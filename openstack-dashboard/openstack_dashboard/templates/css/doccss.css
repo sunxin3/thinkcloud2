@@ -1,0 +1,27 @@
+@charset "utf-8";
+/* CSS Document */
+
+body {
+	color:#444;
+	line-height:1.6;
+	font-family: "宋体", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	background:#f6f6f6;
+	background-image: url(../images/loginbg.jpg);
+}
+
+.bg {
+	height:837px;
+	margin:0 auto;
+
+}
+.box {
+	position: relative;
+	margin:0 auto;
+	height:800px;
+	width:931px;
+}
+.header {
+	background:url(../images/header.jpg) no-repeat;
+	padding-bottom: 79px;
+}

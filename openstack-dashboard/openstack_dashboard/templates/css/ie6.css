@@ -1,0 +1,23 @@
+@charset "utf-8";
+
+.menu ul li a.hide, .menu ul li 
+a:visited.hide {display:none;}
+.menu ul li a:hover ul li a.hide 
+{display:none;}
+.menu ul li a:hover {color:#CF2417;background:url(../images/mon.jpg) no-repeat}
+.menu 
+ul li a:hover ul {display:block; position:absolute; top:39px; left:0; 
+width:116px;}
+.menu ul li a:hover ul li a.sub {background:#EA2725; 
+color:#fff;}
+.menu ul li a:hover ul li a {display:block; background:#EA2725; 
+color:#fff;}
+.menu ul li a:hover ul li a ul {visibility:hidden;}
+.menu ul li a:hover ul li a:hover {background:url(../images/mico.gif) 10px 17px  no-repeat #9D2A2D;color:#fff;}
+.menu ul li a:hover ul li a:hover ul {visibility:visible; position:absolute; left:96px; top:0; 
+color:#fff;}
+.menu ul li a:hover ul li a:hover ul.left 
+{left:-96px;}
+
+.menu ul li a:hover ul ul li a {background:#9D2A2D;width:77px}
+.menu ul li a:hover ul ul li a:hover {background:#9D2A2D;width:77px;text-decoration:underline}

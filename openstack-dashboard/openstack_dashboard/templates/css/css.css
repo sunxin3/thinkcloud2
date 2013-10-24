@@ -1,0 +1,194 @@
+﻿/*Create By Lmx 2010-11-3*/
+/*初始化*/
+body,div,dl,dt,p,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,blockquote,th,td { 
+padding:0; 
+margin:0; 
+ word-break:break-all;
+ }
+ul,li {list-style:none}
+body {
+	color:#444;
+	line-height:1.6;
+	font-family: "宋体", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	background:#f6f6f6;
+}
+table { 
+ border-collapse: collapse; 
+ border-spacing: 0; 
+ }
+fieldset,img { 
+ border: 0; 
+ } 
+address,caption,cite,code,dfn,em,th,var { 
+ font-weight: normal; 
+ font-style: normal; 
+ } 
+ol,ul { 
+ list-style: none; 
+ } 
+caption,th { 
+ text-align: left; 
+ } 
+h1,h2,h3,h4,h5,h6 { 
+ font-weight: normal; 
+ font-size: 100%; 
+ } 
+q:before,q:after { 
+ content:''; 
+ } 
+abbr,acronym { border: 0; 
+ }
+.yh{font-family:"Microsoft YaHei"!important;font-family:"微软雅黑";}
+/*初始化*/
+/*通用布局*/
+.div {
+	width:1002px;
+	text-align:left;
+	clear:both;
+	margin: 0px auto;
+}
+.div1 {
+	width:1100px;
+	text-align:left;
+	clear:both;
+	margin: 0px auto;
+}
+.hack,.hack5,.hack10,.hack15,.hack20,.hack25,.hack7,.hack30 {height:0px;line-height:0px;font-size:0px;clear:both;}
+.hack5 {height:5px;}
+.hack7 {height:7px;}
+.hack10 {height:10px;}
+.hack15 {height:15px;}
+.hack20 {height:15px;}
+.hack25 {height:25px;}
+.hack30 {height:30px;}
+.l {float:left}
+.r {float:right;clear:right}
+.bor {border:1px solid #E7E9E8}
+.more {float:right;margin-right:5px;}
+.alignm {vertical-align:middle}
+.clearfix{*zoom:1;}.clearfix:after{content:'\20';display:block;height:0;clear:both;}
+.ptre{position:relative;}
+.ptab{position:absolute}
+/*通用布局*/
+/*通用字体*/
+.b {font-weight:bold}
+.f14 {font-size:14px}
+.f16 {font-size:16px}
+.f18 {font-size:18px}
+.f13 {font-size:13px}
+.f12 {font-size:12px}
+/*通用字体*/
+/*通用颜色*/
+a {color:#000;text-decoration:none}
+a:hover {color:#f00}
+.unline{text-decoration:underline}
+.red,.red a {color:red}
+.blue,.blue a{color:#0165A3}
+.blue1{color:#017CCA}
+.org,.org a {color:#f70}
+.ored{color:#E20500}
+.gray,.gray a {color:#aaa}
+.green,.green a{color:green}
+.hui,.hui a {color:#333}
+.white,.white a{color:#fff}
+.yel,.yel a{color:#FFF000;}
+.blue1,.blue1 a{color:#008DCD}
+.black{color:#000}
+.c00{color:#B92235}
+.c3{color:#333}
+.c6,.c6 a {color:#666}
+.bg0{background-color:#fff}
+/*通用颜色*/
+/*通用调用CSS*/
+.disno{display:none}
+.pr5{padding-right:5px}
+.pl5{padding-left:5px}
+.pt5{padding-top:5px}
+.pb5{padding-bottom:5px}
+.pd5{padding:5px}
+.pd10{padding:10px}
+.mr10{margin-right:10px}
+.mt10{margin-top:10px}
+.txtr{text-align:right}
+.txtc{text-align:center}
+.txtl{text-align:left}
+.nobbor{border-bottom:none}
+.nobor{border:none}
+.co1,.co1 a{color:#F60}
+.co2{color:#007787}
+.f1{font-family:Tahoma,Arial, Helvetica, sans-serif;}
+/*通用调用CSS*/
+.login_bg{height:837px;background:url(../images/loginbg.jpg) no-repeat;margin:0 auto}
+.login_box{padding-top:200px}
+.login_box .login_table{height:383px;background:url(../images/logintbg.jpg) no-repeat;margin:0 auto;width:418px;}
+.login_input{padding-top:122px;padding-left:65px}
+.login_input dt{height:30px;color:#000;width:290px}
+.login_input dd{height:50px;width:290px}
+.inbg1 input{background:url(../images/inbg1.jpg) no-repeat;width:250px;height:33px;line-height:33px;border:none;padding-left:38px}
+.inbg2 input{background:url(../images/inbg2.jpg) no-repeat;width:250px;height:33px;line-height:33px;border:none;padding-left:38px}
+.login_input .btn{padding-top:30px;text-align:right;}
+.login_input .btn img{vertical-align:middle;margin-left:10px}
+.bg{background:url(../images/bot.gif) repeat-x bottom #EAE8E9}
+.topbox{background:url(../images/topbg.jpg) repeat-x;height:75px}
+.logo{padding-top:20px}
+.menubox{background:url(../images/menubg.jpg) repeat-x;height:57px;}
+.menubox .rightbox{margin-top:10px;background:url(../images/sobg.png) no-repeat;width:165px;height:23px;}
+.menubox .rightbox .in{width:125px;padding:0 10px;float:left;line-height:23px;height:23px;border:none;background:none}
+.menubox .rightbox .btn{margin-top:2px}
+.menubox .leftbox{width:800px;}
+
+.menu {width:800px; position:relative;}
+.menu ul li a, .menu ul li a:visited {display:block; 
+text-decoration:none; color:#000;width:116px; height:39px; text-align:center; 
+color:#fff;line-height:39px;overflow:hidden;}
+.menu ul {padding:0; 
+margin:0;list-style-type: none; }
+.menu ul li {float:left; margin-right:1px;position:relative;}
+.menu ul li ul {display: none;font-size:12px;font-family:'宋体'}
+/* specific to non IE 
+browsers */
+.menu ul li:hover a {color:#CF2417;background:url(../images/mon.jpg) no-repeat }
+.menu ul 
+li:hover ul {display:block; position:absolute; top:39px; left:0; 
+width:116px;}
+.menu ul li:hover ul li:hover a.hide {background:url(../images/mico.gif) 10px 17px  no-repeat #9D2A2D; 
+color:#fff;}
+.menu ul li:hover ul li ul {display: none;}
+.menu ul li:hover 
+ul li a {display:block; background:#EA2725; color:#fff;}
+.menu ul li:hover ul li 
+a:hover {background:url(../images/mico.gif) 10px 17px  no-repeat #9D2A2D; color:#fff;}
+.menu ul li:hover ul li:hover ul 
+{display:block; position:absolute; left:116px; top:0;*left:96px}
+.menu ul li:hover ul 
+li:hover ul.left {left:-116px;}
+.menu ul li:hover 
+ul ul li a {background:#9D2A2D;width:77px}
+.menu ul li:hover ul li:hover ul li 
+a:hover {background:#9D2A2D;width:77px;text-decoration:underline}
+.banner{height:280px;padding-bottom:5px}
+.banner img{display:block}
+.mpic li{float:left;width:324px;height:155px;margin-right:13px}
+.mpic li.nomar{margin-right:0}
+.botlink{height:109px;background:url(../images/botbg.jpg) repeat-x;padding-left:20px;padding-top:12px}
+.botlink div{float:left;width:175px;padding:0 20px 0 40px;height:95px;font-size:13px}
+.botlink dt{font-weight:bold;font-size:14px}
+.botlink1,.botlink2,.botlink3{border-right:1px solid #D9DADE;}
+.botlink2,.botlink3,.botlink4{border-left:1px solid #fff;}
+.footer{height:90px}
+.footerlink{line-height:45px}
+.footer .txt,.footer .txt a{color:#868686;}
+
+
+.picshow {background-color:#e4f2fa; width: 100%; height: 280px}
+.picshow_main {z-index:1;position: relative; width: 100%; height: 280px}
+.picshow_main .imgbig { filter: progid:dximagetransform.microsoft.wipe(gradientsize=1.0,wipestyle=4, motion=forward); width: 100%; height: 280px}
+.picshow_change {position: absolute; text-align: left; bottom: 6px; height: 20px; right: 10px;width:55px}
+.picshow_change a {display: block; float: left; margin-right: 3px; background:url(../images/nbg1.gif) no-repeat bottom;width:15px;font-size:11px;line-height:11px;text-align:center;height:11px;padding-top:3px;overflow:hidden}
+a.axx {color:#fff;background:url(../images/nbg1.gif) no-repeat bottom;text-decoration:none}
+a.axx:hover {background:url(../images/nbg2.gif) no-repeat bottom}
+a.bxx,a.axx:hover {background:url(../images/nbg2.gif) no-repeat bottom;color:#fff;text-align:center;text-decoration:none;}
+.picshow_change a:link,.picshow_change a:active,.picshow_change a:visited{color:#fff}
+a.bxx:hover,a.axx:hover {background:url(../images/nbg2.gif) no-repeat bottom;color:#fff;}
+.picshow_main img{border:0px}
