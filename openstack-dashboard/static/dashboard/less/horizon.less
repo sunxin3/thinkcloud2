@@ -780,8 +780,8 @@ form.horizontal fieldset {
 }
 
 .modal-body {
-  background: url("../img/loginbg2.jpg") repeat scroll 0 0 rgba(0, 0, 0, 0);
-  padding: 20px 15px 15px 60px;
+  overflow-y: visible;
+  max-height: none;
 }
 
 .modal-body table {
@@ -871,8 +871,9 @@ form.horizontal fieldset {
 }
 
 .modal-body .modal-footer {
-  overflow-y: visible;
-  max-height: none;
+    width: 670px;
+    margin-left: -25px;
+    margin-right: -15px;
 }
 
 .modal-footer a.close {
@@ -2106,6 +2107,3 @@ div.network {
     margin-left: 10px;
   }
 }
-
-
-
