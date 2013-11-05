@@ -1,2 +1,5 @@
-#Openstack Base Version
+## Openstack Base Version 
 stable/grizzly
+
+## How to deply the source codes
+   Suppose the devstack codes are under /opt/stack. Then all codes would be copied into /opt/stack/horizon. The original codes would be overwritten.
