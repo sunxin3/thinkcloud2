@@ -179,10 +179,16 @@ class SetInstanceDetailsAction(workflows.Action):
     name = forms.CharField(max_length=80, label=_("Instance Name"))
     flavor = forms.ChoiceField(label=_("Flavor"),
                                help_text=_("Size of image to launch."))
-    count = forms.IntegerField(label=_("Instance Count"),
-                               min_value=1,
-                               initial=1,
-                               help_text=_("Number of instances to launch."))
+    count = forms.ChoiceField(label=_("Instance Count"),
+			       choices=[('1', _('1')),
+                                             ('2', _('2')),
+                                             ('3', _('3')),
+                                             ('4', _('4'))],
+                               help_text=_("Number of instances to lauch."))
+    #count = forms.IntegerField(label=_("Instance Count"),
+                              # min_value=1,
+                              # initial=1,
+                              # help_text=_("Number of instances to launch."))
 
     class Meta:
         name = _("Details")
