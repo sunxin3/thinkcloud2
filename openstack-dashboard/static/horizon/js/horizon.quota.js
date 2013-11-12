@@ -151,7 +151,8 @@ horizon.Quota = {
     if(!this.is_flavor_quota) return;
 
     var scope = this;
-    var instance_count = (parseInt($("#id_count").val(), 10) || 1);
+    //var instance_count = (parseInt($("#id_count").val(), 10) || 1);
+    var instance_count = ($("#id_count").children(":selected").val() || 1);
     var update_amount = 0;
 
     this.getSelectedFlavor();
@@ -199,7 +200,8 @@ horizon.Quota = {
       };
 
       $('#id_flavor').on('change', eventCallback);
-      $('#id_count').on('keyup', eventCallback);
+      //$('#id_count').on('keyup', eventCallback);
+      $('#id_count').on('change', eventCallback);
     }
 
     $(this.user_value_form_inputs).each(function(index, element) {
