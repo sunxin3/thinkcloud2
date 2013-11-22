@@ -1,0 +1,13 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+
+{% block modal-header %}{% trans "Register" %}{% endblock %}
+{% block modal_class %}register{% endblock %}
+
+{% block form_action %}/register/{% endblock %}
+{% block autocomplete %}{{ HORIZON_CONFIG.password_autocomplete }}{% endblock %}
+
+{% block modal-footer %}
+  <a href='/dashboard'  id="users_action_create" class="btn btn-danger pull-right ">Back</a>
+  <button type="submit" class="btn btn-danger pull-right">{% trans "Register" %}</button>
+{% endblock %}

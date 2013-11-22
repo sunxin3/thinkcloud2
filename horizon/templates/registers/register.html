@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Register User" %}{% endblock%}
+
+{% block body_id %}splash{% endblock %}
+
+{% block content %}
+  {% include 'registers/_register.html' %}
+{% endblock %}
