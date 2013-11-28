@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Register User Result" %}{% endblock%}
+
+{% block body_id %}splash{% endblock %}
+
+{% block content %}
+<div>
+Register request mail has been sent to sysadmin for approvaling!
+Please wait for sysadmin's reply mail, Thanks!
+<a href="/"> 首页 </a> | <a href="/dashboard/"> 登录 </a> |
+</div>
+{% endblock %}

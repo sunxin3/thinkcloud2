@@ -26,10 +26,8 @@ def send_mail(to_list,sub,content):
         s.login(mail_user,mail_pass)
         s.sendmail(me, to_list, msg.as_string())
         s.close()
-        print '1'
         return True
     except Exception, e:
-        print '2'
         print str(e)
         return False
 
@@ -41,10 +39,24 @@ def register_page(request):
             realname = form.cleaned_data['realname']  
             email = form.cleaned_data['email']  
             password = form.cleaned_data['password']  
-	    if send_mail(mail_to,"hello","this is python sent"):
-                return HttpResponse("Register Success!")  
+	    mail_body = 'There is a new user to register our ThinkCloud website, the detail information is below:\n'
+	    mail_body += 'User Name: '
+	    mail_body += username
+	    mail_body += '\n'
+	    mail_body += 'Password: '
+	    mail_body += password 
+	    mail_body += '\n'
+	    mail_body += 'Real Name: '
+	    mail_body += realname
+	    mail_body += '\n'
+	    mail_body += 'email: '
+	    mail_body += email 
+	    mail_body += '\n'
+	    mail_body += 'Please help to handle this request, Thanks!'
+	    if send_mail(mail_to,"Think Cloud Register Mail",mail_body):
+                return render_to_response("registers/register_success.html")  
 	    else:
-                return HttpResponse("Register Failed!")  
+                return render_to_response("registers/register_fail.html")  
     else:
         form = RegistrationForm()
     variables = RequestContext(request,{'form':form})

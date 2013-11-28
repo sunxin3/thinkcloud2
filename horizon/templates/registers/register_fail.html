@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Register User Result" %}{% endblock%}
+
+{% block body_id %}splash{% endblock %}
+
+{% block content %}
+<div>
+Due to internal error, the register request mail has not been sent to sysadmin!
+Please send mail to sunxin3@lenovo.com for register manually by bleow info:
+<div>
+	UserName
+	RealName
+	Password
+	Email
+</div>
+<a href="/"> 首页 </a> | <a href="/dashboard/"> 登录 </a> |
+</div>
+{% endblock %}
