@@ -31,7 +31,6 @@ sub macro_hash {
 		$macro_hash->{$key} = $value;
 	}
 
-	#print Dumper($macro_hash);
 	return $macro_hash;
 }
 

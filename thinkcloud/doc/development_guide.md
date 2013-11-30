@@ -1,7 +1,7 @@
 # How to develop nova extension
    The following steps describe how to develop a nova extension.
  
- 1. Add extension source files
+1. Add extension source files
    All nova extension files should be placed into the following folder:
      <os_root>/nova/nova/api/openstack/compute/contrib
    The following is an example of extension:
@@ -88,31 +88,35 @@
     #---------------------------------------------------------------------------
 ```
  **Tips:**
+ 
  * There is name convention strict in the nova extension.
+ 
  ** The extension file name should be all lower case. The class name for 
  registry the extension should have the same name But the first character is 
  upper case 
+ 
  ** The extension should have two classes. One is Controller which would reponse
  for the request. The other one is to registry the extension.
  
  After the extension was added correrctly. You can get the extension name by
  the following command
+ 
  ```shell
      curl -X GET -H 'X-Auth-Token:8a2bcd2f218a42fe8cb3ce94516b4afa' http://192.168.110.90:8774/v2/dc9238e0d0a046cd80ecc4b744da5878/extensions
  ```
  
- 2. In the extension controller, it would get data from database. By the step 1
+2. In the extension controller, it would get data from database. By the step 1
  We just get an extension which can response the URL, But it can't fetch any 
  data until we make the database be ready.
  The nova extension use sqlalchemy ORM framework.
- * 1. Add an abstract interace to  <OS_ROOT>/nova/db/api.py
+_1. Add an abstract interace to  <OS_ROOT>/nova/db/api.py
  ```python
     def physical_server_get(context,server_id):
     """Get a physical server or raise if it doesn't exist"""
     return IMPL.physical_server_get(context,server_id)
  ```
  
- * 2. Above interface would be implemented by the sqlalchemy api. The file
+ _2. Above interface would be implemented by the sqlalchemy api. The file
  location is <OS_ROOT>/nova/db/sqlalchemy/api.py
  
  ```python         
