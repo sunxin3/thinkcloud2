@@ -61,7 +61,10 @@ Here is an exmple of customized codes:
 
   We need know the target file which should be subsituted. The target file 
 location was defined in the customized file like this tag
+
+```
     #[[file:$NOVA_ROOT$/nova/db/api.py;action:weave]]
+```
 The target file location is "$NOVA_ROOT$/nova/db/api.py.
 The sring "$NOVA_ROOT$ would be replaced to the root directory of nova module
 There is also "action" key word. Currently only two actions are supported.
