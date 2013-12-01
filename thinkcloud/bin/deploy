@@ -16,7 +16,7 @@ use File::Basename;
 #
 #-------------------------------------------------------------------------------
 my $ROOT_DIR = {
-	NOVA_ROOT        => '/root/workspace/stack/thinkcloud/test',
+	NOVA_ROOT        => '/root/workspace/stack/nova',
 	NOVA_CLIENT_ROOT => '',
 };
 

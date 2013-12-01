@@ -19,7 +19,7 @@
 # Author: Dengfeng Mao
 # Email:  mdengfeng@gmail.com
 
-#[[file:$NOVA_ROOT$/nova/db/physical_servers.py;action:copy]]
+#[[file:$NOVA_ROOT$/nova/api/openstack/compute/contrib/physical_servers.py;action:copy]]
 
 import webob
 from webob import exc
@@ -60,9 +60,8 @@ class Physical_serversController(wsgi.Controller):
  
         try:
             physical_server = db.physical_server_get(context, id)
-        except  Exception:
+        except :
             raise webob.exc.HTTPNotFound(explanation="Physical_server not found")
-        
  
         physical_servers["physical_server"] = physical_server 
         return physical_servers 
@@ -80,7 +79,7 @@ class Physical_serversController(wsgi.Controller):
     
 # extension declaration 
 class Physical_servers(extensions.ExtensionDescriptor):  
-    """Physical_server ExtensionDescriptor implementation"""
+    """Physical_server Extension Descriptor implementation"""
  
     name = "physical_servers"
     alias = "thkcld-physical_servers"
