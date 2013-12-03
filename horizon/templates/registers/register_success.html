@@ -1,14 +1,108 @@
-{% extends "base.html" %}
-{% load i18n %}
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=utf-8">
+<title>Register Result</title>
+<style>
+.body{
+  background: #fafafa;
+  background-image: url('/static/dashboard/img/loginbg.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+.result{
+    background: none repeat scroll 0 0 padding-box #FFFFFF;
+    border: 1px solid #E1E1E1;
+    border-radius: 6px 6px 6px 6px;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+    left: 45%;
+    margin: 0 0 0 -195px;
+    max-height: none;
+    padding-top: 10px;
+    position: absolute;
+    top: 80px;
+    width: 420px;
+    height: 160px;
+}
+.label{
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: bold;
+    text-align: left;
+    color: #333333;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    line-height: 18px;
+    padding: 15px;
+    height: 47px;
+}
+.footer{
+    background-color: #F5F5F5;
+    border-radius: 0 0 6px 6px;
+    border-top: 1px solid #DDDDDD;
+    box-shadow: 0 1px 0 #FFFFFF inset;
+    margin-bottom: 0;
+    padding: 14px 15px 15px;
+    height: 15px;
+}
+.header{
+    border-bottom: 1px solid #EEEEEE;
+    padding: 9px 15px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 18px;
+    line-height: 18px;
+    color: #333333;
+    font-weight: bold;
+    margin: 0;
+    text-rendering: optimizelegibility;
+}
+.btn{
+    margin-bottom: 0;
+    margin-left: 5px;
+    float: right;
+    background-color: #DA4F49;
+    background-image: -moz-linear-gradient(center top , #EE5F5B, #BD362F);
+    background-repeat: repeat-x;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    color: #FFFFFF;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-image: none;
+    border-radius: 4px 4px 4px 4px;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    display: inline-block;
+    font-size: 13px;
+    line-height: 14px;
+    padding: 4px 4px;
+    text-align: center;
+    vertical-align: middle;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+</html>
+</style>
+</head>
+<body class="body">
 
-{% block title %}{% trans "Register User Result" %}{% endblock%}
-
-{% block body_id %}splash{% endblock %}
-
-{% block content %}
-<div>
-Register request mail has been sent to sysadmin for approvaling!
-Please wait for sysadmin's reply mail, Thanks!
-<a href="/"> 首页 </a> | <a href="/dashboard/"> 登录 </a> |
+<div class="result">
+       <div class="header" >
+	Succeed!
+       </div>
+       <div class="label">
+	The register request mail has been sent to sysadmin for approvaling!<br>
+        Please wait for sysadmin's reply mail, Thanks!
+       </div>
+       <div class="footer">
+                   <a href='/dashboard' class="btn pull-right">Back</a>
+      </div>
 </div>
-{% endblock %}
+</body>
