@@ -46,9 +46,9 @@ class ServerModel (BASE,NovaBase):
     
     name = Column(String(64))
     
-class PowerStat (BASE,NovaBase):
+class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""
-    __tablename__ = 'thkcld_power_stats'
+    __tablename__ = 'thkcld_power_states'
     
     id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
     
