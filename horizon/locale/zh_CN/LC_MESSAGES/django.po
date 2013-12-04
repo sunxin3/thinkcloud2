@@ -69,7 +69,7 @@ msgstr "选择一个项目"
 
 #: dashboards/nova/dashboard.py:24
 msgid "Manage Compute"
-msgstr "管理计算节点"
+msgstr "资源申请与管理"
 
 #: dashboards/nova/dashboard.py:35
 msgid "Object Store"
@@ -80,7 +80,7 @@ msgstr "对象仓库"
 #: dashboards/syspanel/networks/tables.py:66
 #: dashboards/syspanel/projects/tables.py:65 tests/workflows_tests.py:39
 msgid "Project"
-msgstr "项目"
+msgstr "部门"
 
 #: dashboards/nova/access_and_security/panel.py:25
 #: dashboards/nova/instances/workflows.py:345
@@ -217,12 +217,12 @@ msgstr "无可用实例"
 #: dashboards/nova/access_and_security/floating_ips/workflows.py:81
 #: dashboards/nova/volumes/forms.py:160
 msgid "Select an instance"
-msgstr "选择一个实例"
+msgstr "选择一个虚拟机"
 
 #: dashboards/nova/access_and_security/floating_ips/workflows.py:83
 #: dashboards/nova/volumes/forms.py:162
 msgid "No instances available"
-msgstr "无可用实例"
+msgstr "无可用虚拟机"
 
 #: dashboards/nova/access_and_security/floating_ips/workflows.py:102
 msgid "Manage Floating IP Associations"
@@ -1055,7 +1055,7 @@ msgstr "快照名称"
 #: dashboards/nova/images_and_snapshots/snapshots/forms.py:49
 #, python-format
 msgid "Snapshot \"%(name)s\" created for instance \"%(inst)s\""
-msgstr "已为实例 \"%(inst)s\" 创建快照 \"%(name)s\" "
+msgstr "已为虚拟机 \"%(inst)s\" 创建快照 \"%(name)s\" "
 
 #: dashboards/nova/images_and_snapshots/snapshots/forms.py:55
 msgid "Unable to create snapshot."
@@ -1073,11 +1073,11 @@ msgstr "快照"
 
 #: dashboards/nova/images_and_snapshots/snapshots/tables.py:54
 msgid "Instance Snapshots"
-msgstr "实例快照"
+msgstr "虚拟机快照"
 
 #: dashboards/nova/images_and_snapshots/snapshots/views.py:52
 msgid "Unable to retrieve instance."
-msgstr "无法获取实例。"
+msgstr "无法获取虚拟机。"
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/index.html:3
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/index.html:6
@@ -1242,11 +1242,11 @@ msgstr "卷ID"
 #: dashboards/nova/instances/forms.py:44
 #, python-format
 msgid "Instance \"%s\" updated."
-msgstr "实例 \"%s\" 已更新。"
+msgstr "虚拟机 \"%s\" 已更新。"
 
 #: dashboards/nova/instances/forms.py:49
 msgid "Unable to update instance."
-msgstr "无法更新实例。"
+msgstr "无法更新虚拟机。"
 
 #: dashboards/nova/instances/panel.py:24
 #: dashboards/nova/instances/tables.py:63
@@ -1261,7 +1261,7 @@ msgstr "无法更新实例。"
 #: dashboards/syspanel/instances/templates/instances/index.html:3
 #: dashboards/syspanel/projects/workflows.py:38
 msgid "Instances"
-msgstr "实例"
+msgstr "虚拟机"
 
 #: dashboards/nova/instances/tables.py:60
 msgid "Terminate"
@@ -1316,12 +1316,12 @@ msgstr "已恢复"
 #: dashboards/nova/instances/templates/instances/launch.html:3
 #: dashboards/nova/instances/templates/instances/launch.html:6
 msgid "Launch Instance"
-msgstr "启动实例"
+msgstr "启动虚拟机"
 
 #: dashboards/nova/instances/tables.py:155
 #: dashboards/nova/instances/templates/instances/_update.html:7
 msgid "Edit Instance"
-msgstr "编辑实例"
+msgstr "编辑虚拟机"
 
 #: dashboards/nova/instances/tables.py:172
 msgid "VNC Console"
@@ -1332,7 +1332,7 @@ msgid "View Log"
 msgstr "查看日志"
 
 #: dashboards/nova/instances/tables.py:232
-#, fuzzy, python-format
+#: fuzzy, python-format
 msgid "%(name)s | %(RAM)s RAM | %(VCPU)s VCPU | %(disk)s Disk"
 msgstr "%(RAM)s RAM | %(VCPU)s VCPU | %(disk)s Disk"
 
@@ -1344,7 +1344,7 @@ msgstr "无法使用"
 #: dashboards/nova/instances/tables.py:269
 #: dashboards/syspanel/instances/tables.py:73 usage/tables.py:57
 msgid "Instance Name"
-msgstr "实例名称"
+msgstr "虚拟机名称"
 
 #: dashboards/nova/instances/tables.py:281
 #: dashboards/syspanel/instances/tables.py:85
@@ -1363,7 +1363,7 @@ msgstr "日志"
 #: dashboards/nova/instances/tabs.py:47 dashboards/nova/instances/views.py:105
 #, python-format
 msgid "Unable to get log for instance \"%s\"."
-msgstr "无法获得实例 \"%s\" 的日志。"
+msgstr "无法获得虚拟机 \"%s\" 的日志。"
 
 #: dashboards/nova/instances/tabs.py:54
 msgid "VNC"
@@ -1372,25 +1372,25 @@ msgstr "VNC"
 #: dashboards/nova/instances/tabs.py:69 dashboards/nova/instances/views.py:121
 #, python-format
 msgid "Unable to get VNC console for instance \"%s\"."
-msgstr "无法获得实例 \"%s\" 的VNC控制台"
+msgstr "无法获得虚拟机 \"%s\" 的VNC控制台"
 
 #: dashboards/nova/instances/views.py:58
 msgid "Unable to retrieve instances."
-msgstr "无法获取实例。"
+msgstr "无法获取虚拟机。"
 
 #: dashboards/nova/instances/views.py:81
 #: dashboards/syspanel/instances/views.py:89
 msgid "Unable to retrieve instance size information."
-msgstr "无法获取实例大小信息。"
+msgstr "无法获取虚拟机大小信息。"
 
 #: dashboards/nova/instances/views.py:143
 msgid "Unable to retrieve instance details."
-msgstr "无法获取实例详情。"
+msgstr "无法获取虚拟机详情。"
 
 #: dashboards/nova/instances/views.py:178
 #, python-format
 msgid "Unable to retrieve details for instance \"%s\"."
-msgstr "无法获取实例 \"%s\" 的详情。"
+msgstr "无法获取虚拟机 \"%s\" 的详情。"
 
 #: dashboards/nova/instances/workflows.py:38
 #: dashboards/syspanel/projects/tables.py:106
@@ -1450,7 +1450,7 @@ msgstr "终止后删除"
 
 #: dashboards/nova/instances/workflows.py:85
 msgid "Delete volume on instance terminate"
-msgstr "实例终止后删除卷"
+msgstr "虚拟机终止后删除卷"
 
 #: dashboards/nova/instances/workflows.py:99
 #, python-format
@@ -1479,12 +1479,12 @@ msgstr "无法获取卷快照"
 #: dashboards/nova/instances/workflows.py:170
 #, fuzzy
 msgid "Instance Source"
-msgstr "实例计数"
+msgstr "虚拟机计数"
 
 #: dashboards/nova/instances/workflows.py:173
 #, fuzzy
 msgid "Instance Snapshot"
-msgstr "实例快照"
+msgstr "虚拟机快照"
 
 #: dashboards/nova/instances/workflows.py:175
 msgid "Server Name"
@@ -1502,11 +1502,11 @@ msgstr "启动镜像大小"
 
 #: dashboards/nova/instances/workflows.py:178
 msgid "Instance Count"
-msgstr "实例计数"
+msgstr "虚拟机计数"
 
 #: dashboards/nova/instances/workflows.py:181
 msgid "Number of instances to launch."
-msgstr "启动的实例数目"
+msgstr "启动的虚拟机数目"
 
 #: dashboards/nova/instances/workflows.py:184
 #, fuzzy
@@ -1548,12 +1548,12 @@ msgstr "选择语言"
 #: dashboards/nova/instances/workflows.py:266
 #, fuzzy
 msgid "No images available."
-msgstr "无可用实例"
+msgstr "无可用虚拟机"
 
 #: dashboards/nova/instances/workflows.py:275
 #, fuzzy
 msgid "Select Instance Snapshot"
-msgstr "实例快照"
+msgstr "虚拟机快照"
 
 #: dashboards/nova/instances/workflows.py:277
 #, fuzzy
@@ -1562,7 +1562,7 @@ msgstr "无可用实例"
 
 #: dashboards/nova/instances/workflows.py:288
 msgid "Unable to retrieve instance flavors."
-msgstr "无法获取实例类型"
+msgstr "无法获取虚拟机类型"
 
 #: dashboards/nova/instances/workflows.py:301
 #, fuzzy
@@ -1575,7 +1575,7 @@ msgstr "认证使用哪个密钥对"
 
 #: dashboards/nova/instances/workflows.py:341
 msgid "Launch instance in these security groups."
-msgstr "在这些安全组中启动实例"
+msgstr "在这些安全组中启动虚拟机"
 
 #: dashboards/nova/instances/workflows.py:346
 msgid ""
@@ -1629,7 +1629,7 @@ msgstr ""
 #: dashboards/nova/instances/workflows.py:412
 #, fuzzy
 msgid "Launch instance withthese networks"
-msgstr "在这些安全组中启动实例"
+msgstr "在这些安全组中启动虚拟机"
 
 #: dashboards/nova/instances/workflows.py:416
 #: dashboards/syspanel/instances/workflows.py:37
@@ -1640,7 +1640,7 @@ msgstr ""
 #: dashboards/syspanel/instances/workflows.py:39
 #, fuzzy
 msgid "Select networks for your instance."
-msgstr "选择一个实例"
+msgstr "选择一个虚拟机"
 
 #: dashboards/nova/instances/workflows.py:434
 #: dashboards/syspanel/instances/workflows.py:73
@@ -1656,22 +1656,22 @@ msgstr ""
 #: dashboards/nova/instances/workflows.py:458
 #, fuzzy, python-format
 msgid "Unable to launch %(count)s named \"%(name)s\"."
-msgstr "无法启动实例: %(exc)s"
+msgstr "无法启动虚拟机: %(exc)s"
 
 #: dashboards/nova/instances/workflows.py:471
 #, fuzzy, python-format
 msgid "%s instances"
-msgstr "实例"
+msgstr "虚拟机"
 
 #: dashboards/nova/instances/workflows.py:474
 #, fuzzy
 msgid "instance"
-msgstr "实例"
+msgstr "虚拟机"
 
 #: dashboards/nova/instances/templates/instances/_detail_log.html:4
 #, fuzzy
 msgid "Instance Console Log"
-msgstr "实例的VNC控制台"
+msgstr "虚拟机的VNC控制台"
 
 #: dashboards/nova/instances/templates/instances/_detail_log.html:7
 msgid "Log Length"
@@ -1687,13 +1687,13 @@ msgstr "查看所有日志"
 
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:3
 msgid "Instance Overview"
-msgstr "实例概况"
+msgstr "虚拟机概况"
 
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:24
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:14
 #: usage/tables.py:22
 msgid "RAM"
-msgstr "RAM"
+msgstr "内存"
 
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:26
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:10
@@ -1701,11 +1701,11 @@ msgstr "RAM"
 #: dashboards/syspanel/flavors/tables.py:40
 #: dashboards/syspanel/projects/workflows.py:37 usage/tables.py:19
 msgid "VCPUs"
-msgstr "VCPUs"
+msgstr "虚拟CPU"
 
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:27
 msgid "VCPU"
-msgstr "VCPU"
+msgstr "虚拟CPU"
 
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:28
 #: usage/tables.py:20
@@ -1759,7 +1759,7 @@ msgstr "没有卷附加。"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:3
 msgid "Instance VNC Console"
-msgstr "实例的VNC控制台"
+msgstr "虚拟机的VNC控制台"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:5
 msgid ""
@@ -1769,7 +1769,7 @@ msgstr "如果VNC控制台对键盘输入没有响应：点击下面的灰色状
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:5
 msgid "Click here to show only VNC"
-msgstr ""
+msgstr "点击这里来全屏显示VNC控制台"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:8
 msgid "VNC console is currently unavailabe. Please try again later."
@@ -1783,7 +1783,7 @@ msgstr "重新加载"
 msgid ""
 "You can customize your instance after it's launched using the options "
 "available here."
-msgstr ""
+msgstr "当用这里的可用选项申请完虚拟机后，您可以自定义使用您的虚拟机"
 
 #: dashboards/nova/instances/templates/instances/_launch_customize_help.html:3
 msgid ""
@@ -1801,7 +1801,7 @@ msgid ""
 "The chart below shows the resources used by this project in relation to the "
 "project's quotas."
 msgstr ""
-"详细说明启动实例的情况。下面的图表显示此项目所使用的资源和关联的项目配额。"
+"详细说明启动虚拟机的情况。下面的图表显示此项目所使用的资源和关联的项目配额。"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:6
 #, fuzzy
@@ -1831,11 +1831,11 @@ msgstr "MB"
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:21
 #, fuzzy
 msgid "Number of Instances"
-msgstr "启动的实例数目"
+msgstr "启动的虚拟机数目"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:29
 msgid "Number of VCPUs"
-msgstr ""
+msgstr "虚拟CPU的数量"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:37
 #, fuzzy
@@ -1846,12 +1846,12 @@ msgstr "内存"
 msgid ""
 "An instance can be launched with varying types of attached storage. You may "
 "select from those options here."
-msgstr ""
+msgstr "虚拟机可以在启动时，挂载各种不同类型的存储，您可以从这些选项中选择"
 
 #: dashboards/nova/instances/templates/instances/_update.html:17
 #, fuzzy
 msgid "You may update the editable properties of your instance here."
-msgstr "更新您的实例名称"
+msgstr "更新您的虚拟机名称"
 
 #: dashboards/nova/instances/templates/instances/_update.html:22
 #: dashboards/nova/networks/templates/networks/_update.html:22
@@ -1860,16 +1860,16 @@ msgstr "更新您的实例名称"
 #: dashboards/syspanel/networks/templates/networks/ports/_update.html:27
 #: dashboards/syspanel/networks/templates/networks/subnets/_update.html:31
 msgid "Save Changes"
-msgstr ""
+msgstr "保存更改"
 
 #: dashboards/nova/instances/templates/instances/detail.html:3
 msgid "Instance Detail"
-msgstr "实例详情"
+msgstr "虚拟机详情"
 
 #: dashboards/nova/instances/templates/instances/update.html:3
 #: dashboards/nova/instances/templates/instances/update.html:6
 msgid "Update Instance"
-msgstr "更新实例"
+msgstr "更新虚拟机"
 
 #: dashboards/nova/networks/forms.py:47
 #, fuzzy, python-format
@@ -1886,7 +1886,7 @@ msgstr "无法更新镜像 \"%s\"."
 #: dashboards/nova/networks/templates/networks/subnets/index.html:6
 #: dashboards/syspanel/networks/tables.py:33
 msgid "Network"
-msgstr ""
+msgstr "网络"
 
 #: dashboards/nova/networks/tables.py:47
 #: dashboards/syspanel/networks/tables.py:40
@@ -1925,7 +1925,7 @@ msgstr "添加规则"
 #: dashboards/syspanel/networks/tables.py:70
 #, fuzzy
 msgid "Subnets Associated"
-msgstr "关联IP"
+msgstr "关联外网IP"
 
 #: dashboards/nova/networks/tables.py:88
 #: dashboards/nova/networks/ports/tables.py:46
@@ -1961,7 +1961,7 @@ msgstr ""
 #: dashboards/syspanel/networks/views.py:118
 #, fuzzy, python-format
 msgid "Unable to retrieve details for network \"%s\"."
-msgstr "无法获取实例 \"%s\" 的详情。"
+msgstr "无法获取虚拟机 \"%s\" 的详情。"
 
 #: dashboards/nova/networks/workflows.py:36
 msgid "Network Name (optional)"
@@ -2189,7 +2189,7 @@ msgstr "编辑规则"
 #: dashboards/nova/networks/subnets/tabs.py:41
 #, fuzzy
 msgid "Unable to retrieve subnet details."
-msgstr "无法获取实例详情。"
+msgstr "无法获取虚拟机详情。"
 
 #: dashboards/nova/networks/subnets/views.py:52
 #: dashboards/syspanel/networks/ports/views.py:48
@@ -2318,7 +2318,7 @@ msgstr ""
 #: dashboards/syspanel/networks/templates/networks/subnets/_update.html:26
 #, fuzzy
 msgid "You may update the editable properties of your subnet here."
-msgstr "更新您的实例名称"
+msgstr "更新您的虚拟机名称"
 
 #: dashboards/nova/networks/templates/networks/subnets/detail.html:3
 #: dashboards/nova/networks/templates/networks/subnets/detail.html:6
@@ -2476,20 +2476,20 @@ msgstr "无法创建用户。"
 #: dashboards/nova/volumes/forms.py:123
 #, fuzzy
 msgid "Attach to Instance"
-msgstr "附加到实例"
+msgstr "附加到虚拟机"
 
 #: dashboards/nova/volumes/forms.py:124
 msgid "Select an instance to attach to."
-msgstr "选择要附加的实例。"
+msgstr "选择要附加的虚拟机。"
 
 #: dashboards/nova/volumes/forms.py:168
 msgid "Unknown instance (None)"
-msgstr ""
+msgstr "未知虚拟机"
 
 #: dashboards/nova/volumes/forms.py:179
 #, fuzzy, python-format
 msgid "Attaching volume %(vol)s to instance %(inst)s on %(dev)s."
-msgstr "附加卷 %(vol)s 到实例 %(inst)s 的 %(dev)s 上"
+msgstr "附加卷 %(vol)s 到虚拟机 %(inst)s 的 %(dev)s 上"
 
 #: dashboards/nova/volumes/forms.py:188
 #, fuzzy
@@ -2563,7 +2563,7 @@ msgstr "无法得到用户信息列表。"
 #: dashboards/nova/volumes/views.py:58
 #, fuzzy
 msgid "Unable to retrieve volume/instance attachment information"
-msgstr "无法获取实例租户信息。"
+msgstr "无法获取虚拟机租户信息。"
 
 #: dashboards/nova/volumes/views.py:121 dashboards/nova/volumes/views.py:131
 msgid "Unable to retrieve volume information."
@@ -2585,7 +2585,7 @@ msgstr "附加卷"
 #: dashboards/nova/volumes/templates/volumes/_create.html:20
 #: dashboards/nova/volumes/templates/volumes/_create_snapshot.html:18
 msgid "Volumes are block devices that can be attached to instances."
-msgstr "卷是块设备，可以被附加到实例上。"
+msgstr "卷是块设备，可以被附加到虚拟机上。"
 
 #: dashboards/nova/volumes/templates/volumes/_create.html:22
 #, fuzzy
@@ -2742,7 +2742,7 @@ msgstr "在这里您可以为您的 dashboard 修改不同的设置"
 #: dashboards/syspanel/flavors/templates/flavors/_edit.html:24
 #: dashboards/syspanel/projects/workflows.py:268 workflows/base.py:538
 msgid "Save"
-msgstr ""
+msgstr "保存"
 
 #: dashboards/syspanel/dashboard.py:24
 msgid "System Panel"
@@ -2782,7 +2782,7 @@ msgstr "无法创建用户。"
 #: dashboards/syspanel/flavors/forms.py:91
 #, python-format
 msgid "Updated flavor \"%s\"."
-msgstr ""
+msgstr "更新类型"
 
 #: dashboards/syspanel/flavors/forms.py:95
 #, fuzzy
@@ -2841,7 +2841,7 @@ msgid "From here you can define the sizing of a new flavor."
 msgstr "在这里您可以定义新类型的大小。"
 
 #: dashboards/syspanel/flavors/templates/flavors/_edit.html:18
-#, fuzzy
+#: fuzzy
 msgid "From here you can alter the sizing of the current flavor."
 msgstr "在这里您可以定义新类型的大小。"
 
@@ -2856,9 +2856,9 @@ msgid "Unable to retrieve image list."
 msgstr "无法获得镜像列表。"
 
 #: dashboards/syspanel/instances/tables.py:62 usage/tables.py:30
-#, fuzzy
+#: fuzzy
 msgid "Project Name"
-msgstr "项目使用"
+msgstr "部门名称"
 
 #: dashboards/syspanel/instances/tables.py:69
 #: dashboards/syspanel/services/tables.py:40
@@ -2878,7 +2878,7 @@ msgstr ""
 
 #: dashboards/syspanel/instances/templates/instances/index.html:6
 msgid "All Instances"
-msgstr "全部实例"
+msgstr "全部虚拟机"
 
 #: dashboards/syspanel/networks/forms.py:45
 #: dashboards/syspanel/users/forms.py:41
@@ -2938,7 +2938,7 @@ msgstr "无法获取卷详情。"
 #: dashboards/syspanel/networks/subnets/forms.py:42
 #, fuzzy, python-format
 msgid "Failed to retrieve network %s for a subnet"
-msgstr "无法获取实例 \"%s\" 的详情。"
+msgstr "无法获取虚拟机 \"%s\" 的详情。"
 
 #: dashboards/syspanel/networks/templates/networks/ports/_create.html:18
 msgid ""
@@ -2949,7 +2949,7 @@ msgstr ""
 #: dashboards/syspanel/networks/templates/networks/ports/_update.html:22
 #, fuzzy
 msgid "You may update the editable properties of your port here."
-msgstr "更新您的实例名称"
+msgstr "更新您的虚拟机名称"
 
 #: dashboards/syspanel/networks/templates/networks/ports/update.html:3
 #: dashboards/syspanel/networks/templates/networks/ports/update.html:6
@@ -3545,16 +3545,16 @@ msgstr[0] "显示 %(counter)s 个条目"
 msgstr[1] "显示 %(counter)s 个条目"
 
 #: templates/horizon/common/_resource_browser.html:11
-#, fuzzy, python-format
+#: fuzzy, python-format
 msgid "Displaying %(content_items)s item"
 msgid_plural "Displaying %(content_items)s items"
 msgstr[0] "显示 %(counter)s 个条目"
 msgstr[1] "显示 %(counter)s 个条目"
 
 #: templates/horizon/common/_sidebar.html:14
-#, fuzzy
+#: fuzzy
 msgid "Current Project"
-msgstr "创建项目"
+msgstr "当前部门:"
 
 #: templates/horizon/common/_usage_summary.html:5
 msgid "Select a month to query its usage"
@@ -3566,19 +3566,19 @@ msgstr "提交"
 
 #: templates/horizon/common/_usage_summary.html:14
 msgid "Active Instances"
-msgstr "活跃的实例"
+msgstr "正在运行的虚拟机"
 
 #: templates/horizon/common/_usage_summary.html:15
-msgid "Active Memory"
-msgstr "活跃的内存"
+msgid "Active RAM"
+msgstr "已分配的内存"
 
 #: templates/horizon/common/_usage_summary.html:16
 msgid "This Month's VCPU-Hours"
-msgstr "本月的 VCPU 小时时间"
+msgstr "本月的虚拟CPU (vCPU) 小时时间"
 
 #: templates/horizon/common/_usage_summary.html:17
 msgid "This Month's GB-Hours"
-msgstr "本月的 GB 小时时间"
+msgstr "本月的磁盘(GB) 小时时间"
 
 #: templatetags/branding.py:35
 msgid "Horizon"
@@ -3593,31 +3593,31 @@ msgid "Available"
 msgstr "可用配额"
 
 #: templatetags/sizeformat.py:45
-#, python-format
+#: python-format
 msgid "%(size)d byte"
 msgid_plural "%(size)d bytes"
 msgstr[0] "%(size)d 字节"
 msgstr[1] "%(size)d 字节"
 
 #: templatetags/sizeformat.py:49
-#, python-format
+#: python-format
 msgid "%(size)d"
 msgid_plural "%(size)d"
 msgstr[0] "%(size)d"
 msgstr[1] "%(size)d"
 
 #: templatetags/sizeformat.py:52
-#, python-format
+#: python-format
 msgid "%s KB"
 msgstr "%s KB"
 
 #: templatetags/sizeformat.py:55
-#, python-format
+#: python-format
 msgid "%s MB"
 msgstr "%s MB"
 
 #: templatetags/sizeformat.py:58
-#, python-format
+#: python-format
 msgid "%s GB"
 msgstr "%s GB"
 
@@ -3780,7 +3780,7 @@ msgstr "下载 CSV 摘要"
 
 #: usage/tables.py:25
 msgid "VCPU Hours"
-msgstr "VCPU 小时时间"
+msgstr "虚拟CPU 小时时间"
 
 #: usage/tables.py:32
 msgid "Disk GB Hours"
@@ -3828,3 +3828,16 @@ msgstr ""
 #: dashboards/syspanel/instances/tables.py:42
 msgid "Tenant"
 msgstr "租户"
+
+#below is added by sunxin3 for thinkcloud
+msgid "Register"
+msgstr "注册"
+
+msgid "Real Name"
+msgstr "真实姓名"
+
+msgid "System Info"
+msgstr "系统信息"
+
+msgid "Quota Summary"
+msgstr "部门计算资源配额使用统计"
