@@ -3890,3 +3890,6 @@ msgstr "虚拟机的默认管理员密码/root密码是 "
 
 msgid "Please change it after you launched instance."
 msgstr "由于安全考虑，创建完虚拟机请修改各自密码"
+
+msgid "Back"
+msgstr "返回"
