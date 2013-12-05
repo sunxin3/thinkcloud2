@@ -15,7 +15,7 @@ def send_mail(to_list,sub,content):
     mail_pass=""
     mail_postfix="thinkcloudlab.com"
     me=mail_user+"<"+mail_user+"@"+mail_postfix+">"
-    msg = MIMEText(content)
+    msg = MIMEText(content, 'plain', 'UTF-8')
     msg['Subject'] = sub
     msg['From'] = me
     msg['To'] = ";".join(to_list)
