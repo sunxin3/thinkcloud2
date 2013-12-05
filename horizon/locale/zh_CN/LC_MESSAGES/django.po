@@ -1747,15 +1747,15 @@ msgid "No volumes attached."
 msgstr "没有卷附加。"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:3
-msgid "Instance VNC Console"
+msgid "Instance Console"
 msgstr "虚拟机的VNC控制台"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:5
-msgid "If VNC console is not responding to keyboard input: click the grey status bar below."
+msgid "If console is not responding to keyboard input: click the grey status bar below."
 msgstr "如果VNC控制台对键盘输入没有响应：点击下面的灰色状态栏。"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:5
-msgid "Click here to show only VNC"
+msgid "Click here to show only console"
 msgstr "点击这里来全屏显示VNC控制台"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:8
