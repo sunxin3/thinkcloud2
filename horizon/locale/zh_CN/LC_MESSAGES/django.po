@@ -65,7 +65,7 @@ msgstr ""
 #: browsers/views.py:44
 #, fuzzy, python-format
 msgid "Select a %s to browse."
-msgstr "选择一个项目"
+msgstr "选择一个部门"
 
 #: dashboards/nova/dashboard.py:24
 msgid "Manage Compute"
@@ -74,13 +74,6 @@ msgstr "资源申请与管理"
 #: dashboards/nova/dashboard.py:35
 msgid "Object Store"
 msgstr "对象仓库"
-
-#: dashboards/nova/dashboard.py:40 dashboards/nova/instances/workflows.py:37
-#: dashboards/syspanel/networks/forms.py:37
-#: dashboards/syspanel/networks/tables.py:66
-#: dashboards/syspanel/projects/tables.py:65 tests/workflows_tests.py:39
-msgid "Project"
-msgstr "部门"
 
 #: dashboards/nova/access_and_security/panel.py:25
 #: dashboards/nova/instances/workflows.py:345
@@ -123,7 +116,7 @@ msgstr "无法分配浮动IP"
 
 #: dashboards/nova/access_and_security/floating_ips/tables.py:36
 msgid "Allocate IP To Project"
-msgstr "为项目分配IP"
+msgstr "为部门分配IP"
 
 #: dashboards/nova/access_and_security/floating_ips/tables.py:46
 msgid "Release"
@@ -207,7 +200,7 @@ msgstr ""
 #: dashboards/nova/access_and_security/floating_ips/workflows.py:52
 #, fuzzy
 msgid "Select an IP address"
-msgstr "选择一个项目"
+msgstr "选择一个地址"
 
 #: dashboards/nova/access_and_security/floating_ips/workflows.py:54
 #, fuzzy
@@ -259,12 +252,12 @@ msgid "Public Key"
 msgstr "公钥"
 
 #: dashboards/nova/access_and_security/keypairs/forms.py:60
-#, python-format
+#: python-format
 msgid "Successfully imported public key: %s"
 msgstr "成功导入公钥：%s"
 
 #: dashboards/nova/access_and_security/keypairs/forms.py:65
-#, fuzzy
+#: fuzzy
 msgid "Unable to import keypair."
 msgstr "无法获取密钥对"
 
@@ -446,7 +439,7 @@ msgid "The ICMP type is invalid."
 msgstr "\"to\"端口号无效."
 
 #: dashboards/nova/access_and_security/security_groups/forms.py:123
-#, fuzzy
+#: fuzzy
 msgid "The ICMP code is invalid."
 msgstr "\"to\"端口号无效."
 
@@ -565,7 +558,7 @@ msgstr "从给定的浮动ip地址池里分配一个浮动的IP。"
 #: dashboards/nova/access_and_security/templates/access_and_security/floating_ips/_allocate.html:20
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:19
 msgid "Project Quotas"
-msgstr "项目配额"
+msgstr "部门配额"
 
 #: dashboards/nova/access_and_security/templates/access_and_security/floating_ips/_allocate.html:31
 msgid "Allocate IP"
@@ -877,7 +870,7 @@ msgstr "无法获取卷快照"
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:41
 msgid "Image Location"
-msgstr ""
+msgstr "镜像位置"
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:42
 msgid "An external (HTTP) URL to load the image from."
@@ -912,7 +905,7 @@ msgstr ""
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:67
 msgid "Minimum Disk (GB)"
-msgstr ""
+msgstr "最小磁盘"
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:68
 #: dashboards/nova/images_and_snapshots/images/forms.py:75
@@ -923,14 +916,14 @@ msgstr ""
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:74
 msgid "Minimum Ram (MB)"
-msgstr ""
+msgstr "最小内存"
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:81
 #: dashboards/nova/images_and_snapshots/images/forms.py:133
 #: dashboards/nova/images_and_snapshots/images/tables.py:122
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_detail_overview.html:15
 msgid "Public"
-msgstr "开放"
+msgstr "公开"
 
 #: dashboards/nova/images_and_snapshots/images/forms.py:105
 #, python-format
@@ -1087,30 +1080,26 @@ msgstr "镜像和快照"
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_create.html:7
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/create.html:3
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/create.html:6
-#, fuzzy
+#: fuzzy
 msgid "Create An Image"
-msgstr "更新镜像"
+msgstr "创建镜像"
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_create.html:18
 msgid "Specify an image to upload to the Image Service."
-msgstr ""
+msgstr "上传一个自己制作的镜像到镜像服务,以供使用"
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_create.html:21
-msgid ""
-"Currently only images available via an HTTP URL are supported. The image "
-"location must be accessible to the Image Service. Compressed image binaries "
-"are supported (.zip and .tar.gz.)"
-msgstr ""
+msgid "Currently only images available via an HTTP URL are supported. The image location must be accessible to the Image Service. Compressed image binaries are supported (.zip and .tar.gz.)"
+msgstr "通过HTTP URL的方式上传是支持的,镜像位置必须能被镜像服务访问。"
+
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_create.html:24
 msgid "Please note: "
-msgstr ""
+msgstr "请注意："
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_create.html:25
-msgid ""
-"The Image Location field MUST be a valid and direct URL to the image binary. "
-"URLs that redirect or serve error pages will results in unusable images."
-msgstr ""
+msgid "The Image Location field MUST be a valid and direct URL to the image binary. URLs that redirect or serve error pages will result in unusable images."
+msgstr "镜像位置填写的必须是镜像文件的有效直接的URL。间接的重定向的URL会导致镜像上传后不可用"
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_detail_overview.html:3
 msgid "Image Overview"
@@ -1176,7 +1165,7 @@ msgstr "Euca2ools状态"
 #: dashboards/nova/networks/templates/networks/ports/_detail_overview.html:15
 #: dashboards/syspanel/projects/tables.py:90
 msgid "Project ID"
-msgstr "项目ID"
+msgstr "部门ID"
 
 #: dashboards/nova/images_and_snapshots/templates/images_and_snapshots/images/_detail_overview.html:64
 msgid "Image Type"
@@ -1402,7 +1391,7 @@ msgstr "用户"
 #: dashboards/nova/instances/workflows.py:52
 #, fuzzy
 msgid "Project & User"
-msgstr "项目使用"
+msgstr "部门使用"
 
 #: dashboards/nova/instances/workflows.py:54
 msgid ""
@@ -1467,22 +1456,22 @@ msgid "Unable to retrieve list of volumes."
 msgstr "无法获取卷列表"
 
 #: dashboards/nova/instances/workflows.py:128
-#, fuzzy
+#: fuzzy
 msgid "Select Volume Snapshot"
 msgstr "创建卷快照"
 
 #: dashboards/nova/instances/workflows.py:137
-#, fuzzy
+#: fuzzy
 msgid "Unable to retrieve list of volume snapshots."
 msgstr "无法获取卷快照"
 
 #: dashboards/nova/instances/workflows.py:170
-#, fuzzy
+#: fuzzy
 msgid "Instance Source"
-msgstr "虚拟机计数"
+msgstr "虚拟机来源"
 
 #: dashboards/nova/instances/workflows.py:173
-#, fuzzy
+#: fuzzy
 msgid "Instance Snapshot"
 msgstr "虚拟机快照"
 
@@ -1502,16 +1491,16 @@ msgstr "启动镜像大小"
 
 #: dashboards/nova/instances/workflows.py:178
 msgid "Instance Count"
-msgstr "虚拟机计数"
+msgstr "申请虚拟机数量"
 
 #: dashboards/nova/instances/workflows.py:181
 msgid "Number of instances to launch."
 msgstr "启动的虚拟机数目"
 
 #: dashboards/nova/instances/workflows.py:184
-#, fuzzy
+#: fuzzy
 msgid "Details"
-msgstr "卷详情"
+msgstr "详情"
 
 #: dashboards/nova/instances/workflows.py:197
 msgid ""
@@ -1531,19 +1520,19 @@ msgid ""
 msgstr ""
 
 #: dashboards/nova/instances/workflows.py:227
-#, fuzzy
+#: fuzzy
 msgid "Unable to retrieve public images."
 msgstr "无法获取镜像"
 
 #: dashboards/nova/instances/workflows.py:241
-#, fuzzy
+#: fuzzy
 msgid "Unable to retrieve images for the current project."
-msgstr "无法为项目进行验证。"
+msgstr "无法为部门进行验证。"
 
 #: dashboards/nova/instances/workflows.py:264
-#, fuzzy
+#: fuzzy
 msgid "Select Image"
-msgstr "选择语言"
+msgstr "选择镜像"
 
 #: dashboards/nova/instances/workflows.py:266
 #, fuzzy
@@ -1581,7 +1570,7 @@ msgstr "在这些安全组中启动虚拟机"
 msgid ""
 "Control access to your instance via keypairs, security groups, and other "
 "mechanisms."
-msgstr ""
+msgstr "通过keypairs,安全组控制您的虚拟机访问。"
 
 #: dashboards/nova/instances/workflows.py:356
 msgid "Unable to retrieve keypairs."
@@ -1601,7 +1590,7 @@ msgstr "无法获取安全组列表"
 
 #: dashboards/nova/instances/workflows.py:389
 msgid "Customization Script"
-msgstr ""
+msgstr "自定义脚本"
 
 #: dashboards/nova/instances/workflows.py:391
 msgid ""
@@ -1611,7 +1600,7 @@ msgstr ""
 
 #: dashboards/nova/instances/workflows.py:398
 msgid "Post-Creation"
-msgstr ""
+msgstr "虚拟机创建后操作"
 
 #: dashboards/nova/instances/workflows.py:409
 #: dashboards/nova/networks/panel.py:24 dashboards/nova/networks/tables.py:32
@@ -1783,45 +1772,45 @@ msgstr "重新加载"
 msgid ""
 "You can customize your instance after it's launched using the options "
 "available here."
-msgstr "当用这里的可用选项申请完虚拟机后，您可以自定义使用您的虚拟机"
+msgstr "当用这里的可用选项申请完虚拟机后，您可以自定义操作您的虚拟机"
 
 #: dashboards/nova/instances/templates/instances/_launch_customize_help.html:3
 msgid ""
 "The \"Customization Script\" field is analogous to \"User Data\" in other "
 "systems."
-msgstr ""
+msgstr "自定义脚本输入框用于用户自定义数据操作"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:3
 msgid "Specify the details for launching an instance."
-msgstr ""
+msgstr "请指定申请虚拟机的详细信息。"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:4
-#, fuzzy
+#: fuzzy
 msgid ""
 "The chart below shows the resources used by this project in relation to the "
 "project's quotas."
 msgstr ""
-"详细说明启动虚拟机的情况。下面的图表显示此项目所使用的资源和关联的项目配额。"
+"详细说明启动虚拟机的情况。下面的图表显示本部门所使用的资源和关联的部门配额。"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:6
-#, fuzzy
+#: fuzzy
 msgid "Flavor Details"
-msgstr "类型 ID"
+msgstr "类型详细信息"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:11
 #: dashboards/syspanel/flavors/tables.py:44
 msgid "Root Disk"
-msgstr "根磁盘"
+msgstr "根磁盘(C:)"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:12
 #: dashboards/syspanel/flavors/tables.py:46
 msgid "Ephemeral Disk"
-msgstr "临时磁盘"
+msgstr "临时磁盘(D:)"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:13
-#, fuzzy
+#: fuzzy
 msgid "Total Disk"
-msgstr "根磁盘"
+msgstr "磁盘总量"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:14
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:37
@@ -1829,7 +1818,7 @@ msgid "MB"
 msgstr "MB"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:21
-#, fuzzy
+#: fuzzy
 msgid "Number of Instances"
 msgstr "启动的虚拟机数目"
 
@@ -1838,9 +1827,9 @@ msgid "Number of VCPUs"
 msgstr "虚拟CPU的数量"
 
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:37
-#, fuzzy
-msgid "Total Memory"
-msgstr "内存"
+#: fuzzy
+msgid "Total RAM"
+msgstr "内存总量"
 
 #: dashboards/nova/instances/templates/instances/_launch_volumes_help.html:3
 msgid ""
@@ -2248,9 +2237,9 @@ msgstr "概况"
 
 #: dashboards/nova/networks/templates/networks/ports/_detail_overview.html:6
 #: dashboards/syspanel/networks/ports/tables.py:34
-#, fuzzy
+#: fuzzy
 msgid "Port"
-msgstr "至端口"
+msgstr "端口"
 
 #: dashboards/nova/networks/templates/networks/ports/_detail_overview.html:17
 msgid "Fixed IP"
@@ -2466,7 +2455,7 @@ msgstr ""
 #: dashboards/nova/volumes/forms.py:99
 #, fuzzy
 msgid "You are already using all of your available volumes."
-msgstr "您没有任何可用项目的授权。"
+msgstr "您没有任何可用部门的授权。"
 
 #: dashboards/nova/volumes/forms.py:115
 #, fuzzy
@@ -2644,7 +2633,7 @@ msgstr "设置"
 
 #: dashboards/settings/ec2/forms.py:35 dashboards/settings/project/forms.py:35
 msgid "Select a Project"
-msgstr "选择一个项目"
+msgstr "选择一个部门"
 
 #: dashboards/settings/ec2/forms.py:45
 msgid "Unable to retrieve tenant list."
@@ -2714,7 +2703,7 @@ msgid ""
 "Download the RC file for the selected project, then type \"source openrc\" "
 "in the terminal to configure your environment to communicate with OpenStack."
 msgstr ""
-"为选中的项目下载 RC 文件，然后输入 \"source openrc\" 于终端中来配置您与"
+"为选中的部门下载 RC 文件，然后输入 \"source openrc\" 于终端中来配置您与"
 "OpenStack交流的环境。"
 
 #: dashboards/settings/project/templates/project/_openrc.html:30
@@ -2809,9 +2798,9 @@ msgstr "创建类型"
 #: dashboards/syspanel/flavors/templates/flavors/_edit.html:8
 #: dashboards/syspanel/flavors/templates/flavors/edit.html:3
 #: dashboards/syspanel/flavors/templates/flavors/edit.html:6
-#, fuzzy
+#: fuzzy
 msgid "Edit Flavor"
-msgstr "类型"
+msgstr "编辑类型"
 
 #: dashboards/syspanel/flavors/tables.py:35
 #, python-format
@@ -2849,7 +2838,7 @@ msgstr "在这里您可以定义新类型的大小。"
 msgid ""
 "Note: this will not affect the resources allocated to any existing instances "
 "using this flavor."
-msgstr ""
+msgstr "注意：该更改不会影响到已经用该类型申请完毕的其他虚拟机。"
 
 #: dashboards/syspanel/images/views.py:53
 msgid "Unable to retrieve image list."
@@ -2883,7 +2872,7 @@ msgstr "全部虚拟机"
 #: dashboards/syspanel/networks/forms.py:45
 #: dashboards/syspanel/users/forms.py:41
 msgid "Select a project"
-msgstr "选择项目"
+msgstr "选择部门"
 
 #: dashboards/syspanel/networks/forms.py:56
 #, fuzzy, python-format
@@ -2969,8 +2958,11 @@ msgstr "监控"
 #: dashboards/syspanel/projects/tables.py:66
 #: dashboards/syspanel/projects/tables.py:95
 #: dashboards/syspanel/projects/templates/projects/index.html:8
-msgid "Projects"
-msgstr "项目"
+msgid "Project"
+msgstr "部门"
+
+msgid "projects"
+msgstr "部门"
 
 #: dashboards/syspanel/projects/tables.py:19
 msgid "Modify Users"
@@ -2985,14 +2977,14 @@ msgstr "查看使用情况"
 #: dashboards/syspanel/projects/templates/projects/_create.html:23
 #: dashboards/syspanel/projects/templates/projects/create.html:6
 msgid "Create Project"
-msgstr "创建项目"
+msgstr "创建部门"
 
 #: dashboards/syspanel/projects/tables.py:46
 #: dashboards/syspanel/projects/workflows.py:267
 #: dashboards/syspanel/projects/templates/projects/update.html:3
 #: dashboards/syspanel/projects/templates/projects/update.html:6
 msgid "Edit Project"
-msgstr "编辑项目"
+msgstr "编辑部门"
 
 #: dashboards/syspanel/projects/tables.py:91
 #: dashboards/syspanel/projects/workflows.py:74
@@ -3032,11 +3024,11 @@ msgstr "角色"
 
 #: dashboards/syspanel/projects/tables.py:134
 msgid "Users For Project"
-msgstr "项目的用户"
+msgstr "部门的用户"
 
 #: dashboards/syspanel/projects/tables.py:142
 msgid "Add To Project"
-msgstr "添加到项目"
+msgstr "添加到部门"
 
 #: dashboards/syspanel/projects/tables.py:154
 msgid "Add New Users"
@@ -3049,7 +3041,7 @@ msgstr "无法获取卷信息。"
 
 #: dashboards/syspanel/projects/views.py:87
 msgid "Unable to retrieve project list."
-msgstr "无法获取项目列表。"
+msgstr "无法获取部门列表。"
 
 #: dashboards/syspanel/projects/views.py:110
 msgid "Unable to retrieve users."
@@ -3063,7 +3055,7 @@ msgstr "无法获取卷列表"
 #: dashboards/syspanel/projects/views.py:182
 #, fuzzy
 msgid "Unable to retrieve project details."
-msgstr "无法获取项目列表。"
+msgstr "无法获取部门细节。"
 
 #: dashboards/syspanel/projects/workflows.py:35
 msgid "Injected File Content Bytes"
@@ -3094,29 +3086,29 @@ msgstr "配额"
 #: dashboards/syspanel/projects/workflows.py:50
 #, fuzzy
 msgid "From here you can set quotas (max limits) for the project."
-msgstr "在这里您可以为项目 %(tenant.name)s 编辑配额（最大限制）。"
+msgstr "在这里您可以为部门 %(tenant.name)s 编辑配额（最大限制）。"
 
 #: dashboards/syspanel/projects/workflows.py:79
 #: dashboards/syspanel/projects/workflows.py:252
-#, fuzzy
+#fuzzy
 msgid "Project Info"
-msgstr "项目ID"
+msgstr "部门信息"
 
 #: dashboards/syspanel/projects/workflows.py:80
 #: dashboards/syspanel/projects/templates/projects/_create.html:18
 msgid "From here you can create a new project to organize users."
-msgstr "在这里您可以创建新的项目来组织用户。"
+msgstr "在这里您可以创建新的部门来组织用户。"
 
 #: dashboards/syspanel/projects/workflows.py:99
-#, fuzzy
+# fuzzy
 msgid "Unable to retrieve user list. Please try again later."
 msgstr "无法得到用户信息列表。"
 
 #: dashboards/syspanel/projects/workflows.py:153
 #: dashboards/syspanel/projects/templates/projects/_update_members.html:16
-#, fuzzy
+#fuzzy
 msgid "Project Members"
-msgstr "项目使用"
+msgstr "部门成员"
 
 #: dashboards/syspanel/projects/workflows.py:167
 #: dashboards/syspanel/users/views.py:46
@@ -3124,18 +3116,18 @@ msgid "Unable to retrieve user list."
 msgstr "无法得到用户信息列表。"
 
 #: dashboards/syspanel/projects/workflows.py:178
-#, fuzzy
+#fuzzy
 msgid "Add Project"
-msgstr "添加到项目"
+msgstr "添加到部门"
 
 #: dashboards/syspanel/projects/workflows.py:179
 msgid "Finish"
 msgstr ""
 
 #: dashboards/syspanel/projects/workflows.py:180
-#, fuzzy, python-format
+#fuzzy, python-format
 msgid "Created new project \"%s\"."
-msgstr "创建新项目"
+msgstr "创建新部门"
 
 #: dashboards/syspanel/projects/workflows.py:181
 #, fuzzy, python-format
@@ -3153,9 +3145,9 @@ msgid "Unable to set project quotas."
 msgstr "无法获取租户。"
 
 #: dashboards/syspanel/projects/workflows.py:254
-#, fuzzy
+#fuzzy
 msgid "From here you can edit the project details."
-msgstr "在这里您可以编辑项目。"
+msgstr "在这里您可以编辑部门信息。"
 
 #: dashboards/syspanel/projects/workflows.py:269
 #, python-format
@@ -3163,9 +3155,9 @@ msgid "Modified project \"%s\"."
 msgstr ""
 
 #: dashboards/syspanel/projects/workflows.py:270
-#, fuzzy, python-format
+#fuzzy, python-format
 msgid "Unable to modify project \"%s\"."
-msgstr "无法拷贝对象。"
+msgstr "无法修改部门。"
 
 #: dashboards/syspanel/projects/workflows.py:340
 #, python-format
@@ -3182,11 +3174,11 @@ msgstr ""
 #: dashboards/syspanel/projects/templates/projects/add_user.html:3
 #: dashboards/syspanel/projects/templates/projects/add_user.html:6
 msgid "Add User To Project"
-msgstr "添加用户到项目"
+msgstr "添加用户到部门"
 
 #: dashboards/syspanel/projects/templates/projects/_add_user.html:18
 msgid "Select the user role for the project."
-msgstr "为项目选址用户角色。"
+msgstr "为部门选址用户角色。"
 
 #: dashboards/syspanel/projects/templates/projects/_add_user.html:23
 msgid "Add"
@@ -3198,9 +3190,9 @@ msgid "Create User for project '%(tenant_name)s'."
 msgstr ""
 
 #: dashboards/syspanel/projects/templates/projects/_create_user.html:18
-#, fuzzy
+#fuzzy
 msgid "From here you can create a new user to add to this project."
-msgstr "在这里您可以创建新用户并把他们分配给某个项目"
+msgstr "在这里您可以创建新用户并把他们分配给某个部门"
 
 #: dashboards/syspanel/projects/templates/projects/_create_user.html:23
 #: dashboards/syspanel/users/tables.py:19
@@ -3219,17 +3211,17 @@ msgstr "更新配额"
 #, python-format
 msgid ""
 "From here you can edit quotas (max limits) for the project %(tenant.name)s."
-msgstr "在这里您可以为项目 %(tenant.name)s 编辑配额（最大限制）。"
+msgstr "在这里您可以为部门 %(tenant.name)s 编辑配额（最大限制）。"
 
 #: dashboards/syspanel/projects/templates/projects/_update.html:8
 #: dashboards/syspanel/projects/templates/projects/_update.html:23
 #: dashboards/syspanel/projects/templates/projects/quotas.html:6
 msgid "Update Project"
-msgstr "更新项目"
+msgstr "更新部门"
 
 #: dashboards/syspanel/projects/templates/projects/_update.html:18
 msgid "From here you can edit a project."
-msgstr "在这里您可以编辑项目。"
+msgstr "在这里您可以编辑部门。"
 
 #: dashboards/syspanel/projects/templates/projects/_update_members.html:7
 msgid ""
@@ -3255,15 +3247,15 @@ msgstr "添加新用户"
 
 #: dashboards/syspanel/projects/templates/projects/usage.html:3
 msgid "Project Usage Overview"
-msgstr "项目使用概况"
+msgstr "部门使用概况"
 
 #: dashboards/syspanel/projects/templates/projects/usage.html:7
 msgid "Project Usage"
-msgstr "项目使用"
+msgstr "部门使用"
 
 #: dashboards/syspanel/projects/templates/projects/users.html:7
 msgid "Users for Project"
-msgstr "项目用户"
+msgstr "部门用户"
 
 #: dashboards/syspanel/quotas/panel.py:28
 #: dashboards/syspanel/quotas/tables.py:36
@@ -3329,7 +3321,7 @@ msgstr "确认密码"
 #: dashboards/syspanel/users/forms.py:72
 #: dashboards/syspanel/users/forms.py:126
 msgid "Primary Project"
-msgstr "主项目"
+msgstr "主部门"
 
 #: dashboards/syspanel/users/forms.py:74
 msgid "Role"
@@ -3341,9 +3333,9 @@ msgid "User \"%s\" was successfully created."
 msgstr "用户 \"%s\" 成功创建。"
 
 #: dashboards/syspanel/users/forms.py:105
-#, fuzzy
+#fuzzy
 msgid "Unable to add userto primary project."
-msgstr "无法向主项目添加用户。"
+msgstr "无法向主部门添加用户。"
 
 #: dashboards/syspanel/users/forms.py:109
 msgid "Unable to create user."
@@ -3359,7 +3351,7 @@ msgstr "邮箱"
 
 #: dashboards/syspanel/users/forms.py:159
 msgid "primary project"
-msgstr "主项目"
+msgstr "主部门"
 
 #: dashboards/syspanel/users/forms.py:172
 #, python-format
@@ -3413,7 +3405,7 @@ msgstr "无法得到用户信息列表。"
 
 #: dashboards/syspanel/users/templates/users/_create.html:17
 msgid "From here you can create a new user and assign them to a project."
-msgstr "在这里您可以创建新用户并把他们分配给某个项目"
+msgstr "在这里您可以创建新用户并把他们分配给某个部门"
 
 #: dashboards/syspanel/users/templates/users/_update.html:7
 #: dashboards/syspanel/users/templates/users/_update.html:22
@@ -3422,10 +3414,10 @@ msgid "Update User"
 msgstr "更新用户"
 
 #: dashboards/syspanel/users/templates/users/_update.html:17
-#, fuzzy
+#: fuzzy
 msgid ""
 "From here you can edit the user's details, including their default project."
-msgstr "在这里您可以编辑用户的用户名、邮箱、密码、以及默认项目等信息。"
+msgstr "在这里您可以编辑用户的用户名、邮箱、密码、以及默认部门等信息。"
 
 #: tables/actions.py:338
 msgid "Filter"
@@ -3464,7 +3456,7 @@ msgid "Deleted"
 msgstr "被删除"
 
 #: tables/base.py:266
-#, python-format
+#: python-format
 msgid "The attribute %(attr)s doesn't exist on %(obj)s."
 msgstr "属性 %(attr)s 并不存在于 %(obj)s。"
 
@@ -3865,3 +3857,36 @@ msgstr "/"
 
 msgid "Modify Quotas"
 msgstr "修改部门配额"
+
+msgid "Port Range"
+msgstr "端口范围"
+
+msgid "Open"
+msgstr "开放方式"
+
+msgid "Rules define which traffic is allowed to instances assigned to the security group. A security group rule consists of three main parts:"
+msgstr "定义安全组的规则，用于开启虚拟机的网络端口,允许通过网络数据包，进行虚拟机访问，安全组的规则主要包括以下三个方面:"
+
+msgid "Image File"
+msgstr "镜像文件"
+
+msgid "Protocol"
+msgstr "协议"
+
+msgid "Open Port/Port Range"
+msgstr "开放端口/端口范围"
+
+msgid "You must specify the desired IP protocol to which this rule will apply; the options are TCP, UDP, or ICMP."
+msgstr "您必须给将要应用的规则指定期望的IP协议;可选的有TCP，UDP，ICMP。"
+
+msgid "For TCP and UDP rules you may choose to open either a single port or a range of ports. Selecting the \"Port Range\" option will provide you with space to provide both the starting and ending ports for the range. For ICMP rules you instead specify an ICMP type and code in the spaces provided."
+msgstr "对于TCP和UDP规则，您可以选择开放单一端口，也可以选择端口范围。\"端口范围\"选项可供您填写开始和结束的端口;对于ICMP规则，您只需在ICMP type和code内填写数字即可"
+
+msgid "You must specify the source of the traffic to be allowed via this rule. You may do so either in the form of an IP address block (CIDR) or via a source group (Security Group). Selecting a security group as the source will allow any other instance in that security group access to any other instance via this rule."
+msgstr "您必须在规则中指定允许通过网络数据包的来源,您可以用ip地址段（CIDR)的格式填写或者直接选择一个安全组来填写"
+
+msgid "The default initialized administor/root password of instance is "
+msgstr "虚拟机的默认管理员密码/root密码是 "
+
+msgid "Please change it after you launched instance."
+msgstr "由于安全考虑，创建完虚拟机请修改各自密码"
