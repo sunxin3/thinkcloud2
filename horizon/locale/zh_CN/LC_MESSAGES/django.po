@@ -1648,19 +1648,19 @@ msgid "Unable to launch %(count)s named \"%(name)s\"."
 msgstr "无法启动虚拟机: %(exc)s"
 
 #: dashboards/nova/instances/workflows.py:471
-#, fuzzy, python-format
+#fuzzy, python-format
 msgid "%s instances"
 msgstr "虚拟机"
 
 #: dashboards/nova/instances/workflows.py:474
-#, fuzzy
+#fuzzy
 msgid "instance"
 msgstr "虚拟机"
 
 #: dashboards/nova/instances/templates/instances/_detail_log.html:4
-#, fuzzy
+#fuzzy
 msgid "Instance Console Log"
-msgstr "虚拟机的VNC控制台"
+msgstr "虚拟机的控制台日志"
 
 #: dashboards/nova/instances/templates/instances/_detail_log.html:7
 msgid "Log Length"
@@ -1751,9 +1751,7 @@ msgid "Instance VNC Console"
 msgstr "虚拟机的VNC控制台"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:5
-msgid ""
-"If VNC console is not responding to keyboard input: click the grey status "
-"bar below."
+msgid "If VNC console is not responding to keyboard input: click the grey status bar below."
 msgstr "如果VNC控制台对键盘输入没有响应：点击下面的灰色状态栏。"
 
 #: dashboards/nova/instances/templates/instances/_detail_vnc.html:5
@@ -3893,3 +3891,9 @@ msgstr "由于安全考虑，创建完虚拟机请修改各自密码"
 
 msgid "Back"
 msgstr "返回"
+
+msgid "Console"
+msgstr "控制台"
+
+msgid "Department"
+msgstr "部门"

@@ -8,6 +8,6 @@
 {% block autocomplete %}{{ HORIZON_CONFIG.password_autocomplete }}{% endblock %}
 
 {% block modal-footer %}
-  <a href='/dashboard'  id="users_action_create" class="btn btn-danger pull-right ">Back</a>
+  <a href='/dashboard'  id="users_action_create" class="btn btn-danger pull-right ">{% trans "Back" %}</a>
   <button type="submit" class="btn btn-danger pull-right">{% trans "Register" %}</button>
 {% endblock %}

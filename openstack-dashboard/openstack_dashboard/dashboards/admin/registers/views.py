@@ -37,6 +37,7 @@ def register_page(request):
         if form.is_valid():
             username = form.cleaned_data['username']  
             realname = form.cleaned_data['realname']  
+            department = form.cleaned_data['department']  
             email = form.cleaned_data['email']  
             password = form.cleaned_data['password']  
 	    mail_body = 'There is a new user to register our ThinkCloud website, the detail information is below:\n'
@@ -49,7 +50,10 @@ def register_page(request):
 	    mail_body += 'Real Name: '
 	    mail_body += realname
 	    mail_body += '\n'
-	    mail_body += 'email: '
+	    mail_body += 'Department: '
+	    mail_body += department
+	    mail_body += '\n'
+	    mail_body += 'Email: '
 	    mail_body += email 
 	    mail_body += '\n'
 	    mail_body += 'Please help to handle this request, Thanks!'
