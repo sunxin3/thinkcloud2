@@ -184,205 +184,105 @@ We can test the extesnion by the curl like this:
 
 #How to add commands to nova client
   After the nova extension is ready, we are going to add commands to nova clien.
-which would call nova extension to fetch data from database.
-1. Add interface to interact with nova extension. The file should be placed into
-<pyhon-novaclien>/novaclient/v1_1
+which would call nova extension to fetch data from database and we can get the 
+output in command line.
+1. Add nova client extension. The file should be placed into
+<pyhon-novaclien>/novaclient/v1_1/contrib
 ```python
-    # Copyright 2013
-    """
-    physical server interface.
-    """
-   from novaclient import base
-   from novaclient import exceptions
-   from novaclient import utils
-   from novaclient.openstack.common.py3kcompat import urlutils
+
+#[[file:$NOVA_CLIENT_ROOT$/novaclient/v1_1/contrib/server_models.py;action:copy]]
+from novaclient import base
+from novaclient import utils
 
 
-    class PhysicalServers(base.Resource):
-
-
-    def __repr__(self):
-        return "<PhysicalServer: %s>" % self.name
-
-   
-
-    @property
-    def is_public(self):
-        """
-        Provide a user-friendly accessor to os-flavor-access:is_public
-        """
-        return self._info.get("os-flavor-access:is_public", 'N/A')
-
-    
-
+class Server_Model(base.Resource):
     def delete(self):
-        """
-        Delete this flavor.
-        """
-        self.manager.delete(self)
+        self.manager.delete(model=self)
 
 
-    class PhysicalServersManager(base.ManagerWithFind):
-        """
-        Manage :class:`Flavor` resources.
-        """
-        resource_class = PhysicalServers
-        is_alphanum_id_allowed = True
+class Server_ModelManager(base.ManagerWithFind):
+    resource_class = base.Resource
 
-    def list(self, detailed=True, is_public=True):
-        """
-        Get a list of all physical servers.
+    def list(self):
+        return self._list('/thkcld-server_models', 'server_models')
 
-        :rtype: list of :class:`PhysicalServer`.
-        """
-        qparams = {}
-        # is_public is ternary - None means give all flavors.
-        # By default Nova assumes True and gives admins public flavors
-        # and flavors from their own projects only.
-        if not is_public:
-            qparams['is_public'] = is_public
-        query_string = "?%s" % urlutils.urlencode(qparams) if qparams else ""
+    def get(self, server_model):
+        return self._get('/thkcld-server_models/%s' % base.getid(server_model),
+                         'server_model')
 
-        detail = ""
-        if detailed:
-            detail = "/detail"
+    def delete(self, server_model):
+        self._delete('/thkcld-server_models/%s' % base.getid(server_model))
 
-        return self._list("/thkcld-physical_servers%s%s" % (detail, query_string), "physical_server")
+    def create(self, model_name):
+        body = {'server_model':{'name':model_name}}
+        return self._create('/thkcld-server_models', body, 'server_model')
 
-    def get(self, physical_server_id):
-        """
-        Get a specific physical_server.
 
-        :param flavor: The ID of the :class:`PhysicalServer` to get.
-        :rtype: :class:`PhyscialServer`
-        """
-        
-        return self._get("/thkcld-physical_servers/%s" % physical_server_id, "physical_server")
+@utils.arg('server_model_id', metavar='<server_model_id>', 
+           help='ID of server model')
+def do_server_model(cs, args):
+    """
+    Show a server model
+    """
+    server_model = cs.server_models.get(args.server_model_id)
+    utils.print_dict(server_model._info)
 
-    def delete(self, physical_server):
-        """
-        Delete a specific physical_server.
 
-        :param physical_server: The ID of the :class:`PhysicalServer` to get.
-        :param purge: Whether to purge record from the database
-        """
-        self._delete("/thkcld-physical_servers/%s" % base.getid(physical_server))
+def do_server_model_list(cs, args):
+    """
+    List networks
+    """
+    server_models = cs.server_models.list()
+    utils.print_list(server_models, ['ID', 'Name','Created_at'])
 
-    def create(self, user_id, server_model_Id, locked_by, power_state_id,name,
-               description, is_public=True):
-        """
-        Create (allocate) a  floating ip for a tenant
 
-        :param name: Descriptive name of the flavor
-        :param ram: Memory in MB for the flavor
-        :param vcpu: Number of VCPUs for the flavor
-        :param disk: Size of local disk in GB
-        :param flavorid: ID for the flavor (optional). You can use the reserved
-                         value ``"auto"`` to have Nova generate a UUID for the
-                         flavor in cases where you cannot simply pass ``None``.
-        :param swap: Swap space in MB
-        :param rxtx_factor: RX/TX factor
-        :rtype: :class:`Flavor`
-        """
+@utils.arg('model_name', metavar='<model_name>',
+           help='Server model name')
+def do_server_model_create(cs, args):
+    """
+    Create a server model record
+    """
+    model = cs.server_models.create(args.model_name)
+    utils.print_dict(model._info)
 
-        body = {
-            "physical_server": {
-                "user_id": user_id,
-                "server_model_id": server_model_id,
-                "locked_by": locked_by,
-                "power_state_id": power_state_id,
-                "name": name,
-                "description": description,
-                "is_public": is_public,
-            }
-        }
 
-        return self._create("/thkcld_physical_servers", body, "physical_server")
+@utils.arg('server_model_id', metavar='<server_model_id>', 
+           help='ID of server model')
+def do_server_model_delete(cs, args):
+    """
+    Delete a server model
+    """
+    cs.server_models.delete(args.server_model_id)
     
-```
-
-2. Regist above interface into client. Add the following statements into
-<python-novaclient>/novaclien/v1_1/client.py
-```python
-    #import the interface package
-    from novaclient.v1_1 import physical_servers
- ```
-
-Initialize the interface in "__init__" in  <python-novaclient>/novaclien/v1_1/client.py
-
-```python
-    self.physical_servers = physical_servers.PhysicalServersManager(self)
-```
-
-3.Add an entry to <python-novaclient>/novaclien/v1_1/shell.py. Then nova client
-command can be mapped to the python function
-
-```python
-    def _print_physical_server(physical_server):
-
-        info = physical_server._info.copy()
-        utils.print_dict(info)
-    
-    def _find_physical_server(cs,physical_server):
-    """Get an physical server by name or ID."""
-    return utils.find_resource(cs.physical_servers, physical_server)
-    
-    
-    
-    @utils.arg('physical_server', metavar='<physical_server>', 
-           help='Name or ID of physical_server.')
-    def do_physical_server_show(cs, args):
-    """Show details about the given physical_server."""
-    physical_server = _find_physical_server(cs, args.physical_server)
-    _print_physical_server(physical_server)
-
 ```
 
 **Tips**
   There is a name convension when mapping the command line to the python
 action. e.g.
 ```shell
-    nova physical-server-show 1
+    nova server-model 1
 ```
-The command "physical-server-show" would be mapped to "do_physical_server_show"
+The command "server-model" would be mapped to "do_server_model" subroutine 
+in the extension file. 
+The same thing, the command "server-model-list" wold be mapped to 
+"do_server_model-list" suroutine in the extension file.
 
 That's all. If all are right. Then you try the command:
 ```shell
-   nova physical-server-show 1 
+   nova server-model 4
 ```
 you should get the output like this:
 ```shell
-+-----------------+---------------------------------------------------------------------+
-| Property        | Value                                                               |
-+-----------------+---------------------------------------------------------------------+
-| cpu_core_num    | None                                                                |
-| cpu_desc        | None                                                                |
-| cpu_fre         | 3.5                                                                 |
-| cpu_socket_num  | None                                                                |
-| created_at      | 2013-11-27T00:00:00.000000                                          |
-| deleted         | None                                                                |
-| deleted_at      | None                                                                |
-| description     | 1 x Intel? Ci3-4330 processor 3.5 GHz, 2C, 4M Cache, 1.00 GT/s, 65W |
-| disk_desc       | 1 x 500 GB 7200 RPM 3.5" DC SATA                                    |
-| disk_num        | None                                                                |
-| disk_total      | None                                                                |
-| hba_attached    | None                                                                |
-| hba_port_num    | None                                                                |
-| id              | 1                                                                   |
-| ipmi_address    | None                                                                |
-| is_public       | True                                                                |
-| locked_by       | None                                                                |
-| mem_desc        | 4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD                       |
-| mem_total       | 4                                                                   |
-| name            | Test Server1                                                        |
-| nc_number       | None                                                                |
-| nic_desc        | None                                                                |
-| nic_num         | None                                                                |
-| power_state_id  | 1                                                                   |
-| raid_external   | None                                                                |
-| raid_internal   | None                                                                |
-| server_model_id | 1                                                                   |
-| updated_at      | None                                                                |
-+-----------------+---------------------------------------------------------------------+
+    +------------+----------------------------+
+    | Property   | Value                      |
+    +------------+----------------------------+
+    | created_at | 2013-12-07T07:11:24.000000 |
+    | deleted    | 0                          |
+    | deleted_at | None                       |
+    | id         | 4                          |
+    | name       | RD320                      |
+    | updated_at | None                       |
+    +------------+----------------------------+
+
     
 ```

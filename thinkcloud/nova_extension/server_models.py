@@ -31,27 +31,31 @@ from nova.api.openstack import extensions
 
 authorize = extensions.extension_authorizer('compute', 'server_models')
  
+ 
+ 
 # Controller which would response for the request
 class Server_modelsController(wsgi.Controller):
     """the Server_model API Controller declearation"""
  
     def index(self, req):
-        import pdb; pdb.set_trace()
         server_models = {}
         context = req.environ['nova.context']
         authorize(context)
-             
-        # logic for get all records from db
-       
-        return server_models 
+        
+        server_models["server_models"] = db.server_model_get_all(context); 
+            
+        return server_models
+    
+    
  
-    def create(self, req):
-        server_models = {}
+    def create(self, req,body):
+        server_model = {}
         context = req.environ['nova.context']
         authorize(context)
+        
+        server_model["server_model"] = db.server_model_create(context, body['server_model'])
+        return server_model
  
-        # real logic to create the object
-        return server_models 
  
     def show(self, req, id):
         server_models = {}
@@ -75,6 +79,12 @@ class Server_modelsController(wsgi.Controller):
         return server_models 
  
     def delete(self, req, id):
+        """Delete a server model entry.  'id' is a model id."""
+        context = req.environ['nova.context']
+        authorize(context)
+        num_deleted = db.server_model_delete(context, id)
+        if num_deleted == 0:
+            raise exc.HTTPNotFound()
         return webob.Response(status_int=202)
     
 # extension declaration 

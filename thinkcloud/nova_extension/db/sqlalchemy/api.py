@@ -27,8 +27,28 @@ def server_model_get(context,model_id):
         if not result or not query:
             raise  Exception()
         
-        return result     
+        return result
     
+@require_admin_context    
+def server_model_get_all(context):
+        query = model_query(context, models.ServerModel)
+        return query.all();    
+      
+@require_admin_context        
+def server_model_create(context, values):
+    server_model = models.ServerModel()
+    server_model.update(values)
+    server_model.save()
+    return server_model    
+
+@require_admin_context        
+def server_model_delete(context, model_id):
+    result = model_query(context, models.ServerModel).\
+             filter_by(id=model_id).\
+             soft_delete()
+
+    return result
+
 @require_admin_context    
 def power_state_get(context,power_state_id):
     session = get_session()
