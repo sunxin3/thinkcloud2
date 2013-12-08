@@ -1,5 +1,9 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
+# Copyright 2012 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
 # Copyright 2012 Nebula, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,24 +18,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.utils.translation import ugettext_lazy as _
-
-import horizon
-
-
-class SystemPanels(horizon.PanelGroup):
-    slug = "admin"
-    name = _("System Panel")
-    panels = ('overview', 'physical_servers','instances', 'flavors',
-              'images', 'projects', 'users', 'networks', 'routers', 'info')
+from openstack_dashboard.dashboards.project.images_and_snapshots \
+        .images import forms
 
 
-class Admin(horizon.Dashboard):
-    name = _("Admin")
-    slug = "admin"
-    panels = (SystemPanels,)
-    default_panel = 'overview'
-    permissions = ('openstack.roles.admin',)
+class AdminCreateImageForm(forms.CreateImageForm):
+    pass
 
 
-horizon.register(Admin)
+class AdminUpdateImageForm(forms.UpdateImageForm):
+    pass

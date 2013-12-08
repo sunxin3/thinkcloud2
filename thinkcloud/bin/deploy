@@ -1,0 +1,179 @@
+#!/usr/bin/perl
+
+use File::Find;
+use FindBin qw($Bin);
+no warnings 'uninitialized';
+use File::Basename;
+
+
+#use Data::Dumper;
+
+##------------------------------------------------------------------------------
+#  Globle Variable Definition
+#
+#
+#
+#
+#-------------------------------------------------------------------------------
+my $ROOT_DIR = {
+	NOVA_ROOT        => '/root/workspace/stack/nova',
+	NOVA_CLIENT_ROOT => '/root/workspace/stack/python-novaclient',
+};
+
+sub macro_hash {
+	my $txt = shift;
+	my @sections = split( ';', $txt );
+
+	my $macro_hash = {};
+
+	for my $one_section (@sections) {
+		my ( $key, $value ) = split( ':', $one_section, 2 );
+		$macro_hash->{$key} = $value;
+	}
+
+	return $macro_hash;
+}
+
+##-----------------------------------------------------------------------------
+#Description:
+#  Weave the customized content to the target file
+#
+#
+#
+#------------------------------------------------------------------------------
+sub weave {
+	my $dest_file              = shift;
+	my $weave_content_arrayref = shift;
+
+	if ( ( !$dest_file ) or ( !-f $dest_file ) ) {
+		print "Fail to weave content.Can't find the target file:$dest_file\n";
+		return;
+	}
+
+	my $dest_content = `cat $dest_file`;
+	my (@weave_positions) = $dest_content =~
+	  /\s*(\#\[\[\s*section(\d+):start.*section\g2:end\s*\]\]\s*)/sg;
+
+	my $source_hook_num = scalar(@$weave_content_arrayref) / 2;
+	my $dest_place_num  = scalar(@weave_positions) / 2;
+	if ( $dest_place_num != $source_hook_num ) {
+		die "Error: The source file has  $source_hook_num segement(s) to Wave
+		But the destination file has $dest_place_num places
+		"
+	}
+
+	my $segment_num = 1;
+	for my $element (@$weave_content_arrayref) {
+		if ( $element =~ /^\s*\d+\s*$/ ) {
+			$segment_num = $element;
+			next;
+		}
+
+		if ($segment_num) {
+			$dest_content =~
+s/\#\[\[\s*section${segment_num}:start.*section${segment_num}:end\s*\]\]\s*/$element/s;
+		}
+	}
+
+	#write the cutomized content back to the destination file
+	open( my $fh, ">", $dest_file ) or die "$!";
+	print $fh $dest_content;
+	close $fh;
+
+}
+
+##------------------------------------------------------------------------------
+#
+#  Main
+#-------------------------------------------------------------------------------
+
+# print "bin dir:$Bin\n";
+
+my $dir = $Bin;
+$dir =~ s/bin$//;
+
+my $repository_dir = $dir;
+
+# This subroutine only work when it was called by File::Find module.
+sub check_consistent {
+
+	my $file = $File::Find::name;
+	my $dir  = $File::Find::dir;
+
+	return if ( ( $dir =~ /\/(doc)|(bin)|(test)/ ) or ( !-f $file ) );
+
+	my $file_content = `cat $file`;
+	my ($dest_file_line) =
+	  $file_content =~ /^\s*\#\[\[(\s*file[^\]]+)\]\]\s*$/ms;
+	my @replace_sections = $file_content =~
+	  /\s*(\#\[\[\s*section(\d+):start.*section\g2:end\s*\]\]\s*)/sg;
+
+	#check the 'file' tag
+	if ( ( !$dest_file_line ) or $dest_file_line =~ /^\s*$/ ) {
+		print <<EOT;
+#---------------------------------WARNING--------------------------------------
+# File: $File::Find::name
+# Has No "#[[file:blabla;action:blabla]]" tag in the file.
+# It means it would be ignored by this deply script
+# Please refer the doc: REPO/doc/code_rules.readme
+#-------------------------------------------------------------------------------
+
+EOT
+	}
+	else {
+
+		my $macro_hash;
+		$macro_hash = macro_hash($dest_file_line) if ($dest_file_line);
+
+		my $dest_file       = $macro_hash->{'file'};
+		my $weave_array_ref = \@replace_sections;
+
+		#If someone copy one file to create a new one
+		# The 'file' tag would be copied to the new file.
+		# This case would break the deployment. So check it
+		my $real_file_name = basename($File::Find::name);
+		my $dest_file_name = basename($dest_file);
+		if ( $real_file_name ne $dest_file_name ) {
+			die <<EOT;
+#------------------------------------ERROR--------------------------------------
+# File: $File::Find::name
+# The file name is different from the file name in 
+# tag "#[[$dest_file_line]]"
+# Please correct it first
+#-------------------------------------------------------------------------------        	
+EOT
+		}
+
+		#subsitute the ROOT PATH
+
+		for my $path_key ( keys %$ROOT_DIR ) {
+			my $path_value = $ROOT_DIR->{$path_key};
+			$dest_file =~ s/\$${path_key}\$/$path_value/;
+		}
+
+        my $dest_dir = dirname($dest_file);
+		if ( $macro_hash->{action} eq 'copy' ) {
+		  if (-d $dest_dir){
+			`cp -fr  $File::Find::name $dest_file`
+		  }
+		  else{
+		  	die <<EOT;
+#-------------------------ERROR-------------------------------------------------
+# Try to copy file
+# From: $File::Find::name
+# To  : $dest_dir
+# But the destination directory does NOT exist
+# Please figure it out
+#-------------------------------------------------------------------------------
+
+EOT
+		  }
+		}
+		elsif ( $macro_hash->{action} eq 'weave' ) {
+			weave( $dest_file, $weave_array_ref );
+		}
+	}
+}
+
+find( \&check_consistent, $dir );
+
