@@ -62,16 +62,15 @@ sub weave {
 		"
 	}
 
-	my $segment_num = 1;
-	for my $element (@$weave_content_arrayref) {
-		if ( $element =~ /^\s*\d+\s*$/ ) {
-			$segment_num = $element;
-			next;
-		}
 
+	for my $element (@$weave_content_arrayref) {
+	    my ($segment_num) ;
+	     if( $element  =~ /\#\[\[\s*section(\d+):start/s ){
+	     	  $segment_num = $1  ;
+	     }
+		
 		if ($segment_num) {
-			$dest_content =~
-s/\#\[\[\s*section${segment_num}:start.*section${segment_num}:end\s*\]\]\s*/$element/s;
+			$dest_content =~ s/\#\[\[\s*section${segment_num}:start.*section${segment_num}:end\s*\]\]\s*/$element/s;
 		}
 	}
 

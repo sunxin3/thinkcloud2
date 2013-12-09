@@ -19,22 +19,20 @@ class IndexView(tables.DataTableView):
     table_class = AdminImagesTable
     template_name = 'admin/physical_servers/index.html'
 
-    def has_more_data(self, table):
-        return self._more
-
+#    def has_more_data(self, table):
+#        return self._more
+    
     def get_data(self):
-        images = []
-        marker = self.request.GET.get(AdminImagesTable._meta.pagination_param,
-                                      None)
+        request = self.request
+        flavors = []
         try:
-            images, self._more = api.glance.image_list_detailed(self.request,
-                                                                marker=marker,
-                                                                paginate=True)
+            flavors = api.nova.physical_server_list(request)
         except:
-            self._more = False
-            msg = _('Unable to retrieve image list.')
-            exceptions.handle(self.request, msg)
-        return images
+            exceptions.handle(request,
+                              _('Unable to retrieve physical server list.'))
+
+        return flavors
+    
 
 class CreateView(views.CreateView):
     template_name = 'admin/images/create.html'

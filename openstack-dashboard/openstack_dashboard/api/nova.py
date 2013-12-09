@@ -40,6 +40,7 @@ from openstack_dashboard.api.base import (APIResourceWrapper, QuotaSet,
 from openstack_dashboard.api import network
 
 
+
 LOG = logging.getLogger(__name__)
 
 
@@ -553,3 +554,7 @@ def tenant_absolute_limits(request, reserved=False):
         else:
             limits_dict[limit.name] = limit.value
     return limits_dict
+
+def physical_server_list(request):
+    """Get the list of available physical server."""
+    return novaclient(request).server_models.list();

@@ -59,7 +59,7 @@ def do_server_model(cs, args):
 
 def do_server_model_list(cs, args):
     """
-    List networks
+    List server models
     """
     server_models = cs.server_models.list()
     utils.print_list(server_models, ['ID', 'Name','Created_at'])

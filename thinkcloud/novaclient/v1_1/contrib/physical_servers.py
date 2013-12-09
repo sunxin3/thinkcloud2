@@ -15,7 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 # Description:
-#   Extension for server_requests  
+#   Extension for physical servers  
 # Author: Dengfeng Mao
 # Email:  mdengfeng@gmail.com
 
@@ -34,7 +34,7 @@ class Physical_ServerManager(base.ManagerWithFind):
     resource_class = base.Resource
 
     def list(self):
-        return self._list('/thkcld-physical_servers', 'server_models')
+        return self._list('/thkcld-physical_servers', 'physical_servers')
 
     def get(self, physical_server):
         return self._get('/thkcld-physical_servers/%s' % base.getid(physical_server),
@@ -129,7 +129,7 @@ def do_physical_server_list(cs, args):
     List physical servers
     """
     physical_servers = cs.physical_servers.list()
-    utils.print_list(server_models, ['ID', 'Name','Description',
+    utils.print_list(physical_servers, ['ID', 'Name','Description',
                                      'Server_Models_id','Power_states_id',                                     
                                      ])
 

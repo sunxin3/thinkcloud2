@@ -265,7 +265,7 @@ action. e.g.
 The command "server-model" would be mapped to "do_server_model" subroutine 
 in the extension file. 
 The same thing, the command "server-model-list" wold be mapped to 
-"do_server_model-list" suroutine in the extension file.
+"do_server_model_list" suroutine in the extension file.
 
 That's all. If all are right. Then you try the command:
 ```shell

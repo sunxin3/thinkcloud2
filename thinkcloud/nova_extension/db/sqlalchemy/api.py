@@ -15,6 +15,12 @@ def physical_server_get(context,server_id):
             raise  Exception()
         
         return result 
+
+@require_admin_context    
+def physical_server_get_all(context):
+        query = model_query(context, models.PhysicalServer)
+        return query.all();    
+
     
 @require_admin_context    
 def server_model_get(context,model_id):

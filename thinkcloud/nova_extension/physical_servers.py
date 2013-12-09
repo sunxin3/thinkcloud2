@@ -36,14 +36,14 @@ class Physical_serversController(wsgi.Controller):
     """the Physical_server API Controller declearation"""
  
     def index(self, req):
-        import pdb; pdb.set_trace()
         physical_servers = {}
         context = req.environ['nova.context']
         authorize(context)
-             
-        # logic for get all records from db
+              
+        physical_servers["physical_servers"] = db.physical_server_get_all(context)
        
         return physical_servers 
+    
  
     def create(self, req):
         physical_servers = {}
