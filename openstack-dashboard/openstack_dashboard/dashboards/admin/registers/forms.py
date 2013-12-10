@@ -16,6 +16,7 @@ LOG = logging.getLogger(__name__)
 class RegistrationForm(forms.Form):
     username = forms.CharField(label=_("User Name"))
     realname = forms.CharField(label=_("Real Name"))
+    department = forms.CharField(label=_("Department"))
     email = forms.EmailField(label=_("Email"))
     password = forms.RegexField(
             label=_("Password"),

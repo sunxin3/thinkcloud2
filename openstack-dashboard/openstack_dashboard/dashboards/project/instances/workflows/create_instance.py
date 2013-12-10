@@ -477,7 +477,7 @@ class LaunchInstance(workflows.Workflow):
                      SetInstanceDetails,
                      SetAccessControls,
                      SetNetwork,
-                     VolumeOptions,
+                     #VolumeOptions,
                      PostCreationStep)
 
     def format_status_message(self, message):

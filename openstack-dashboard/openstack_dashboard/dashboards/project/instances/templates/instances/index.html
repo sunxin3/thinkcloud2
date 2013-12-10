@@ -7,5 +7,13 @@
 {% endblock page_header %}
 
 {% block main %}
+  <p><strong>{% trans "Please note: " %}</strong></p>
+  <p>
+        {% trans "The default initialized administor/root password of instance is " %}
+	<strong></strong>
+  </p>
+  <p>
+        {% trans "Please change it after you launched instance." %}
+  </p>
   {{ table.render }}
 {% endblock %}
