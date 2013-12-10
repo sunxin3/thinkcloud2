@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-#[[section1:start]]
-#[[section1:end]]
 from novaclient import client
 from novaclient.v1_1 import agents
 from novaclient.v1_1 import certs
@@ -49,6 +47,8 @@ from novaclient.v1_1 import services
 from novaclient.v1_1 import fixed_ips
 from novaclient.v1_1 import floating_ips_bulk
 
+#[[section1:start]]
+#[[section1:end]]
 
 class Client(object):
     """
