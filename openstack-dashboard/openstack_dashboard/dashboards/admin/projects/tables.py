@@ -56,7 +56,7 @@ class UpdateProject(tables.LinkAction):
 
 class ModifyQuotas(tables.LinkAction):
     name = "quotas"
-    verbose_name = _("Modify Quotas")
+    verbose_name = "Modify Quotas"
     url = "horizon:admin:projects:update"
     classes = ("ajax-modal", "btn-edit")
 
