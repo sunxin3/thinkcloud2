@@ -557,4 +557,4 @@ def tenant_absolute_limits(request, reserved=False):
 
 def physical_server_list(request):
     """Get the list of available physical server."""
-    return novaclient(request).server_models.list();
+    return novaclient(request).physical_servers.list();
