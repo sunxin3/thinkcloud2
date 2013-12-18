@@ -37,6 +37,10 @@ class PhysicalServer(BASE,NovaBase):
     raid_internal  = Column(String(64))
     raid_external  = Column(String(64))
     
+    #build relationships
+    model= relationship("ServerModel",order_by="ServerModel.id", 
+                        backref="physical_servers"   )
+    
     
 class ServerModel (BASE,NovaBase):
     """ Represents physical server model of customized extension"""
