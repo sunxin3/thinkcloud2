@@ -100,8 +100,28 @@ class UpdateRow(tables.Row):
 
     def load_cells(self, image=None):
         super(UpdateRow, self).load_cells(image)
-      
 
+      
+class OwnerFilter(tables.FixedFilterAction):
+    def get_fixed_buttons(self):
+        def make_dict(text, tenant, icon):
+            return dict(text=text, value=tenant, icon=icon)
+
+        buttons = [make_dict('Free Avaiale', 'project', 'icon-home')]
+        buttons.append(make_dict('Reserved by Me', 'shared', 'icon-star'))
+        buttons.append(make_dict('Power On', 'public', 'icon-play'))
+        buttons.append(make_dict('Power Off', 'public', 'icon-stop'))
+        return buttons
+
+    def categorize(self, table, images):
+        user_tenant_id = table.request.user.tenant_id
+        tenants = defaultdict(list)
+        for im in images:
+            categories = [] #get_image_categories(im, user_tenant_id)
+            for category in categories:
+                tenants[category].append(im)
+        return tenants
+    
 
 class PhysicalserversTable(tables.DataTable):
     STATUS_CHOICES = (
@@ -128,7 +148,7 @@ class PhysicalserversTable(tables.DataTable):
                            verbose_name=_("Public"),
                            empty_value=False,
                            filters=(filters.yesno, filters.capfirst))
-    disk_format = tables.Column("cpu_desc", verbose_name=_("Cpu"))
+    cpu = tables.Column("cpu_desc", verbose_name=_("Cpu"))
 
     class Meta:
         name = "physicalservers"
@@ -136,6 +156,6 @@ class PhysicalserversTable(tables.DataTable):
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name", "status", "public", "disk_format"]
-
+        columns = ["name", "status", "public", "cpu"]
+        table_actions = (OwnerFilter,)
 
