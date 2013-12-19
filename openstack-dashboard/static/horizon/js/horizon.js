@@ -20,6 +20,10 @@ var Horizon = function () {
 
   /* Call all initialization functions and clear the queue. */
   horizon.init = function () {
+    if(window.screen.height > $("#main_content").height()){
+      $("#main_content").height(window.screen.height);
+    }
+
     for (var i = 0; i < initFunctions.length; i += 1) {
       initFunctions[i]();
     }
