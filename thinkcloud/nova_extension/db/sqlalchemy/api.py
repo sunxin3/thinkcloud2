@@ -99,4 +99,34 @@ def charge_region_get_all(context):
     query = model_query(context, models.ChargeRegion)
     return query.all();
 
+@require_admin_context
+def charge_item_get(context, item_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.ChargeItem,session=session).filter_by(id=item_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_item_create(context, values):
+    charge_item = models.ChargeItem()
+    charge_item.update(values)
+    charge_item.save()
+    return charge_item
+
+@require_admin_context
+def charge_item_delete(context, item_id):
+    result = model_query(context, models.ChargeItem).\
+             filter_by(id=item_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_item_get_all(context):
+    query = model_query(context, models.ChargeItem)
+    return query.all();
 #[[section1:end]]  

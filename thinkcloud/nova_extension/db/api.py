@@ -44,4 +44,24 @@ def charge_region_create(context,values):
 def charge_region_get_all(context):
     """Get all charge region"""
     return IMPL.charge_region_get_all(context)
+
+def charge_region_delete(context,region_id):
+    """Delete a charge region"""
+    return IMPL.charge_region_delete(context, region_id)
+
+def charge_item_get(context,item_id):
+    """Get a charge item or raise if it doesn't exist"""
+    return IMPL.charge_item_get(context,item_id)
+
+def charge_item_create(context,values):
+    """Create a charge item """
+    return IMPL.charge_item_create(context,values)
+
+def charge_item_get_all(context):
+    """Get all charge item"""
+    return IMPL.charge_item_get_all(context)
+
+def charge_item_delete(context,item_id):
+    """Delete a charge item"""
+    return IMPL.charge_item_delete(context, item_id)
 #[[section1:end]]
