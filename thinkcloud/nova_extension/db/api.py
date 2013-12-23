@@ -33,7 +33,15 @@ def power_state_get(context,power_state_id):
     """Get a server model or raise if it doesn't exist"""
     return IMPL.power_state_get(context,power_state_id)
 
+def charge_region_get(context,region_id):
+    """Get a charge region or raise if it doesn't exist"""
+    return IMPL.charge_region_get(context,region_id)
 
+def charge_region_create(context,values):
+    """Create a charge region """
+    return IMPL.charge_region_create(context,values)
 
+def charge_region_get_all(context):
+    """Get all charge region"""
+    return IMPL.charge_region_get_all(context)
 #[[section1:end]]
-

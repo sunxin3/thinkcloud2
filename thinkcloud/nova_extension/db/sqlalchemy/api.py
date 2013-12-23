@@ -68,4 +68,35 @@ def power_state_get(context,power_state_id):
         
         return result        
     
+@require_admin_context
+def charge_region_get(context, region_id):
+    session = get_session()
+    with session.begin():
+	query = model_query(context,models.ChargeRegion,session=session).filter_by(id=region_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_region_create(context, values):
+    charge_region = models.ChargeRegion()
+    charge_region.update(values)
+    charge_region.save()
+    return charge_region
+
+@require_admin_context
+def charge_region_delete(context, region_id):
+    result = model_query(context, models.ChargeRegion).\
+             filter_by(id=region_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_region_get_all(context):
+    query = model_query(context, models.ChargeRegion)
+    return query.all();
+
 #[[section1:end]]  
