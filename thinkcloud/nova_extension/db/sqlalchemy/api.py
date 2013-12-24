@@ -129,4 +129,66 @@ def charge_item_delete(context, item_id):
 def charge_item_get_all(context):
     query = model_query(context, models.ChargeItem)
     return query.all();
+
+@require_admin_context
+def charge_item_type_get(context, item_type_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.ChargeItemType,session=session).filter_by(id=item_type_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_item_type_create(context, values):
+    charge_item_type = models.ChargeItemType()
+    charge_item_type.update(values)
+    charge_item_type.save()
+    return charge_item_type
+
+@require_admin_context
+def charge_item_type_delete(context, item_type_id):
+    result = model_query(context, models.ChargeItemType).\
+             filter_by(id=item_type_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_item_type_get_all(context):
+    query = model_query(context, models.ChargeItemType)
+    return query.all();
+
+@require_admin_context
+def charge_payment_type_get(context, payment_type_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.ChargePaymentType,session=session).filter_by(id=payment_type_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_payment_type_create(context, values):
+    charge_payment_type = models.ChargePaymentType()
+    charge_payment_type.update(values)
+    charge_payment_type.save()
+    return charge_payment_type
+
+@require_admin_context
+def charge_payment_type_delete(context, payment_type_id):
+    result = model_query(context, models.ChargePaymentType).\
+             filter_by(id=payment_type_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_payment_type_get_all(context):
+    query = model_query(context, models.ChargePaymentType)
+    return query.all();
 #[[section1:end]]  
