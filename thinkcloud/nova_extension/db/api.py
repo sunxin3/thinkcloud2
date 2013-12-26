@@ -24,7 +24,6 @@ def server_model_create(context,values):
     """Create a server model """
     return IMPL.server_model_create(context,values)
 
-
 def server_model_delete(context,model_id):
     """Delete a server model """
     return IMPL.server_model_delete(context,model_id)
@@ -64,4 +63,36 @@ def charge_item_get_all(context):
 def charge_item_delete(context,item_id):
     """Delete a charge item"""
     return IMPL.charge_item_delete(context, item_id)
+
+def charge_item_type_get(context,item_type_id):
+    """Get a charge item type or raise if it doesn't exist"""
+    return IMPL.charge_item_type_get(context,item_type_id)
+
+def charge_item_type_create(context,values):
+    """Create a charge item type"""
+    return IMPL.charge_item_type_create(context,values)
+
+def charge_item_type_get_all(context):
+    """Get all charge item type"""
+    return IMPL.charge_item_type_get_all(context)
+
+def charge_item_type_delete(context,item_type_id):
+    """Delete a charge item type"""
+    return IMPL.charge_item_type_delete(context, item_type_id)
+
+def charge_payment_type_get(context,payment_type_id):
+    """Get a charge payment type or raise if it doesn't exist"""
+    return IMPL.charge_payment_type_get(context,payment_type_id)
+
+def charge_payment_type_create(context,values):
+    """Create a charge payment type"""
+    return IMPL.charge_payment_type_create(context,values)
+
+def charge_payment_type_get_all(context):
+    """Get all charge payment type"""
+    return IMPL.charge_payment_type_get_all(context)
+
+def charge_payment_type_delete(context,payment_type_id):
+    """Delete a charge payment type"""
+    return IMPL.charge_payment_type_delete(context, payment_type_id)
 #[[section1:end]]
