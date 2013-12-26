@@ -18,8 +18,13 @@ def physical_server_get(context,server_id):
 
 @require_admin_context    
 def physical_server_get_all(context):
-        query = model_query(context, models.PhysicalServer)
-        return query.all();    
+        server_list = []
+        session = get_session()
+        resultset = session.query(models.PhysicalServer).all()
+        for row in resultset:
+            row['state'] = row.power_state.state
+            server_list.append(row)
+        return server_list;    
 
     
 @require_admin_context    

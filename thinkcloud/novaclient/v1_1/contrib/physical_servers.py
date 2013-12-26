@@ -130,7 +130,8 @@ def do_physical_server_list(cs, args):
     """
     physical_servers = cs.physical_servers.list()
     utils.print_list(physical_servers, ['ID', 'Name','Description',
-                                     'Server_Models_id','Power_states_id',                                     
+                                     'Server_Models_id','Power_states_id',
+                                     'state'                                     
                                      ])
 
 

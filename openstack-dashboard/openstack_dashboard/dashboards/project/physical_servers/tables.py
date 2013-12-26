@@ -122,6 +122,18 @@ class OwnerFilter(tables.FixedFilterAction):
                 tenants[category].append(im)
         return tenants
     
+def get_server_categories(server,user_tenant_id):
+    categories = []
+    if server.is_public:
+        categories.append('public')
+    if server.owner == user_tenant_id:
+        categories.append('project')
+    elif server.owner in filter_tenant_ids():
+        categories.append(server.owner)
+    elif not server.is_public:
+        categories.append('shared')
+    return categories
+
 
 class PhysicalserversTable(tables.DataTable):
     STATUS_CHOICES = (

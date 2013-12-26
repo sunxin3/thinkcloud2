@@ -15,7 +15,7 @@ class PhysicalServer(BASE,NovaBase):
                        nullable=False)
     is_public = Column(Boolean())
     locked_by = Column(Integer)
-    power_states_id = Column(Integer, ForeignKey('thkcld_power_stats.id'),
+    power_states_id = Column(Integer, ForeignKey('thkcld_power_states.id'),
                        nullable=False)
     nc_number = Column(String(64))
     name = Column(String(64))
@@ -40,6 +40,9 @@ class PhysicalServer(BASE,NovaBase):
     #build relationships
     model= relationship("ServerModel",order_by="ServerModel.id", 
                         backref="physical_servers"   )
+    power_state = relationship("PowerState", order_by="PowerState.id", 
+                               backref="physical_servers" 
+                                 )
     
     
 class ServerModel (BASE,NovaBase):
