@@ -5,13 +5,14 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
 from horizon import tables
+from horizon import tabs
 
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project \
         .images_and_snapshots.images import views
 from .tables import PhysicalserversTable
 from .forms import AdminCreateImageForm, AdminUpdateImageForm
-
+from .tabs import PhysicalServerDetailTabs
 
 LOG = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ class UpdateView(views.UpdateView):
     success_url = reverse_lazy('horizon:admin:images:index')
 
 
-class DetailView(views.DetailView):
-    """ Admin placeholder for image detail view. """
-    pass
+
+class DetailView(tabs.TabView):
+    tab_group_class = PhysicalServerDetailTabs
+    template_name = 'project/physical_servers/detail.html'

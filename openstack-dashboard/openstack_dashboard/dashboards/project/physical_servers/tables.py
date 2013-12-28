@@ -32,44 +32,28 @@ from openstack_dashboard import api
 LOG = logging.getLogger(__name__)
 
 
-class LaunchImage(tables.LinkAction):
-    name = "launch_image"
-    verbose_name = _("Launch")
-    url = "horizon:project:instances:launch"
-    classes = ("btn-launch", "ajax-modal")
 
-    def get_link_url(self, datum):
-        base_url = reverse(self.url)
-        params = urlencode({"source_type": "image_id",
-                            "source_id": self.table.get_object_id(datum)})
-        return "?".join([base_url, params])
-
-
-class DeleteImage(tables.DeleteAction):
-    data_type_singular = _("Image")
-    data_type_plural = _("Images")
-
-    def allowed(self, request, image=None):
-        if image:
-            return image.owner == request.user.tenant_id
-        # Return True to allow table-level bulk delete action to appear.
-        return True
+class DeletePhysicalServer(tables.DeleteAction):
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    def allowed(self, request, server=None):
+        return False
 
     def delete(self, request, obj_id):
-        api.glance.image_delete(request, obj_id)
+        return
 
 
-class CreateImage(tables.LinkAction):
+class AddPhysicalServer(tables.LinkAction):
     name = "create"
-    verbose_name = _("Create Image")
-    url = "horizon:project:images_and_snapshots:images:create"
+    verbose_name = _("Add Physical Server")
+    url = "horizon:project:physical_servers:create"
     classes = ("ajax-modal", "btn-create")
 
 
-class EditImage(tables.LinkAction):
+class EditPhysicalServer(tables.LinkAction):
     name = "edit"
     verbose_name = _("Edit")
-    url = "horizon:project:images_and_snapshots:images:update"
+    url = "horizon:project:physical_servers:update"
     classes = ("ajax-modal", "btn-edit")
 
     def allowed(self, request, image=None):

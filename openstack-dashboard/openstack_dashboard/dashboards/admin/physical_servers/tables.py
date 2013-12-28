@@ -18,34 +18,34 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
-from openstack_dashboard.dashboards.project.images_and_snapshots \
-        .images.tables import (ImagesTable, CreateImage, EditImage,
-                DeleteImage)
+from openstack_dashboard.dashboards.project.physical_servers\
+        .tables import (PhysicalserversTable, AddPhysicalServer, \
+                       EditPhysicalServer,  DeletePhysicalServer)
 
 
-class AdminCreateImage(CreateImage):
+class AdminAddPhysicalServer(AddPhysicalServer):
     url = "horizon:admin:images:create"
 
 
-class AdminDeleteImage(DeleteImage):
+class AdminDeletePhysicalServer(DeletePhysicalServer):
     def allowed(self, request, image=None):
         return True
 
 
-class AdminEditImage(EditImage):
+class AdminEditPhysicalServer(EditPhysicalServer):
     url = "horizon:admin:images:update"
 
     def allowed(self, request, image=None):
         return True
 
 
-class AdminImagesTable(ImagesTable):
+class AdminPhysicalserversTable(PhysicalserversTable):
     name = tables.Column("name",
-                         link="horizon:admin:images:detail",
-                         verbose_name=_("Image Name"))
+                         link="horizon:admin:physical_servers:detail",
+                         verbose_name=_("Server Name"))
 
     class Meta:
-        name = "images"
-        verbose_name = _("Images")
-        table_actions = (AdminCreateImage, AdminDeleteImage)
-        row_actions = (AdminEditImage, AdminDeleteImage)
+        name = "physicalservers"
+        verbose_name = _("Physical Servers")
+        table_actions = (AdminAddPhysicalServer, AdminDeletePhysicalServer)
+        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer)

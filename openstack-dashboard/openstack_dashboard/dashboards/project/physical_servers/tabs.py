@@ -26,20 +26,20 @@ from openstack_dashboard import api
 class OverviewTab(tabs.Tab):
     name = _("Overview")
     slug = "overview"
-    template_name = "project/images_and_snapshots/images/_detail_overview.html"
+    template_name = "project/physical_servers/_detail_overview.html"
 
     def get_context_data(self, request):
-        image_id = self.tab_group.kwargs['image_id']
+        server_id = self.tab_group.kwargs['server_id']
         try:
-            image = api.glance.image_get(self.request, image_id)
+            server = api.nova.physical_server_get(self.request, server_id)
         except:
-            redirect = reverse('horizon:project:images_and_snapshots:index')
+            redirect = reverse('horizon:project:physical_servers:index')
             exceptions.handle(request,
-                              _('Unable to retrieve image details.'),
+                              _('Unable to retrieve physical server details.'),
                               redirect=redirect)
-        return {'image': image}
+        return {'server': server}
 
 
-class ImageDetailTabs(tabs.TabGroup):
-    slug = "image_details"
+class PhysicalServerDetailTabs(tabs.TabGroup):
+    slug = "physical_server_details"
     tabs = (OverviewTab,)

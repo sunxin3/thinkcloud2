@@ -8,15 +8,15 @@ from horizon import tables
 
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project \
-        .images_and_snapshots.images import views
-from .tables import AdminImagesTable
+        .physical_servers import views
+from .tables import AdminPhysicalserversTable
 from .forms import AdminCreateImageForm, AdminUpdateImageForm
 
 
 LOG = logging.getLogger(__name__)
 
 class IndexView(tables.DataTableView):
-    table_class = AdminImagesTable
+    table_class = AdminPhysicalserversTable
     template_name = 'admin/physical_servers/index.html'
 
 #    def has_more_data(self, table):
