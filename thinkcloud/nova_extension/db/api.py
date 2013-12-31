@@ -95,4 +95,52 @@ def charge_payment_type_get_all(context):
 def charge_payment_type_delete(context,payment_type_id):
     """Delete a charge payment type"""
     return IMPL.charge_payment_type_delete(context, payment_type_id)
+
+def charge_product_get(context,product_id):
+    """Get a charge product or raise if it doesn't exist"""
+    return IMPL.charge_product_get(context,product_id)
+
+def charge_product_create(context,values):
+    """Create a charge product"""
+    return IMPL.charge_product_create(context,values)
+
+def charge_product_get_all(context):
+    """Get all charge product"""
+    return IMPL.charge_product_get_all(context)
+
+def charge_product_delete(context,product_id):
+    """Delete a charge product"""
+    return IMPL.charge_product_delete(context, product_id)
+
+def charge_subscription_get(context,subscription_id):
+    """Get a charge subscription or raise if it doesn't exist"""
+    return IMPL.charge_subscription_get(context,subscription_id)
+
+def charge_subscription_create(context,values):
+    """Create a charge subscription"""
+    return IMPL.charge_subscription_create(context,values)
+
+def charge_subscription_get_all(context):
+    """Get all charge subscription"""
+    return IMPL.charge_subscription_get_all(context)
+
+def charge_subscription_delete(context,subscription_id):
+    """Delete a charge subscription"""
+    return IMPL.charge_subscription_delete(context, subscription_id)
+
+def charge_purchase_get(context,purchase_id):
+    """Get a charge purchase or raise if it doesn't exist"""
+    return IMPL.charge_purchase_get(context,purchase_id)
+
+def charge_purchase_create(context,values):
+    """Create a charge purchase"""
+    return IMPL.charge_purchase_create(context,values)
+
+def charge_purchase_get_all(context):
+    """Get all charge purchase"""
+    return IMPL.charge_purchase_get_all(context)
+
+def charge_purchase_delete(context,purchase_id):
+    """Delete a charge purchase"""
+    return IMPL.charge_purchase_delete(context, purchase_id)
 #[[section1:end]]

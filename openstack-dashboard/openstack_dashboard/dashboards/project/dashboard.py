@@ -26,7 +26,8 @@ class BasePanels(horizon.PanelGroup):
               'physical_servers',
               'instances',
               'images_and_snapshots',
-              'access_and_security',)
+              'access_and_security',
+	      'charges',)
 
 
 class NetworkPanels(horizon.PanelGroup):

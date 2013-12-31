@@ -196,4 +196,97 @@ def charge_payment_type_delete(context, payment_type_id):
 def charge_payment_type_get_all(context):
     query = model_query(context, models.ChargePaymentType)
     return query.all();
+
+@require_admin_context
+def charge_product_get(context, product_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.ChargeProduct,session=session).filter_by(id=product_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_product_create(context, values):
+    charge_product = models.ChargeProduct()
+    charge_product.update(values)
+    charge_product.save()
+    return charge_product
+
+@require_admin_context
+def charge_product_delete(context, product_id):
+    result = model_query(context, models.ChargeProduct).\
+             filter_by(id=product_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_product_get_all(context):
+    query = model_query(context, models.ChargeProduct)
+    return query.all();
+
+@require_admin_context
+def charge_subscription_get(context, subscription_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.ChargeSubscription,session=session).filter_by(id=subscription_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_subscription_create(context, values):
+    charge_subscription = models.ChargeSubscription()
+    charge_subscription.update(values)
+    charge_subscription.save()
+    return charge_subscription
+
+@require_admin_context
+def charge_subscription_delete(context, subscription_id):
+    result = model_query(context, models.ChargeSubscription).\
+             filter_by(id=subscription_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_subscription_get_all(context):
+    query = model_query(context, models.ChargeSubscription)
+    return query.all();
+
+@require_admin_context
+def charge_purchase_get(context, purchase_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.ChargePurchase,session=session).filter_by(id=purchase_id)
+        result = query.first()
+    if not result or not query:
+        raise Exception()
+
+    return result
+
+@require_admin_context
+def charge_purchase_create(context, values):
+    charge_purchase = models.ChargePurchase()
+    charge_purchase.update(values)
+    charge_purchase.save()
+    return charge_purchase
+
+@require_admin_context
+def charge_purchase_delete(context, purchase_id):
+    result = model_query(context, models.ChargePurchase).\
+             filter_by(id=purchase_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def charge_purchase_get_all(context):
+    query = model_query(context, models.ChargePurchase)
+    return query.all()
 #[[section1:end]]  
