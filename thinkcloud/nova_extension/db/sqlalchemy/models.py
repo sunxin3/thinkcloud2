@@ -38,9 +38,9 @@ class PhysicalServer(BASE,NovaBase):
     raid_external  = Column(String(64))
     
     #build relationships
-    model= relationship("ServerModel",order_by="ServerModel.id", 
+    rel_model= relationship("ServerModel",order_by="ServerModel.id", 
                         backref="physical_servers"   )
-    power_state = relationship("PowerState", order_by="PowerState.id", 
+    rel_power_state = relationship("PowerState", order_by="PowerState.id", 
                                backref="physical_servers" 
                                  )
     

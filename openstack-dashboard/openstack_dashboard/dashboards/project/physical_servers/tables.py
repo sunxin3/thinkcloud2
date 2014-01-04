@@ -120,31 +120,28 @@ def get_server_categories(server,user_tenant_id):
 
 
 class PhysicalserversTable(tables.DataTable):
-    STATUS_CHOICES = (
-        ("active", True),
-        ("saving", None),
-        ("queued", None),
-        ("pending_delete", None),
-        ("killed", False),
-        ("deleted", False),
-    )
+
     name = tables.Column("name",
                          link=("horizon:project:physical_servers:"
                                "detail"),
                          verbose_name=_("Server Name"))
-    image_type = tables.Column("model",
-                               verbose_name=_("Type"),
-                               filters=(filters.title,))
-    status = tables.Column("status",
+    model = tables.Column("model",
+                               verbose_name=_("Model"),
+                               filters=(filters.upper,))
+    status = tables.Column("state",
                            filters=(filters.title,),
-                           verbose_name=_("Status"),
-                           status=True,
-                           status_choices=STATUS_CHOICES)
+                           verbose_name=_("Power State"),)
     public = tables.Column("is_public",
                            verbose_name=_("Public"),
                            empty_value=False,
                            filters=(filters.yesno, filters.capfirst))
     cpu = tables.Column("cpu_desc", verbose_name=_("Cpu"))
+    
+    memory = tables.Column("mem_total", verbose_name=_("Memory"))
+    
+    storage = tables.Column("disk_total", verbose_name=_("Storage"))
+    
+    nics    = tables.Column("nic_num", verbose_name=_("Nics"))
 
     class Meta:
         name = "physicalservers"
@@ -152,6 +149,6 @@ class PhysicalserversTable(tables.DataTable):
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name", "status", "public", "cpu"]
+        columns = ["name", "model","status", "public", "cpu","memory","storage","nics"]
         table_actions = (OwnerFilter,)
 

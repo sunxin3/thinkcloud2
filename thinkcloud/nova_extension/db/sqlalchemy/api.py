@@ -22,7 +22,8 @@ def physical_server_get_all(context):
         session = get_session()
         resultset = session.query(models.PhysicalServer).all()
         for row in resultset:
-            row['state'] = row.power_state.state
+            row['state'] = row.rel_power_state.state
+            row['model'] = row.rel_model.name
             server_list.append(row)
         return server_list;    
 
