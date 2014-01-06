@@ -118,6 +118,9 @@ def get_server_categories(server,user_tenant_id):
         categories.append('shared')
     return categories
 
+def  total_memory(server):
+    return _("%sGB") % server.mem_total
+
 
 class PhysicalserversTable(tables.DataTable):
 
@@ -137,7 +140,7 @@ class PhysicalserversTable(tables.DataTable):
                            filters=(filters.yesno, filters.capfirst))
     cpu = tables.Column("cpu_desc", verbose_name=_("Cpu"))
     
-    memory = tables.Column("mem_total", verbose_name=_("Memory"))
+    memory = tables.Column(total_memory, verbose_name=_("Memory"))
     
     storage = tables.Column("disk_total", verbose_name=_("Storage"))
     

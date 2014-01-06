@@ -14,6 +14,7 @@ def physical_server_get(context,server_id):
         if not result or not query:
             raise  Exception()
         
+        result['model'] = result.rel_model.name
         return result 
 
 @require_admin_context    
