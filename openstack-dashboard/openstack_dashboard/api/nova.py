@@ -566,3 +566,11 @@ def physical_server_get(request, server_id):
 def charge_product_list(request):
     """Get the list of available charge product."""
     return novaclient(request).charge_products.list();
+
+def charge_subscription_list(request):
+    """Get the list of available charge subscription."""
+    return novaclient(request).charge_subscriptions.list();
+
+def charge_subscription_list_by_userid(request, user_id):
+    """Get the list of available charge subscription."""
+    return novaclient(request).charge_subscriptions.list();

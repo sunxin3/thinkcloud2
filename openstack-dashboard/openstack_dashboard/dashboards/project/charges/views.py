@@ -51,12 +51,12 @@ class IndexView(tables.DataTableView):
     def get_data(self):
         # Gather our instances
         try:
-            #charge_products = api.nova.charge_product_list(self.request)
-            charge_products = api.nova.charge_product_list(self.request)
+            #charge_subscriptions = api.nova.charge_product_list(self.request)
+            charge_subscriptions = api.nova.charge_subscription_list_by_user(self.request, self.request.user_id)
         except:
-            charge_products = []
+            charge_subscriptions = []
             exceptions.handle(self.request,
-                              _('Unable to retrieve charge products.'))
+                              _('Unable to retrieve charge subscriptions'))
         # Gather our flavors and correlate our instances to them
         '''if charge_products:
             try:
@@ -81,7 +81,7 @@ class IndexView(tables.DataTableView):
                 except:
                     msg = _('Unable to retrieve instance size information.')
                     exceptions.handle(self.request, msg)'''
-        return charge_products
+        return charge_subscriptions
 
 
 class LaunchInstanceView(workflows.WorkflowView):

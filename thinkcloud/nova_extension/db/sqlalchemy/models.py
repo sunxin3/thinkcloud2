@@ -176,7 +176,11 @@ class ChargeSubscription(BASE,NovaBase):
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
 
-    project_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(String(64), nullable=False, index=True)
+
+    approver_id = Column(String(64), nullable=False, index=True)
+
+    project_id = Column(String(64), nullable=False, index=True)
 
     product_id = Column(Integer,
                         ForeignKey(ChargeProduct.id),
@@ -189,11 +193,15 @@ class ChargeSubscription(BASE,NovaBase):
                                        'ChargeSubscription.product_id == ChargeProduct.id,'
                                        'ChargeSubscription.deleted == False)')
 
-    resource_uuid = Column(String(255), nullable=False, index=True)
+    resource_uuid = Column(String(36), nullable=False, index=True)
 
     resource_name = Column(String(255), nullable=False)
 
+    applied_at = Column(DateTime, nullable=False, index=True)
+
     expires_at = Column(DateTime, nullable=False, index=True)
+
+    approved_at = Column(DateTime, nullable=False, index=True)
 
     status = Column(String(255), nullable=False)
 

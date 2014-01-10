@@ -46,7 +46,6 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
         body = {'charge_subscription':{'name':subscription_name}}
         return self._create('/thkcld-charge_subscriptions', body, 'charge_subscription')
 
-
 @utils.arg('charge_subscription_id', metavar='<charge_subscription_id>', 
            help='ID of charge subscription')
 def do_charge_subscription(cs, args):
@@ -63,7 +62,6 @@ def do_charge_subscription_list(cs, args):
     """
     charge_subscriptions = cs.charge_subscriptions.list()
     utils.print_list(charge_subscriptions, ['ID', 'Name','Created_at'])
-
 
 @utils.arg('subscription_name', metavar='<subscription_name>',
            help='Charge subscription name')

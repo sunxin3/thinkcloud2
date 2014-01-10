@@ -374,11 +374,12 @@ class SimpleDisassociateIP(tables.Action):
 class UpdateRow(tables.Row):
     ajax = True
 
-    def get_data(self, request, instance_id):
-        instance = api.nova.server_get(request, instance_id)
-        instance.full_flavor = api.nova.flavor_get(request,
-                                                   instance.flavor["id"])
-        return instance
+    def get_data(self, request, charge_product_id):
+	charge_product = api.nova.charge_product_get(self.request, charge_product_id)
+        #instance = api.nova.server_get(request, instance_id)
+        #instance.full_flavor = api.nova.flavor_get(request,
+        #                                           instance.flavor["id"])
+        return charge_product
 
 
 def get_ips(instance):
@@ -435,45 +436,46 @@ class ChargesTable(tables.DataTable):
         ("none", True)
     )
     STATUS_CHOICES = (
-        ("active", True),
-        ("shutoff", True),
-        ("suspended", True),
-        ("paused", True),
+        ("apply", True),
+        ("verified", True),
+        ("teminated", True),
         ("error", False),
     )
-    name = tables.Column("name",
-                         link=("horizon:project:instances:detail"),
-                         verbose_name=_("Instance Name"))
-    ip = tables.Column(get_ips, verbose_name=_("IP Address"))
-    size = tables.Column(get_size,
-                         verbose_name=_("Size"),
-                         attrs={'data-type': 'size'})
-    keypair = tables.Column(get_keyname, verbose_name=_("Keypair"))
+
+    product = tables.Column("product",
+			    verbose_name=_("Charge Product"))
+
+    resource = tables.Column("resource_name",
+			     verbose_name=_("Resource Name"))
+
+    resource_uuid = tables.Column("resource_uuid",
+			     verbose_name=_("Resource UUID"))
+
+    user = tables.Column("user_id",
+			     verbose_name=_("Applyer"))
+
+    approver = tables.Column("approver_id",
+			     verbose_name=_("Approver"))
+
     status = tables.Column("status",
                            filters=(title, replace_underscores),
                            verbose_name=_("Status"),
                            status=True,
                            status_choices=STATUS_CHOICES,
                            display_choices=STATUS_DISPLAY_CHOICES)
-    task = tables.Column("OS-EXT-STS:task_state",
-                         verbose_name=_("Task"),
-                         filters=(title, replace_underscores),
-                         status=True,
-                         status_choices=TASK_STATUS_CHOICES,
-                         display_choices=TASK_DISPLAY_CHOICES)
-    state = tables.Column(get_power_state,
-                          filters=(title, replace_underscores),
-                          verbose_name=_("Power State"))
+
+    applied_at = tables.Column("applied_at",
+                            verbose_name=_("Apply Time"))
+ 
+    approved_at = tables.Column("approved_at",
+                            verbose_name=_("Approved Time"))
+
+    expires_at = tables.Column("expires_at",
+                            verbose_name=_("Expires Time"))
 
     class Meta:
-        name = "instances"
-        verbose_name = _("Instances")
-        status_columns = ["status", "task"]
+        name = "Charge Management"
+        verbose_name = _("Charge Management")
+        status_columns = ["status"]
         row_class = UpdateRow
         table_actions = (LaunchLink, TerminateInstance)
-        row_actions = (ConfirmResize, RevertResize, CreateSnapshot,
-                       SimpleAssociateIP, AssociateIP,
-                       SimpleDisassociateIP, EditInstance,
-                       EditInstanceSecurityGroups, ConsoleLink, LogLink,
-                       TogglePause, ToggleSuspend, SoftRebootInstance,
-                       RebootInstance, TerminateInstance)
