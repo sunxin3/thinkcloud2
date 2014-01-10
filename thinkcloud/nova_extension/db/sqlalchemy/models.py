@@ -186,7 +186,7 @@ class ChargeSubscription(BASE,NovaBase):
                         ForeignKey(ChargeProduct.id),
                         nullable=False)
 
-    product = relationship(ChargeProduct,
+    rel_charge_product = relationship(ChargeProduct,
                            backref=backref('thkcld_charge_subscriptions'),
                            foreign_keys=product_id,
                            primaryjoin='and_('

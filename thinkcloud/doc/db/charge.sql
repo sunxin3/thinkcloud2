@@ -245,4 +245,4 @@ insert into thkcld_charge_regions (created_at,updated_at,deleted_at,deleted,name
 
 
 # subscriptions
-insert into thkcld_charge_subscriptions (created_at,updated_at,deleted_at,deleted,user_id,approver_id,project_id,product_id,resource_uuid,resource_name,applied_at,expires_at,approved_at,status)values(now(),NULL,NULL,0,1,1,1,1,1,'instance',now(),now(),now(),'terminated');
+insert into thkcld_charge_subscriptions (created_at,updated_at,deleted_at,deleted,user_id,approver_id,project_id,product_id,resource_uuid,resource_name,applied_at,expires_at,approved_at,status)values(now(),NULL,NULL,0,'3293f3d580504dcb95e2fda207ee1cfa','3293f3d580504dcb95e2fda207ee1cfa','1',1,1,'instance',now(),now(),now(),'terminated');

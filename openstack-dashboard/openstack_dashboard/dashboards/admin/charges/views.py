@@ -46,7 +46,7 @@ LOG = logging.getLogger(__name__)
 
 class IndexView(tables.DataTableView):
     table_class = ChargesTable
-    template_name = 'project/charges/index.html'
+    template_name = 'admin/charges/index.html'
 
     def get_data(self):
         charge_subscriptions_by_user = []
@@ -101,7 +101,7 @@ class IndexView(tables.DataTableView):
 
 class LaunchInstanceView(workflows.WorkflowView):
     workflow_class = LaunchInstance
-    template_name = "project/instances/launch.html"
+    template_name = "admin/instances/launch.html"
 
     def get_initial(self):
         initial = super(LaunchInstanceView, self).get_initial()
@@ -152,7 +152,7 @@ def spice(request, instance_id):
 
 class UpdateView(workflows.WorkflowView):
     workflow_class = UpdateInstance
-    template_name = 'project/instances/update.html'
+    template_name = 'admin/instances/update.html'
     success_url = reverse_lazy("horizon:project:instances:index")
 
     def get_context_data(self, **kwargs):

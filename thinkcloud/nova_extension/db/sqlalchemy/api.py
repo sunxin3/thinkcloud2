@@ -258,8 +258,14 @@ def charge_subscription_delete(context, subscription_id):
 
 @require_admin_context
 def charge_subscription_get_all(context):
-    query = model_query(context, models.ChargeSubscription)
-    return query.all();
+    subscription_list = []
+    session = get_session()
+    with session.begin():
+        resultset = session.query(models.ChargeSubscription).all()
+        for row in resultset:
+            row['item'] = row.rel_charge_product.item.name
+            subscription_list.append(row)
+    return subscription_list
 
 @require_admin_context
 def charge_purchase_get(context, purchase_id):

@@ -18,20 +18,12 @@ from django.utils.translation import ugettext_lazy as _
 
 import horizon
 
-
-class SystemPanels(horizon.PanelGroup):
-    slug = "admin"
-    name = _("System Panel")
-    panels = ('overview', 'physical_servers','instances',  'flavors',
-              'images', 'charges', 'projects', 'users', 'networks', 'routers', 'info')
+from openstack_dashboard.dashboards.admin import dashboard
 
 
-class Admin(horizon.Dashboard):
-    name = _("Admin")
-    slug = "admin"
-    panels = (SystemPanels,)
-    default_panel = 'overview'
-    permissions = ('openstack.roles.admin',)
+class Charges(horizon.Panel):
+    name = _("Charges")
+    slug = 'charges'
 
 
-horizon.register(Admin)
+dashboard.Admin.register(Charges)

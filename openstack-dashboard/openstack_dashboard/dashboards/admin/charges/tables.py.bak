@@ -436,46 +436,46 @@ class ChargesTable(tables.DataTable):
         ("none", True)
     )
     STATUS_CHOICES = (
-        ("apply", True),
-        ("verified", True),
-        ("teminated", True),
+        ("active", True),
+        ("shutoff", True),
+        ("suspended", True),
+        ("paused", True),
         ("error", False),
     )
-
-    item = tables.Column("item",
-			    verbose_name=_("Charge Product"))
-
-    resource = tables.Column("resource_name",
-			     verbose_name=_("Resource Name"))
-
-    resource_uuid = tables.Column("resource_uuid",
-			     verbose_name=_("Resource UUID"))
-
-    user = tables.Column("user_id",
-			     verbose_name=_("Applyer"))
-
-    approver = tables.Column("approver_id",
-			     verbose_name=_("Approver"))
-
+    product = tables.Column("product")
+    name = tables.Column("name",
+                         link=("horizon:project:instances:detail"),
+                         verbose_name=_("Instance Name"))
+    ip = tables.Column(get_ips, verbose_name=_("IP Address"))
+    size = tables.Column(get_size,
+                         verbose_name=_("Size"),
+                         attrs={'data-type': 'size'})
+    keypair = tables.Column(get_keyname, verbose_name=_("Keypair"))
     status = tables.Column("status",
                            filters=(title, replace_underscores),
                            verbose_name=_("Status"),
                            status=True,
                            status_choices=STATUS_CHOICES,
                            display_choices=STATUS_DISPLAY_CHOICES)
-
-    applied_at = tables.Column("applied_at",
-                            verbose_name=_("Apply Time"))
- 
-    approved_at = tables.Column("approved_at",
-                            verbose_name=_("Approved Time"))
-
-    expires_at = tables.Column("expires_at",
-                            verbose_name=_("Expires Time"))
+    task = tables.Column("OS-EXT-STS:task_state",
+                         verbose_name=_("Task"),
+                         filters=(title, replace_underscores),
+                         status=True,
+                         status_choices=TASK_STATUS_CHOICES,
+                         display_choices=TASK_DISPLAY_CHOICES)
+    state = tables.Column(get_power_state,
+                          filters=(title, replace_underscores),
+                          verbose_name=_("Power State"))
 
     class Meta:
-        name = "Charge Management"
-        verbose_name = _("Charge Management")
-        status_columns = ["status"]
+        name = "instances"
+        verbose_name = _("Instances")
+        status_columns = ["status", "task"]
         row_class = UpdateRow
         table_actions = (LaunchLink, TerminateInstance)
+        row_actions = (ConfirmResize, RevertResize, CreateSnapshot,
+                       SimpleAssociateIP, AssociateIP,
+                       SimpleDisassociateIP, EditInstance,
+                       EditInstanceSecurityGroups, ConsoleLink, LogLink,
+                       TogglePause, ToggleSuspend, SoftRebootInstance,
+                       RebootInstance, TerminateInstance)
