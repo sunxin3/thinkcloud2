@@ -22,6 +22,7 @@
 Views for managing charges.
 """
 import logging
+import iso8601
 
 from django import http
 from django import shortcuts
@@ -65,6 +66,10 @@ class IndexView(tables.DataTableView):
 		        charge_subscription.approver_id = api.keystone.user_get(self.request, charge_subscription.approver_id).name 
                     else:
 		        charge_subscription.approver_id = 'N/A'
+
+                    charge_subscription.applied_at = iso8601.parse_date(charge_subscription.applied_at).strftime("%Y-%m-%d %H:%M:%S")
+                    charge_subscription.approved_at = iso8601.parse_date(charge_subscription.approved_at).strftime("%Y-%m-%d %H:%M:%S")
+                    charge_subscription.expires_at = iso8601.parse_date(charge_subscription.expires_at).strftime("%Y-%m-%d %H:%M:%S")
 	
                     charge_subscriptions_by_user.append(charge_subscription)
   
