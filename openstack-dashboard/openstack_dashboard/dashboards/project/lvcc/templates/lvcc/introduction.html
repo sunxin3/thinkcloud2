@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "LVCC Solution" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("LVCC Solution") %}
+{% endblock page_header %}
+
+{% block main %}
+{% load i18n horizon humanize sizeformat %}
+<div class="quota-dynamic">
+<img src="../../../../images/lvcc/1.png"></img>
+<img src="../../../../images/lvcc/2.png"></img>
+<img src="../../../../images/lvcc/3.png"></img>
+<img src="../../../../images/lvcc/4.png"></img>
+</div>
+{% endblock %}
