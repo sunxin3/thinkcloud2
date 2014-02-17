@@ -122,18 +122,31 @@ def  total_memory(server):
     return _("%sGB") % server.mem_total
 
 
+class ModelFilterAction(tables.LinkAction):
+    name  = "model"
+    classes = ("btn-list")
+    def get_link_url(self, datum=None):
+        
+        return 
+
+
+
 class PhysicalserversTable(tables.DataTable):
 
     name = tables.Column("name",
                          link=("horizon:project:physical_servers:"
                                "detail"),
                          verbose_name=_("Server Name"))
+    nc_num = tables.Column("nc_number",
+                             verbose_name=_("NC_Number"))
     model = tables.Column("model",
                                verbose_name=_("Model"),
                                filters=(filters.upper,))
     status = tables.Column("state",
                            filters=(filters.title,),
                            verbose_name=_("Power State"),)
+    ipmi  = tables.Column("ipmi_address",
+                          verbose_name= _("IPMI Address"))
     public = tables.Column("is_public",
                            verbose_name=_("Public"),
                            empty_value=False,
@@ -152,6 +165,6 @@ class PhysicalserversTable(tables.DataTable):
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name", "model","status", "public", "cpu","memory","storage","nics"]
-        table_actions = (OwnerFilter,)
+        columns = ["name","nc_num" "model","status","ipmi", "public", "cpu","memory","storage","nics"]
+        table_actions = (ModelFilterAction,OwnerFilter,)
 

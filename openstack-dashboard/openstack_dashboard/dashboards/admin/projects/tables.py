@@ -82,6 +82,7 @@ class TenantFilterAction(tables.FilterAction):
     def filter(self, table, tenants, filter_string):
         """ Really naive case-insensitive search. """
         # FIXME(gabriel): This should be smarter. Written for demo purposes.
+        #
         q = filter_string.lower()
 
         def comp(tenant):
@@ -119,6 +120,7 @@ class RemoveUserAction(tables.BatchAction):
     def action(self, request, user_id):
         tenant_id = self.table.kwargs['tenant_id']
         api.keystone.remove_tenant_user(request, tenant_id, user_id)
+
 
 
 class ProjectUserRolesColumn(tables.Column):
