@@ -52,6 +52,17 @@ class ServerModel (BASE,NovaBase):
     id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
     
     name = Column(String(64))
+
+class Ram (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_rams'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    type = Column(String(64))
+    capacity = Column(Integer)
+    quantity = Column(Integer)
+    description = olumn(String(255))
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""

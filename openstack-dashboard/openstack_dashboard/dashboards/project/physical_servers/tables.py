@@ -138,7 +138,7 @@ class PhysicalserversTable(tables.DataTable):
                                "detail"),
                          verbose_name=_("Server Name"))
     nc_num = tables.Column("nc_number",
-                             verbose_name=_("NC_Number"))
+                             verbose_name=_("NC Number"))
     model = tables.Column("model",
                                verbose_name=_("Model"),
                                filters=(filters.upper,))

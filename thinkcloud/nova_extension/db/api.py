@@ -28,6 +28,22 @@ def server_model_delete(context,model_id):
     """Delete a server model """
     return IMPL.server_model_delete(context,model_id)
 
+def ram_get(context,ram_id):
+    """Get a server RAM or raise if it doesn't exist"""
+    return IMPL.ram_get(context,ram_id)
+
+def ram_get_all(context):
+    """Get all  RAM """
+    return IMPL.ram_get_all(context)
+
+def ram_create(context,values):
+    """Create RAM """
+    return IMPL.ram_create(context,values)
+
+def ram_delete(context,ram_id):
+    """Delete a RAM """
+    return IMPL.ram_delete(context,model_id)
+
 def power_state_get(context,power_state_id):
     """Get a server model or raise if it doesn't exist"""
     return IMPL.power_state_get(context,power_state_id)

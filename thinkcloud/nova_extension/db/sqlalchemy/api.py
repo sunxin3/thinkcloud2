@@ -62,6 +62,41 @@ def server_model_delete(context, model_id):
 
     return result
 
+    
+@require_admin_context    
+def ram_get(context,ram_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Ram,session=session,
+                            read_deleted="yes").filter_by(id=ram_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def ram_get_all(context):
+        query = model_query(context, models.Ram)
+        return query.all();    
+      
+@require_admin_context        
+def ram_create(context, values):
+    ram_obj = models.Ram()
+    ram_obj.update(values)
+    ram_obj.save()
+    return ram_obj    
+
+@require_admin_context        
+def ram_delete(context, ram_id):
+    result = model_query(context, models.Ram).\
+             filter_by(id=ram_id).\
+             soft_delete()
+
+    return result
+
+
 @require_admin_context    
 def power_state_get(context,power_state_id):
     session = get_session()
