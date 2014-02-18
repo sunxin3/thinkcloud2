@@ -257,6 +257,14 @@ def charge_subscription_delete(context, subscription_id):
     return result
 
 @require_admin_context
+def charge_subscription_update(context, subscription_id, values):
+    session = get_session()
+    with session.begin():
+        subscription_ref = charge_subscription_get(context, subscription_id)
+        subscription_ref.update(values)
+	subscription_ref.save(session=session)
+
+@require_admin_context
 def charge_subscription_get_all(context):
     subscription_list = []
     session = get_session()

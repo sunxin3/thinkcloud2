@@ -46,6 +46,11 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
         body = {'charge_subscription':{'name':subscription_name}}
         return self._create('/thkcld-charge_subscriptions', body, 'charge_subscription')
 
+    def update(self, charge_subscription_id, charge_subscription_status):
+        body = {'charge_subscription':{'status':charge_subscription_status}}
+	url = '/thkcld-charge_subscriptions/%s' % charge_subscription_id
+        return self._update(url, body, 'charge_subscription')
+
 @utils.arg('charge_subscription_id', metavar='<charge_subscription_id>', 
            help='ID of charge subscription')
 def do_charge_subscription(cs, args):
@@ -61,7 +66,7 @@ def do_charge_subscription_list(cs, args):
     List charge subscriptions
     """
     charge_subscriptions = cs.charge_subscriptions.list()
-    utils.print_list(charge_subscriptions, ['ID', 'Name','Created_at'])
+    utils.print_list(charge_subscriptions, ['ID', 'Status','Created_at'])
 
 @utils.arg('subscription_name', metavar='<subscription_name>',
            help='Charge subscription name')
@@ -72,6 +77,16 @@ def do_charge_subscription_create(cs, args):
     subscription = cs.charge_subscriptions.create(args.subscription_name)
     utils.print_dict(subscription._info)
 
+@utils.arg('charge_subscription_id', metavar='<charge_subscription_id>',
+           help='ID of charge subscription')
+@utils.arg('charge_subscription_status', metavar='<charge_subscription_status>',
+           help='Charge subscription status')
+def do_charge_subscription_update(cs, args):
+    """
+    update a charge subscription record
+    """
+    subscription = cs.charge_subscriptions.update(args.charge_subscription_id, args.charge_subscription_status)
+    utils.print_dict(subscription._info)
 
 @utils.arg('charge_subscription_id', metavar='<charge_subscription_id>', 
            help='ID of charge subscription')

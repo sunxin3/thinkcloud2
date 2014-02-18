@@ -128,6 +128,10 @@ def charge_subscription_delete(context,subscription_id):
     """Delete a charge subscription"""
     return IMPL.charge_subscription_delete(context, subscription_id)
 
+def charge_subscription_update(context,subscription_id,values):
+    """Update a charge subscription"""
+    return IMPL.charge_subscription_update(context, subscription_id, values)
+
 def charge_purchase_get(context,purchase_id):
     """Get a charge purchase or raise if it doesn't exist"""
     return IMPL.charge_purchase_get(context,purchase_id)
