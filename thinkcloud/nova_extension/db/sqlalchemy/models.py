@@ -4,6 +4,13 @@
 
 #[[section1:start]]
 
+server_ram_map = Table('thkcld_server_ram_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('ram_id',Integer,
+                              ForeignKey('thkcld_rams.id')),
+                       )
+
 
 class PhysicalServer(BASE,NovaBase):
     """ Represents physical server of customized extension"""
@@ -43,6 +50,9 @@ class PhysicalServer(BASE,NovaBase):
     rel_power_state = relationship("PowerState", order_by="PowerState.id", 
                                backref="physical_servers" 
                                  )
+    rel_ram = relationship("Ram",
+                           secondary=server_ram_map,
+                           backref="servers")
     
     
 class ServerModel (BASE,NovaBase):
@@ -60,9 +70,10 @@ class Ram (BASE,NovaBase):
     id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
     
     type = Column(String(64))
+    frequence = Column(Integer)
     capacity = Column(Integer)
     quantity = Column(Integer)
-    description = olumn(String(255))
+    description = Column(String(255))
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""

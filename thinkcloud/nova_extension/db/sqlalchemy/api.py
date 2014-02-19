@@ -25,6 +25,11 @@ def physical_server_get_all(context):
         for row in resultset:
             row['state'] = row.rel_power_state.state
             row['model'] = row.rel_model.name
+            # get RAMs of server
+            ram_ids = []
+            for ram_item in row.rel_ram:
+                ram_ids.append(ram_item.id)
+            row['ram_ids'] = ','.join(str(v) for v in ram_ids)
             server_list.append(row)
         return server_list;    
 
