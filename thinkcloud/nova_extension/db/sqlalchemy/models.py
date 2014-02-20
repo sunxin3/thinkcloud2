@@ -74,6 +74,50 @@ class Ram (BASE,NovaBase):
     capacity = Column(Integer)
     quantity = Column(Integer)
     description = Column(String(255))
+
+class Disk (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_disks'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    manufacture = Column(String(255))
+    model = Column(String(255))
+    interface = Column(String(255))
+    rpm = Column(Integer)
+    description = Column(String(255))
+
+class Nic (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_nics'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    is_onboard = Column(Boolean())
+    interface_number = Column(Integer)
+    interface = Column(String(255))
+    description = Column(String(255))
+
+class HbaType (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_hba_types'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    model = Column(String(64))
+    manufacture = Column(String(128))
+    bandwidth = Column(Integer)
+    port_number = Column(Integer)
+    description = Column(String(255))
+    
+class Hba (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_hbas'
+    
+    sn = Column(String(255),primary_key=True,nullable=False,)
+    
+    type_id = Column(Integer)
+    description = Column(String(255))
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""

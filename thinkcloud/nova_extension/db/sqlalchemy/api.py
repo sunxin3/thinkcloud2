@@ -103,6 +103,145 @@ def ram_delete(context, ram_id):
 
 
 @require_admin_context    
+def disk_get(context,disk_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Disk,session=session,
+                            read_deleted="yes").filter_by(id=disk_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def disk_get_all(context):
+        query = model_query(context, models.Disk)
+        return query.all();    
+      
+@require_admin_context        
+def disk_create(context, values):
+    disk_obj = models.Disk()
+    disk_obj.update(values)
+    disk_obj.save()
+    return disk_obj    
+
+@require_admin_context        
+def disk_delete(context, disk_id):
+    result = model_query(context, models.Disk).\
+             filter_by(id=disk_id).\
+             soft_delete()
+
+    return result
+
+
+@require_admin_context    
+def nic_get(context,nic_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Nic,session=session,
+                            read_deleted="yes").filter_by(id=nic_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def nic_get_all(context):
+        query = model_query(context, models.Nic)
+        return query.all();    
+      
+@require_admin_context        
+def nic_create(context, values):
+    nic_obj = models.Nic()
+    nic_obj.update(values)
+    nic_obj.save()
+    return nic_obj    
+
+@require_admin_context        
+def nic_delete(context, nic_id):
+    result = model_query(context, models.Nic).\
+             filter_by(id=nic_id).\
+             soft_delete()
+
+    return result
+
+
+
+@require_admin_context    
+def hba_type_get(context,hba_type_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.HbaType,session=session,
+                            read_deleted="yes").filter_by(id=hba_type_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def hba_type_get_all(context):
+        query = model_query(context, models.HbaType)
+        return query.all();    
+      
+@require_admin_context        
+def hba_type_create(context, values):
+    hba_type_obj = models.HbaType()
+    hba_type_obj.update(values)
+    hba_type_obj.save()
+    return hba_type_obj    
+
+@require_admin_context        
+def hba_type_delete(context, hba_type_id):
+    result = model_query(context, models.HbaType).\
+             filter_by(id=hba_type_id).\
+             soft_delete()
+
+    return result
+
+
+    
+@require_admin_context    
+def hba_get(context,hba_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Hba,session=session,
+                            read_deleted="yes").filter_by(id=hba_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def hba_get_all(context):
+        query = model_query(context, models.Hba)
+        return query.all();    
+      
+@require_admin_context        
+def hba_create(context, values):
+    hba_obj = models.Hba()
+    hba_obj.update(values)
+    hba_obj.save()
+    return hba_obj    
+
+@require_admin_context        
+def hba_delete(context, hba_id):
+    result = model_query(context, models.Hba).\
+             filter_by(id=hba_id).\
+             soft_delete()
+
+    return result
+
+
+
+@require_admin_context    
 def power_state_get(context,power_state_id):
     session = get_session()
     with session.begin():

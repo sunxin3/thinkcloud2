@@ -15,11 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 # Description:
-#   Extension for rams  
+#   Extension for disks  
 # Author: Dengfeng Mao
 # Email:  mdengfeng@gmail.com
 
-#[[file:$NOVA_ROOT$/nova/api/openstack/compute/contrib/rams.py;action:copy]]
+#[[file:$NOVA_ROOT$/nova/api/openstack/compute/contrib/disks.py;action:copy]]
 
 import webob
 from webob import exc
@@ -29,67 +29,67 @@ from nova import db
 from nova import exception
 from nova.api.openstack import extensions
 
-authorize = extensions.extension_authorizer('compute', 'rams')
+authorize = extensions.extension_authorizer('compute', 'disks')
  
 # Controller which would response for the request
-class RamsController(wsgi.Controller):
-    """the Ram API Controller declearation"""
+class DisksController(wsgi.Controller):
+    """the Disk API Controller declearation"""
  
     def index(self, req):
-        rams = {}
+        disks = {}
         context = req.environ['nova.context']
         authorize(context)
              
         # logic for get all records from db
-        rams["rams"] = db.ram_get_all(context); 
-        return rams 
+       
+        return disks 
  
     def create(self, req):
-        rams = {}
+        disks = {}
         context = req.environ['nova.context']
         authorize(context)
  
         # real logic to create the object
-        return rams 
+        return disks 
  
     def show(self, req, id):
-        rams = {}
+        disks = {}
         context = req.environ['nova.context']
         authorize(context)
  
         try:
-            ram = db.ram_get(context, id)
+            disk = db.disk_get(context, id)
         except :
-            raise webob.exc.HTTPNotFound(explanation="Ram not found")
+            raise webob.exc.HTTPNotFound(explanation="Disk not found")
  
-        rams["ram"] = ram 
-        return rams 
+        disks["disk"] = disk 
+        return disks 
  
     def update(self, req):
-        rams = {}
+        disks = {}
         context = req.environ['nova.context']
         authorize(context)
  
         # real logic for update object
-        return rams 
+        return disks 
  
     def delete(self, req, id):
         return webob.Response(status_int=202)
     
 # extension declaration 
-class Rams(extensions.ExtensionDescriptor):  
-    """Ram Extension Descriptor implementation"""
+class Disks(extensions.ExtensionDescriptor):  
+    """Disk Extension Descriptor implementation"""
  
-    name = "rams"
-    alias = "thkcld-rams"
-    namespace = "http://www.thinkcloud.com/ext/api/v1.0/thkcld-rams"
+    name = "disks"
+    alias = "thkcld-disks"
+    namespace = "http://www.thinkcloud.com/ext/api/v1.0/thkcld-disks"
     updated = "2013-11-25T00:00:00+00:00"
  
     def get_resources(self):
-        """register the new Rams Restful resource"""
+        """register the new Disks Restful resource"""
  
         resources = [extensions.ResourceExtension(self.alias,
-                 RamsController())
+                 DisksController())
                  ]
  
         return resources

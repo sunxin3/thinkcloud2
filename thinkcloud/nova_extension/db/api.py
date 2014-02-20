@@ -42,7 +42,74 @@ def ram_create(context,values):
 
 def ram_delete(context,ram_id):
     """Delete a RAM """
-    return IMPL.ram_delete(context,model_id)
+    return IMPL.ram_delete(context,ram_id)
+
+def disk_get(context,disk_id):
+    """Get a server disk or raise if it doesn't exist"""
+    return IMPL.disk_get(context,disk_id)
+
+def disk_get_all(context):
+    """Get all  DISK """
+    return IMPL.disk_get_all(context)
+
+def disk_create(context,values):
+    """Create disk """
+    return IMPL.disk_create(context,values)
+
+def disk_delete(context,disk_id):
+    """Delete a disk """
+    return IMPL.disk_delete(context,disk_id)
+
+def nic_get(context,nic_id):
+    """Get a server NIC or raise if it doesn't exist"""
+    return IMPL.disk_get(context,nic_id)
+
+def nic_get_all(context):
+    """Get all  nic """
+    return IMPL.nic_get_all(context)
+
+def nic_create(context,values):
+    """Create nic """
+    return IMPL.nic_create(context,values)
+
+def nic_delete(context,nic_id):
+    """Delete a nic """
+    return IMPL.nic_delete(context,nic_id)
+
+
+def hba_type_get(context,hba_type_id):
+    """Get a server hba_type or raise if it doesn't exist"""
+    return IMPL.disk_get(context,hba_type_id)
+
+def hba_type_get_all(context):
+    """Get all  hba_type """
+    return IMPL.hba_type_get_all(context)
+
+def hba_type_create(context,values):
+    """Create hba_type """
+    return IMPL.hba_type_create(context,values)
+
+def hba_type_delete(context,hba_type_id):
+    """Delete a hba_type """
+    return IMPL.hba_type_delete(context,hba_type_id)
+
+def hba_get(context,hba_id):
+    """Get a server hba or raise if it doesn't exist"""
+    return IMPL.disk_get(context,hba_id)
+
+def hba_get_all(context):
+    """Get all  hba """
+    return IMPL.hba_get_all(context)
+
+def hba_create(context,values):
+    """Create hba """
+    return IMPL.hba_create(context,values)
+
+def hba_delete(context,hba_id):
+    """Delete a hba """
+    return IMPL.hba_delete(context,hba_id)
+
+
 
 def power_state_get(context,power_state_id):
     """Get a server model or raise if it doesn't exist"""

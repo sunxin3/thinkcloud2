@@ -130,7 +130,6 @@ class ModelFilterAction(tables.LinkAction):
         return 
 
 
-
 class PhysicalserversTable(tables.DataTable):
 
     name = tables.Column("name",
