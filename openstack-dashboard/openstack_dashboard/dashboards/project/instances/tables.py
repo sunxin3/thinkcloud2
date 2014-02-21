@@ -97,6 +97,19 @@ class RebootInstance(tables.BatchAction):
     def action(self, request, obj_id):
         api.nova.server_reboot(request, obj_id, api.nova.REBOOT_HARD)
 
+class RebootInstanceBat(tables.BatchAction):
+    name = "rebootbat"
+    action_present = _("Reboot")
+    action_past = _("Soft Rebooted")
+    data_type_singular = _("Instance")
+    data_type_plural = _("Instances")
+    classes = ('btn-danger', 'btn-reboot')
+
+    def allowed(self, request, instance=None):
+        return True
+
+    def action(self, request, obj_id):
+        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_SOFT)
 
 class SoftRebootInstance(RebootInstance):
     name = "soft_reboot"
