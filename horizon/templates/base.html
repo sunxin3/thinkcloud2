@@ -9,6 +9,9 @@
       {% include "_stylesheets.html" %}
     {% endblock %}
     {% include "horizon/client_side/_script_loader.html" %}
+     {% block js %}
+      {% include "horizon/_scripts.html" %}
+    {% endblock %}
   </head>
   <body id="{% block body_id %}{% endblock %}">
     {% block content %}
@@ -29,9 +32,7 @@
     <div id="footer">
       {% block footer %}{% endblock %}
     </div>
-    {% block js %}
-      {% include "horizon/_scripts.html" %}
-    {% endblock %}
+  
     <div id="modal_wrapper" />
   </body>
 </html>

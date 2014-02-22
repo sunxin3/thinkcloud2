@@ -1,0 +1,175 @@
+{% load i18n horizon humanize sizeformat %}
+<div>
+	<h3>{% trans "Quota Summary" %}</h3>
+	<div class="thkcld_gauge">
+		<strong>{% trans "Available Instances" %}</strong>
+		<div id="jInstanceGauge" class="jgauge"></div>
+	</div>
+	<div class="thkcld_gauge">
+		<strong>{% trans "Available vCPUs" %}</strong>
+		<div id="jVcpuGauge" class="jgauge"></div>
+	</div>
+	<div class="thkcld_gauge">
+		<strong>{% trans "Available RAM" %}</strong>
+		<div id="jRamGauge" class="jgauge"></div>
+	</div>
+	<div class="thkcld_gauge">
+		<strong>{% trans "Available volumes" %}</strong>
+		<div id="jVolumeGauge" class="jgauge"></div>
+
+	</div>
+	<div class="thkcld_gauge">
+		<strong>{% trans "Available volume storage" %}</strong>
+		<div id="jGigaBytesGauge" class="jgauge"></div>
+	</div>
+
+</div>
+<div style="clear: both""></div>
+<script type="text/javascript">
+	// InstanceGauge
+	var instanceGauge = new jGauge(); // Create a new jGauge.
+	instanceGauge.id = 'jInstanceGauge'; // Link the new jGauge to the placeholder DIV.
+	instanceGauge.autoPrefix = autoPrefix.si; // Use SI prefixing (i.e. 1k = 1000).
+	instanceGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
+	instanceGauge.segmentStart = -225
+	instanceGauge.segmentEnd = 45
+	instanceGauge.width = 170;
+	instanceGauge.height = 170;
+	instanceGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
+	instanceGauge.needle.xOffset = 0;
+	instanceGauge.needle.yOffset = 0;
+	instanceGauge.label.yOffset = 55;
+	instanceGauge.label.color = '#0ce';
+	instanceGauge.label.precision = 0; // 0 decimals (whole numbers).
+	instanceGauge.label.suffix = '/{{ usage.quotas.instances.quota|intcomma }}'; 
+	instanceGauge.ticks.labelRadius = 45;
+
+	instanceGauge.ticks.labelColor = '#0ce';
+	instanceGauge.ticks.start = 0;
+	instanceGauge.ticks.end = {{ usage.quotas.instances.quota|intcomma }};
+	instanceGauge.ticks.count = 11;
+	instanceGauge.ticks.color = 'rgba(35, 200, 255, 0)';
+	instanceGauge.range.color = 'rgba(0, 0, 0, 0)';
+	
+	instanceGauge.value= {{ usage.quotas.instances.used|intcomma  }};
+	
+	// vCpuGauge
+    var vCpuGauge = new jGauge(); // Create a new jGauge.
+    vCpuGauge.id = 'jVcpuGauge'; // Link the new jGauge to the placeholder DIV.
+    vCpuGauge.autoPrefix = autoPrefix.si; // Use SI prefixing (i.e. 1k = 1000).
+    vCpuGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
+    vCpuGauge.segmentStart = -225
+    vCpuGauge.segmentEnd = 45
+    vCpuGauge.width = 170;
+    vCpuGauge.height = 170;
+    vCpuGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
+    vCpuGauge.needle.xOffset = 0;
+    vCpuGauge.needle.yOffset = 0;
+    vCpuGauge.label.yOffset = 55;
+    vCpuGauge.label.color = '#0ce';
+    vCpuGauge.label.precision = 0; // 0 decimals (whole numbers).
+    vCpuGauge.label.suffix = '/{{ usage.quotas.cores.quota|intcomma }}'; 
+    vCpuGauge.ticks.labelRadius = 45;
+
+    vCpuGauge.ticks.labelColor = '#0ce';
+    vCpuGauge.ticks.start = 0;
+    vCpuGauge.ticks.end = {{ usage.quotas.cores.quota|intcomma }};
+    vCpuGauge.ticks.count = 11;
+    vCpuGauge.ticks.color = 'rgba(35, 200, 255, 0)';
+    vCpuGauge.range.color = 'rgba(0, 0, 0, 0)';
+    
+    vCpuGauge.value= {{ usage.quotas.cores.used|intcomma  }};
+    
+ // ramGauge
+    var ramGauge = new jGauge(); // Create a new jGauge.
+    ramGauge.id = 'jRamGauge'; // Link the new jGauge to the placeholder DIV.
+    ramGauge.autoPrefix = autoPrefix.binary; // Use SI prefixing (i.e. 1k = 1000).
+    ramGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
+    ramGauge.segmentStart = -225
+    ramGauge.segmentEnd = 45
+    ramGauge.width = 170;
+    ramGauge.height = 170;
+    ramGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
+    ramGauge.needle.xOffset = 0;
+    ramGauge.needle.yOffset = 0;
+    ramGauge.label.yOffset = 55;
+    ramGauge.label.color = '#0ce';
+    ramGauge.label.precision = 0; // 0 decimals (whole numbers).
+    ramGauge.label.suffix = 'MB/{{ usage.quotas.ram.quota|intcomma }}MB'; 
+    ramGauge.ticks.labelRadius = 45;
+
+    ramGauge.ticks.labelColor = '#0ce';
+    ramGauge.ticks.start = 0;
+    ramGauge.ticks.end = {{ usage.quotas.ram.quota|intcomma }};
+    ramGauge.ticks.count = 11;
+    ramGauge.ticks.color = 'rgba(35, 200, 255, 0)';
+    ramGauge.range.color = 'rgba(0, 0, 0, 0)';
+    
+    ramGauge.value= {{ usage.quotas.ram.used|intcomma  }};
+    
+    
+ // volumeGauge
+    var volumeGauge = new jGauge(); // Create a new jGauge.
+    volumeGauge.id = 'jVolumeGauge'; // Link the new jGauge to the placeholder DIV.
+    volumeGauge.autoPrefix = autoPrefix.si; // Use SI prefixing (i.e. 1k = 1000).
+    volumeGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
+    volumeGauge.segmentStart = -225
+    volumeGauge.segmentEnd = 45
+    volumeGauge.width = 170;
+    volumeGauge.height = 170;
+    volumeGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
+    volumeGauge.needle.xOffset = 0;
+    volumeGauge.needle.yOffset = 0;
+    volumeGauge.label.yOffset = 55;
+    volumeGauge.label.color = '#0ce';
+    volumeGauge.label.precision = 0; // 0 decimals (whole numbers).
+    volumeGauge.label.suffix = '/{{ usage.quotas.volumes.quota|intcomma }}'; 
+    volumeGauge.ticks.labelRadius = 45;
+
+    volumeGauge.ticks.labelColor = '#0ce';
+    volumeGauge.ticks.start = 0;
+    volumeGauge.ticks.end = {{ usage.quotas.volumes.quota|intcomma }};
+    volumeGauge.ticks.count = 11;
+    volumeGauge.ticks.color = 'rgba(35, 200, 255, 0)';
+    volumeGauge.range.color = 'rgba(0, 0, 0, 0)';
+    
+    volumeGauge.value= {{ usage.quotas.volumes.used|intcomma  }};
+    
+ // gigaBytesGauge
+    var gigaBytesGauge = new jGauge(); // Create a new jGauge.
+    gigaBytesGauge.id = 'jGigaBytesGauge'; // Link the new jGauge to the placeholder DIV.
+    gigaBytesGauge.autoPrefix = autoPrefix.binary; // Use SI prefixing (i.e. 1k = 1000).
+    gigaBytesGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
+    gigaBytesGauge.segmentStart = -225
+    gigaBytesGauge.segmentEnd = 45
+    gigaBytesGauge.width = 170;
+    gigaBytesGauge.height = 170;
+    gigaBytesGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
+    gigaBytesGauge.needle.xOffset = 0;
+    gigaBytesGauge.needle.yOffset = 0;
+    gigaBytesGauge.label.yOffset = 55;
+    gigaBytesGauge.label.color = '#0ce';
+    gigaBytesGauge.label.precision = 1; // 0 decimals (whole numbers).
+    gigaBytesGauge.label.suffix = 'GB/{{ usage.quotas.gigabytes.quota|intcomma }}GB'; 
+    gigaBytesGauge.ticks.labelRadius = 45;
+
+    gigaBytesGauge.ticks.labelColor = '#0ce';
+    gigaBytesGauge.ticks.start = 0;
+    gigaBytesGauge.ticks.end = {{ usage.quotas.gigabytes.quota|intcomma }};
+    gigaBytesGauge.ticks.count = 11;
+    gigaBytesGauge.ticks.color = 'rgba(35, 200, 255, 0)';
+    gigaBytesGauge.range.color = 'rgba(0, 0, 0, 0)';
+    
+    gigaBytesGauge.value= {{ usage.quotas.gigabytes.used|intcomma  }};
+    
+    
+
+	// This function is called by jQuery once the page has finished loading.
+	$(document).ready(function() {
+		instanceGauge.init(); // Put the jGauge on the page by initializing it.
+		vCpuGauge.init();
+		ramGauge.init();
+		volumeGauge.init();
+		gigaBytesGauge.init();
+	});
+</script>
