@@ -560,7 +560,7 @@ def physical_server_list(request):
     return novaclient(request).physical_servers.list();
 
 def physical_server_get(request, server_id):
-    """Get  physical server detail."""
+    """Get physical server detail."""
     return novaclient(request).physical_servers.get(server_id);
 
 def charge_product_list(request):
@@ -571,6 +571,10 @@ def charge_subscription_list(request):
     """Get the list of available charge subscription."""
     return novaclient(request).charge_subscriptions.list();
 
-def charge_subscription_list_by_userid(request, user_id):
-    """Get the list of available charge subscription."""
-    return novaclient(request).charge_subscriptions.list();
+def charge_subscription_get(request, charge_subscription_id):
+    """Get the charge subscription details."""
+    return novaclient(request).charge_subscriptions.get(charge_subscription_id);
+
+def charge_subscription_update(request, charge_subscription_id, **kwargs):
+    """update charge subscription."""
+    return novaclient(request).charge_subscriptions.update(charge_subscription_id, **kwargs);

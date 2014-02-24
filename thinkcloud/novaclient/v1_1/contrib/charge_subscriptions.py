@@ -46,8 +46,19 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
         body = {'charge_subscription':{'name':subscription_name}}
         return self._create('/thkcld-charge_subscriptions', body, 'charge_subscription')
 
-    def update(self, charge_subscription_id, charge_subscription_status):
-        body = {'charge_subscription':{'status':charge_subscription_status}}
+    def update(self, charge_subscription_id,status=None,approver_id=None, resource_name=None, approved_at=None, deleted=None, expires_at=None):
+        body = {'charge_subscription': {
+		'status':status,
+		'approver_id':approver_id,
+		'resource_name':resource_name,
+		'approved_at':approved_at,
+		'deleted':deleted,
+                'expires_at':expires_at}}
+
+        for key in list(body['charge_subscription']):
+            if body['charge_subscription'][key] is None:
+                body['charge_subscription'].pop(key)
+
 	url = '/thkcld-charge_subscriptions/%s' % charge_subscription_id
         return self._update(url, body, 'charge_subscription')
 

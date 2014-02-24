@@ -139,3 +139,29 @@ ALTER TABLE `thkcld_physical_servers`
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_server_models`
+--
+
+DROP TABLE IF EXISTS `thkcld_charge_regions`;
+CREATE TABLE IF NOT EXISTS `thkcld_charge_regions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `deleted` tinyint(1) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=6 ;
+
+
+INSERT INTO `thkcld_charge_regions` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `name`) VALUES
+(1, NULL, NULL, NULL, 0, 'Beijing'),
+(2, NULL, NULL, NULL, 0, 'Daqing'),
+(3, '2013-12-07 02:58:16', NULL, '2013-12-07 05:59:01', 3, 'RD220'),
+(4, '2013-12-07 07:11:24', NULL, NULL, 0, 'RD320'),
+(5, '2013-12-07 07:16:34', NULL, '2013-12-07 07:32:16', 5, 'RD520');

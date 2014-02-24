@@ -63,21 +63,33 @@ def is_deleting(instance):
         return False
     return task_state.lower() == "deleting"
 
-
-class TerminateChargeSubscription(tables.BatchAction):
-    name = "terminate"
-    action_present = _("Terminate")
-    action_past = _("Scheduled termination of")
-    data_type_singular = _("Charge_subscription")
-    data_type_plural = _("Charge_subscriptions")
-    classes = ('btn-danger', 'btn-terminate')
+class ApproveChargeSubscription(tables.BatchAction):
+    name = "approve"
+    action_present = _("Approve")
+    action_past = _("Scheduled approval of")
+    data_type_singular = _("Subscription")
+    data_type_plural = _("Subscriptions")
+    classes = ('btn-danger', 'btn-reboot')
 
     def allowed(self, request, charge_subcription=None):
         return True
 
     def action(self, request, obj_id):
-        #api.nova.server_delete(request, obj_id)
-        api.nova.charge_subscription_update(request, 1, "test")
+        api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id)
+
+class DenyChargeSubscription(tables.BatchAction):
+    name = "deny"
+    action_present = _("Deny")
+    action_past = _("Scheduled denial of")
+    data_type_singular = _("Subscription")
+    data_type_plural = _("Subscriptions")
+    classes = ('btn-danger', 'btn-reboot')
+
+    def allowed(self, request, charge_subcription=None):
+        return True
+
+    def action(self, request, obj_id):
+        api.nova.charge_subscription_update(request, obj_id, status='denied', approver_id=request.user.id)
 
 class UpdateRow(tables.Row):
     ajax = True
@@ -176,4 +188,4 @@ class ChargeSubscriptionTable(tables.DataTable):
         verbose_name = _("Charge Subscriptions")
         #status_columns = ["status", "task"]
         row_class = UpdateRow
-        table_actions = (TerminateChargeSubscription,)
+        #table_actions = (ApproveChargeSubscription, DenyChargeSubscription)
