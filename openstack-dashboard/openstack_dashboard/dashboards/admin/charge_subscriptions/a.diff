@@ -1,0 +1,4648 @@
+diff --git a/openstack-dashboard/openstack_dashboard/api/nova.py b/openstack-dashboard/openstack_dashboard/api/nova.py
+index 7e98240..65040d9 100644
+--- a/openstack-dashboard/openstack_dashboard/api/nova.py
++++ b/openstack-dashboard/openstack_dashboard/api/nova.py
+@@ -560,7 +560,7 @@ def physical_server_list(request):
+     return novaclient(request).physical_servers.list();
+ 
+ def physical_server_get(request, server_id):
+-    """Get  physical server detail."""
++    """Get physical server detail."""
+     return novaclient(request).physical_servers.get(server_id);
+ 
+ def charge_product_list(request):
+@@ -571,6 +571,10 @@ def charge_subscription_list(request):
+     """Get the list of available charge subscription."""
+     return novaclient(request).charge_subscriptions.list();
+ 
+-def charge_subscription_list_by_userid(request, user_id):
+-    """Get the list of available charge subscription."""
+-    return novaclient(request).charge_subscriptions.list();
++def charge_subscription_get(request, charge_subscription_id):
++    """Get the charge subscription details."""
++    return novaclient(request).charge_subscriptions.get(charge_subscription_id);
++
++def charge_subscription_update(request, charge_subscription_id, **kwargs):
++    """update charge subscription."""
++    return novaclient(request).charge_subscriptions.update(charge_subscription_id, **kwargs);
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/__init__.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/__init__.py
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/panel.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/panel.py
+deleted file mode 100644
+index 56b4f49..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/panel.py
++++ /dev/null
+@@ -1,29 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-from django.utils.translation import ugettext_lazy as _
+-
+-import horizon
+-
+-from openstack_dashboard.dashboards.admin import dashboard
+-
+-
+-class Charges(horizon.Panel):
+-    name = _("Charges")
+-    slug = 'charges'
+-
+-
+-dashboard.Admin.register(Charges)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tables.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tables.py
+deleted file mode 100644
+index 1b4503b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tables.py
++++ /dev/null
+@@ -1,481 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-import logging
+-
+-from django import shortcuts
+-from django import template
+-from django.core import urlresolvers
+-from django.template.defaultfilters import title
+-from django.utils.http import urlencode
+-from django.utils.translation import string_concat, ugettext_lazy as _
+-
+-from horizon.conf import HORIZON_CONFIG
+-from horizon import exceptions
+-from horizon import messages
+-from horizon import tables
+-from horizon.templatetags import sizeformat
+-from horizon.utils.filters import replace_underscores
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.dashboards.project.access_and_security \
+-        .floating_ips.workflows import IPAssociationWorkflow
+-from .tabs import InstanceDetailTabs, LogTab, ConsoleTab
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-ACTIVE_STATES = ("ACTIVE",)
+-
+-POWER_STATES = {
+-    0: "NO STATE",
+-    1: "RUNNING",
+-    2: "BLOCKED",
+-    3: "PAUSED",
+-    4: "SHUTDOWN",
+-    5: "SHUTOFF",
+-    6: "CRASHED",
+-    7: "SUSPENDED",
+-    8: "FAILED",
+-    9: "BUILDING",
+-}
+-
+-PAUSE = 0
+-UNPAUSE = 1
+-SUSPEND = 0
+-RESUME = 1
+-
+-
+-def is_deleting(instance):
+-    task_state = getattr(instance, "OS-EXT-STS:task_state", None)
+-    if not task_state:
+-        return False
+-    return task_state.lower() == "deleting"
+-
+-
+-class TerminateInstance(tables.BatchAction):
+-    name = "terminate"
+-    action_present = _("Terminate")
+-    action_past = _("Scheduled termination of")
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ('btn-danger', 'btn-terminate')
+-
+-    def allowed(self, request, instance=None):
+-        return True
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_delete(request, obj_id)
+-
+-
+-class RebootInstance(tables.BatchAction):
+-    name = "reboot"
+-    action_present = _("Hard Reboot")
+-    action_past = _("Hard Rebooted")
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ('btn-danger', 'btn-reboot')
+-
+-    def allowed(self, request, instance=None):
+-        return ((instance.status in ACTIVE_STATES
+-                 or instance.status == 'SHUTOFF')
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_HARD)
+-
+-
+-class SoftRebootInstance(RebootInstance):
+-    name = "soft_reboot"
+-    action_present = _("Soft Reboot")
+-    action_past = _("Soft Rebooted")
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_SOFT)
+-
+-
+-class TogglePause(tables.BatchAction):
+-    name = "pause"
+-    action_present = (_("Pause"), _("Resume"))
+-    action_past = (_("Paused"), _("Resumed"))
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ("btn-pause",)
+-
+-    def allowed(self, request, instance=None):
+-        self.paused = False
+-        if not instance:
+-            return self.paused
+-        self.paused = instance.status == "PAUSED"
+-        if self.paused:
+-            self.current_present_action = UNPAUSE
+-        else:
+-            self.current_present_action = PAUSE
+-        return ((instance.status in ACTIVE_STATES or self.paused)
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        if self.paused:
+-            api.nova.server_unpause(request, obj_id)
+-            self.current_past_action = UNPAUSE
+-        else:
+-            api.nova.server_pause(request, obj_id)
+-            self.current_past_action = PAUSE
+-
+-
+-class ToggleSuspend(tables.BatchAction):
+-    name = "suspend"
+-    action_present = (_("Suspend"), _("Resume"))
+-    action_past = (_("Suspended"), _("Resumed"))
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ("btn-suspend",)
+-
+-    def allowed(self, request, instance=None):
+-        self.suspended = False
+-        if not instance:
+-            self.suspended
+-        self.suspended = instance.status == "SUSPENDED"
+-        if self.suspended:
+-            self.current_present_action = RESUME
+-        else:
+-            self.current_present_action = SUSPEND
+-        return ((instance.status in ACTIVE_STATES or self.suspended)
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        if self.suspended:
+-            api.nova.server_resume(request, obj_id)
+-            self.current_past_action = RESUME
+-        else:
+-            api.nova.server_suspend(request, obj_id)
+-            self.current_past_action = SUSPEND
+-
+-
+-class LaunchLink(tables.LinkAction):
+-    name = "launch"
+-    verbose_name = _("Launch Instance")
+-    url = "horizon:project:instances:launch"
+-    classes = ("btn-launch", "ajax-modal")
+-
+-    def allowed(self, request, datum):
+-        try:
+-            limits = api.nova.tenant_absolute_limits(request, reserved=True)
+-
+-            instances_available = limits['maxTotalInstances'] \
+-                - limits['totalInstancesUsed']
+-            cores_available = limits['maxTotalCores'] \
+-                - limits['totalCoresUsed']
+-            ram_available = limits['maxTotalRAMSize'] - limits['totalRAMUsed']
+-
+-            if instances_available <= 0 or cores_available <= 0 \
+-                    or ram_available <= 0:
+-                if "disabled" not in self.classes:
+-                    self.classes = [c for c in self.classes] + ['disabled']
+-                    self.verbose_name = string_concat(self.verbose_name, ' ',
+-                                                      _("(Quota exceeded)"))
+-            else:
+-                self.verbose_name = _("Launch Instance")
+-                classes = [c for c in self.classes if c != "disabled"]
+-                self.classes = classes
+-        except:
+-            LOG.exception("Failed to retrieve quota information")
+-            # If we can't get the quota information, leave it to the
+-            # API to check when launching
+-
+-        return True  # The action should always be displayed
+-
+-
+-class EditInstance(tables.LinkAction):
+-    name = "edit"
+-    verbose_name = _("Edit Instance")
+-    url = "horizon:project:instances:update"
+-    classes = ("ajax-modal", "btn-edit")
+-
+-    def get_link_url(self, project):
+-        return self._get_link_url(project, 'instance_info')
+-
+-    def _get_link_url(self, project, step_slug):
+-        base_url = urlresolvers.reverse(self.url, args=[project.id])
+-        param = urlencode({"step": step_slug})
+-        return "?".join([base_url, param])
+-
+-    def allowed(self, request, instance):
+-        return not is_deleting(instance)
+-
+-
+-class EditInstanceSecurityGroups(EditInstance):
+-    name = "edit_secgroups"
+-    verbose_name = _("Edit Security Groups")
+-
+-    def get_link_url(self, project):
+-        return self._get_link_url(project, 'update_security_groups')
+-
+-    def allowed(self, request, instance=None):
+-        return (instance.status in ACTIVE_STATES and
+-                not is_deleting(instance) and
+-                request.user.tenant_id == instance.tenant_id)
+-
+-
+-class CreateSnapshot(tables.LinkAction):
+-    name = "snapshot"
+-    verbose_name = _("Create Snapshot")
+-    url = "horizon:project:images_and_snapshots:snapshots:create"
+-    classes = ("ajax-modal", "btn-camera")
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-
+-class ConsoleLink(tables.LinkAction):
+-    name = "console"
+-    verbose_name = _("Console")
+-    url = "horizon:project:instances:detail"
+-    classes = ("btn-console",)
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = super(ConsoleLink, self).get_link_url(datum)
+-        tab_query_string = ConsoleTab(InstanceDetailTabs).get_query_string()
+-        return "?".join([base_url, tab_query_string])
+-
+-
+-class LogLink(tables.LinkAction):
+-    name = "log"
+-    verbose_name = _("View Log")
+-    url = "horizon:project:instances:detail"
+-    classes = ("btn-log",)
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = super(LogLink, self).get_link_url(datum)
+-        tab_query_string = LogTab(InstanceDetailTabs).get_query_string()
+-        return "?".join([base_url, tab_query_string])
+-
+-
+-class ConfirmResize(tables.Action):
+-    name = "confirm"
+-    verbose_name = _("Confirm Resize/Migrate")
+-    classes = ("btn-confirm", "btn-action-required")
+-
+-    def allowed(self, request, instance):
+-        return instance.status == 'VERIFY_RESIZE'
+-
+-    def single(self, table, request, instance):
+-        api.nova.server_confirm_resize(request, instance)
+-
+-
+-class RevertResize(tables.Action):
+-    name = "revert"
+-    verbose_name = _("Revert Resize/Migrate")
+-    classes = ("btn-revert", "btn-action-required")
+-
+-    def allowed(self, request, instance):
+-        return instance.status == 'VERIFY_RESIZE'
+-
+-    def single(self, table, request, instance):
+-        api.nova.server_revert_resize(request, instance)
+-
+-
+-class AssociateIP(tables.LinkAction):
+-    name = "associate"
+-    verbose_name = _("Associate Floating IP")
+-    url = "horizon:project:access_and_security:floating_ips:associate"
+-    classes = ("ajax-modal", "btn-associate")
+-
+-    def allowed(self, request, instance):
+-        fip = api.network.NetworkClient(request).floating_ips
+-        if fip.is_simple_associate_supported():
+-            return False
+-        return not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = urlresolvers.reverse(self.url)
+-        next = urlresolvers.reverse("horizon:project:instances:index")
+-        params = {"instance_id": self.table.get_object_id(datum),
+-                  IPAssociationWorkflow.redirect_param_name: next}
+-        params = urlencode(params)
+-        return "?".join([base_url, params])
+-
+-
+-class SimpleAssociateIP(tables.Action):
+-    name = "associate-simple"
+-    verbose_name = _("Associate Floating IP")
+-    classes = ("btn-associate-simple",)
+-
+-    def allowed(self, request, instance):
+-        fip = api.network.NetworkClient(request).floating_ips
+-        if not fip.is_simple_associate_supported():
+-            return False
+-        return not is_deleting(instance)
+-
+-    def single(self, table, request, instance):
+-        try:
+-            fip = api.network.tenant_floating_ip_allocate(request)
+-            api.network.floating_ip_associate(request, fip.id, instance)
+-            messages.success(request,
+-                             _("Successfully associated floating IP: %s")
+-                             % fip.ip)
+-        except:
+-            exceptions.handle(request,
+-                              _("Unable to associate floating IP."))
+-        return shortcuts.redirect("horizon:project:instances:index")
+-
+-
+-class SimpleDisassociateIP(tables.Action):
+-    name = "disassociate"
+-    verbose_name = _("Disassociate Floating IP")
+-    classes = ("btn-danger", "btn-disassociate",)
+-
+-    def allowed(self, request, instance):
+-        if not HORIZON_CONFIG["simple_ip_management"]:
+-            return False
+-        return not is_deleting(instance)
+-
+-    def single(self, table, request, instance_id):
+-        try:
+-            fips = [fip for fip in api.network.tenant_floating_ip_list(request)
+-                    if fip.port_id == instance_id]
+-            # Removing multiple floating IPs at once doesn't work, so this pops
+-            # off the first one.
+-            if fips:
+-                fip = fips.pop()
+-                api.network.floating_ip_disassociate(request,
+-                                                     fip.id, instance_id)
+-                api.network.tenant_floating_ip_release(request, fip.id)
+-                messages.success(request,
+-                                 _("Successfully disassociated "
+-                                   "floating IP: %s") % fip.ip)
+-            else:
+-                messages.info(request, _("No floating IPs to disassociate."))
+-        except:
+-            exceptions.handle(request,
+-                              _("Unable to disassociate floating IP."))
+-        return shortcuts.redirect("horizon:project:instances:index")
+-
+-
+-class UpdateRow(tables.Row):
+-    ajax = True
+-
+-    def get_data(self, request, charge_product_id):
+-	charge_product = api.nova.charge_product_get(self.request, charge_product_id)
+-        #instance = api.nova.server_get(request, instance_id)
+-        #instance.full_flavor = api.nova.flavor_get(request,
+-        #                                           instance.flavor["id"])
+-        return charge_product
+-
+-
+-def get_ips(instance):
+-    template_name = 'project/instances/_instance_ips.html'
+-    context = {"instance": instance}
+-    return template.loader.render_to_string(template_name, context)
+-
+-
+-def get_size(instance):
+-    if hasattr(instance, "full_flavor"):
+-        size_string = _("%(name)s | %(RAM)s RAM | %(VCPU)s VCPU "
+-                        "| %(disk)s Disk")
+-        vals = {'name': instance.full_flavor.name,
+-                'RAM': sizeformat.mbformat(instance.full_flavor.ram),
+-                'VCPU': instance.full_flavor.vcpus,
+-                'disk': sizeformat.diskgbformat(instance.full_flavor.disk)}
+-        return size_string % vals
+-    return _("Not available")
+-
+-
+-def get_keyname(instance):
+-    if hasattr(instance, "key_name"):
+-        keyname = instance.key_name
+-        return keyname
+-    return _("Not available")
+-
+-
+-def get_power_state(instance):
+-    return POWER_STATES.get(getattr(instance, "OS-EXT-STS:power_state", 0), '')
+-
+-
+-STATUS_DISPLAY_CHOICES = (
+-    ("resize", "Resize/Migrate"),
+-    ("verify_resize", "Confirm or Revert Resize/Migrate"),
+-    ("revert_resize", "Revert Resize/Migrate"),
+-)
+-
+-
+-TASK_DISPLAY_CHOICES = (
+-    ("image_snapshot", "Snapshotting"),
+-    ("resize_prep", "Preparing Resize or Migrate"),
+-    ("resize_migrating", "Resizing or Migrating"),
+-    ("resize_migrated", "Resized or Migrated"),
+-    ("resize_finish", "Finishing Resize or Migrate"),
+-    ("resize_confirming", "Confirming Resize or Nigrate"),
+-    ("resize_reverting", "Reverting Resize or Migrate"),
+-    ("unpausing", "Resuming"),
+-)
+-
+-
+-class ChargesTable(tables.DataTable):
+-    TASK_STATUS_CHOICES = (
+-        (None, True),
+-        ("none", True)
+-    )
+-    STATUS_CHOICES = (
+-        ("apply", True),
+-        ("verified", True),
+-        ("teminated", True),
+-        ("error", False),
+-    )
+-
+-    item = tables.Column("item",
+-			    verbose_name=_("Charge Product"))
+-
+-    resource = tables.Column("resource_name",
+-			     verbose_name=_("Resource Name"))
+-
+-    resource_uuid = tables.Column("resource_uuid",
+-			     verbose_name=_("Resource UUID"))
+-
+-    user = tables.Column("user_id",
+-			     verbose_name=_("Applyer"))
+-
+-    approver = tables.Column("approver_id",
+-			     verbose_name=_("Approver"))
+-
+-    status = tables.Column("status",
+-                           filters=(title, replace_underscores),
+-                           verbose_name=_("Status"),
+-                           status=True,
+-                           status_choices=STATUS_CHOICES,
+-                           display_choices=STATUS_DISPLAY_CHOICES)
+-
+-    applied_at = tables.Column("applied_at",
+-                            verbose_name=_("Apply Time"))
+- 
+-    approved_at = tables.Column("approved_at",
+-                            verbose_name=_("Approved Time"))
+-
+-    expires_at = tables.Column("expires_at",
+-                            verbose_name=_("Expires Time"))
+-
+-    class Meta:
+-        name = "Charge Management"
+-        verbose_name = _("Charge Management")
+-        status_columns = ["status"]
+-        row_class = UpdateRow
+-        table_actions = (LaunchLink, TerminateInstance)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tables.py.bak b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tables.py.bak
+deleted file mode 100644
+index 71327a0..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tables.py.bak
++++ /dev/null
+@@ -1,481 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-import logging
+-
+-from django import shortcuts
+-from django import template
+-from django.core import urlresolvers
+-from django.template.defaultfilters import title
+-from django.utils.http import urlencode
+-from django.utils.translation import string_concat, ugettext_lazy as _
+-
+-from horizon.conf import HORIZON_CONFIG
+-from horizon import exceptions
+-from horizon import messages
+-from horizon import tables
+-from horizon.templatetags import sizeformat
+-from horizon.utils.filters import replace_underscores
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.dashboards.project.access_and_security \
+-        .floating_ips.workflows import IPAssociationWorkflow
+-from .tabs import InstanceDetailTabs, LogTab, ConsoleTab
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-ACTIVE_STATES = ("ACTIVE",)
+-
+-POWER_STATES = {
+-    0: "NO STATE",
+-    1: "RUNNING",
+-    2: "BLOCKED",
+-    3: "PAUSED",
+-    4: "SHUTDOWN",
+-    5: "SHUTOFF",
+-    6: "CRASHED",
+-    7: "SUSPENDED",
+-    8: "FAILED",
+-    9: "BUILDING",
+-}
+-
+-PAUSE = 0
+-UNPAUSE = 1
+-SUSPEND = 0
+-RESUME = 1
+-
+-
+-def is_deleting(instance):
+-    task_state = getattr(instance, "OS-EXT-STS:task_state", None)
+-    if not task_state:
+-        return False
+-    return task_state.lower() == "deleting"
+-
+-
+-class TerminateInstance(tables.BatchAction):
+-    name = "terminate"
+-    action_present = _("Terminate")
+-    action_past = _("Scheduled termination of")
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ('btn-danger', 'btn-terminate')
+-
+-    def allowed(self, request, instance=None):
+-        return True
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_delete(request, obj_id)
+-
+-
+-class RebootInstance(tables.BatchAction):
+-    name = "reboot"
+-    action_present = _("Hard Reboot")
+-    action_past = _("Hard Rebooted")
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ('btn-danger', 'btn-reboot')
+-
+-    def allowed(self, request, instance=None):
+-        return ((instance.status in ACTIVE_STATES
+-                 or instance.status == 'SHUTOFF')
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_HARD)
+-
+-
+-class SoftRebootInstance(RebootInstance):
+-    name = "soft_reboot"
+-    action_present = _("Soft Reboot")
+-    action_past = _("Soft Rebooted")
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_SOFT)
+-
+-
+-class TogglePause(tables.BatchAction):
+-    name = "pause"
+-    action_present = (_("Pause"), _("Resume"))
+-    action_past = (_("Paused"), _("Resumed"))
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ("btn-pause",)
+-
+-    def allowed(self, request, instance=None):
+-        self.paused = False
+-        if not instance:
+-            return self.paused
+-        self.paused = instance.status == "PAUSED"
+-        if self.paused:
+-            self.current_present_action = UNPAUSE
+-        else:
+-            self.current_present_action = PAUSE
+-        return ((instance.status in ACTIVE_STATES or self.paused)
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        if self.paused:
+-            api.nova.server_unpause(request, obj_id)
+-            self.current_past_action = UNPAUSE
+-        else:
+-            api.nova.server_pause(request, obj_id)
+-            self.current_past_action = PAUSE
+-
+-
+-class ToggleSuspend(tables.BatchAction):
+-    name = "suspend"
+-    action_present = (_("Suspend"), _("Resume"))
+-    action_past = (_("Suspended"), _("Resumed"))
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ("btn-suspend",)
+-
+-    def allowed(self, request, instance=None):
+-        self.suspended = False
+-        if not instance:
+-            self.suspended
+-        self.suspended = instance.status == "SUSPENDED"
+-        if self.suspended:
+-            self.current_present_action = RESUME
+-        else:
+-            self.current_present_action = SUSPEND
+-        return ((instance.status in ACTIVE_STATES or self.suspended)
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        if self.suspended:
+-            api.nova.server_resume(request, obj_id)
+-            self.current_past_action = RESUME
+-        else:
+-            api.nova.server_suspend(request, obj_id)
+-            self.current_past_action = SUSPEND
+-
+-
+-class LaunchLink(tables.LinkAction):
+-    name = "launch"
+-    verbose_name = _("Launch Instance")
+-    url = "horizon:project:instances:launch"
+-    classes = ("btn-launch", "ajax-modal")
+-
+-    def allowed(self, request, datum):
+-        try:
+-            limits = api.nova.tenant_absolute_limits(request, reserved=True)
+-
+-            instances_available = limits['maxTotalInstances'] \
+-                - limits['totalInstancesUsed']
+-            cores_available = limits['maxTotalCores'] \
+-                - limits['totalCoresUsed']
+-            ram_available = limits['maxTotalRAMSize'] - limits['totalRAMUsed']
+-
+-            if instances_available <= 0 or cores_available <= 0 \
+-                    or ram_available <= 0:
+-                if "disabled" not in self.classes:
+-                    self.classes = [c for c in self.classes] + ['disabled']
+-                    self.verbose_name = string_concat(self.verbose_name, ' ',
+-                                                      _("(Quota exceeded)"))
+-            else:
+-                self.verbose_name = _("Launch Instance")
+-                classes = [c for c in self.classes if c != "disabled"]
+-                self.classes = classes
+-        except:
+-            LOG.exception("Failed to retrieve quota information")
+-            # If we can't get the quota information, leave it to the
+-            # API to check when launching
+-
+-        return True  # The action should always be displayed
+-
+-
+-class EditInstance(tables.LinkAction):
+-    name = "edit"
+-    verbose_name = _("Edit Instance")
+-    url = "horizon:project:instances:update"
+-    classes = ("ajax-modal", "btn-edit")
+-
+-    def get_link_url(self, project):
+-        return self._get_link_url(project, 'instance_info')
+-
+-    def _get_link_url(self, project, step_slug):
+-        base_url = urlresolvers.reverse(self.url, args=[project.id])
+-        param = urlencode({"step": step_slug})
+-        return "?".join([base_url, param])
+-
+-    def allowed(self, request, instance):
+-        return not is_deleting(instance)
+-
+-
+-class EditInstanceSecurityGroups(EditInstance):
+-    name = "edit_secgroups"
+-    verbose_name = _("Edit Security Groups")
+-
+-    def get_link_url(self, project):
+-        return self._get_link_url(project, 'update_security_groups')
+-
+-    def allowed(self, request, instance=None):
+-        return (instance.status in ACTIVE_STATES and
+-                not is_deleting(instance) and
+-                request.user.tenant_id == instance.tenant_id)
+-
+-
+-class CreateSnapshot(tables.LinkAction):
+-    name = "snapshot"
+-    verbose_name = _("Create Snapshot")
+-    url = "horizon:project:images_and_snapshots:snapshots:create"
+-    classes = ("ajax-modal", "btn-camera")
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-
+-class ConsoleLink(tables.LinkAction):
+-    name = "console"
+-    verbose_name = _("Console")
+-    url = "horizon:project:instances:detail"
+-    classes = ("btn-console",)
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = super(ConsoleLink, self).get_link_url(datum)
+-        tab_query_string = ConsoleTab(InstanceDetailTabs).get_query_string()
+-        return "?".join([base_url, tab_query_string])
+-
+-
+-class LogLink(tables.LinkAction):
+-    name = "log"
+-    verbose_name = _("View Log")
+-    url = "horizon:project:instances:detail"
+-    classes = ("btn-log",)
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = super(LogLink, self).get_link_url(datum)
+-        tab_query_string = LogTab(InstanceDetailTabs).get_query_string()
+-        return "?".join([base_url, tab_query_string])
+-
+-
+-class ConfirmResize(tables.Action):
+-    name = "confirm"
+-    verbose_name = _("Confirm Resize/Migrate")
+-    classes = ("btn-confirm", "btn-action-required")
+-
+-    def allowed(self, request, instance):
+-        return instance.status == 'VERIFY_RESIZE'
+-
+-    def single(self, table, request, instance):
+-        api.nova.server_confirm_resize(request, instance)
+-
+-
+-class RevertResize(tables.Action):
+-    name = "revert"
+-    verbose_name = _("Revert Resize/Migrate")
+-    classes = ("btn-revert", "btn-action-required")
+-
+-    def allowed(self, request, instance):
+-        return instance.status == 'VERIFY_RESIZE'
+-
+-    def single(self, table, request, instance):
+-        api.nova.server_revert_resize(request, instance)
+-
+-
+-class AssociateIP(tables.LinkAction):
+-    name = "associate"
+-    verbose_name = _("Associate Floating IP")
+-    url = "horizon:project:access_and_security:floating_ips:associate"
+-    classes = ("ajax-modal", "btn-associate")
+-
+-    def allowed(self, request, instance):
+-        fip = api.network.NetworkClient(request).floating_ips
+-        if fip.is_simple_associate_supported():
+-            return False
+-        return not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = urlresolvers.reverse(self.url)
+-        next = urlresolvers.reverse("horizon:project:instances:index")
+-        params = {"instance_id": self.table.get_object_id(datum),
+-                  IPAssociationWorkflow.redirect_param_name: next}
+-        params = urlencode(params)
+-        return "?".join([base_url, params])
+-
+-
+-class SimpleAssociateIP(tables.Action):
+-    name = "associate-simple"
+-    verbose_name = _("Associate Floating IP")
+-    classes = ("btn-associate-simple",)
+-
+-    def allowed(self, request, instance):
+-        fip = api.network.NetworkClient(request).floating_ips
+-        if not fip.is_simple_associate_supported():
+-            return False
+-        return not is_deleting(instance)
+-
+-    def single(self, table, request, instance):
+-        try:
+-            fip = api.network.tenant_floating_ip_allocate(request)
+-            api.network.floating_ip_associate(request, fip.id, instance)
+-            messages.success(request,
+-                             _("Successfully associated floating IP: %s")
+-                             % fip.ip)
+-        except:
+-            exceptions.handle(request,
+-                              _("Unable to associate floating IP."))
+-        return shortcuts.redirect("horizon:project:instances:index")
+-
+-
+-class SimpleDisassociateIP(tables.Action):
+-    name = "disassociate"
+-    verbose_name = _("Disassociate Floating IP")
+-    classes = ("btn-danger", "btn-disassociate",)
+-
+-    def allowed(self, request, instance):
+-        if not HORIZON_CONFIG["simple_ip_management"]:
+-            return False
+-        return not is_deleting(instance)
+-
+-    def single(self, table, request, instance_id):
+-        try:
+-            fips = [fip for fip in api.network.tenant_floating_ip_list(request)
+-                    if fip.port_id == instance_id]
+-            # Removing multiple floating IPs at once doesn't work, so this pops
+-            # off the first one.
+-            if fips:
+-                fip = fips.pop()
+-                api.network.floating_ip_disassociate(request,
+-                                                     fip.id, instance_id)
+-                api.network.tenant_floating_ip_release(request, fip.id)
+-                messages.success(request,
+-                                 _("Successfully disassociated "
+-                                   "floating IP: %s") % fip.ip)
+-            else:
+-                messages.info(request, _("No floating IPs to disassociate."))
+-        except:
+-            exceptions.handle(request,
+-                              _("Unable to disassociate floating IP."))
+-        return shortcuts.redirect("horizon:project:instances:index")
+-
+-
+-class UpdateRow(tables.Row):
+-    ajax = True
+-
+-    def get_data(self, request, charge_product_id):
+-	charge_product = api.nova.charge_product_get(self.request, charge_product_id)
+-        #instance = api.nova.server_get(request, instance_id)
+-        #instance.full_flavor = api.nova.flavor_get(request,
+-        #                                           instance.flavor["id"])
+-        return charge_product
+-
+-
+-def get_ips(instance):
+-    template_name = 'project/instances/_instance_ips.html'
+-    context = {"instance": instance}
+-    return template.loader.render_to_string(template_name, context)
+-
+-
+-def get_size(instance):
+-    if hasattr(instance, "full_flavor"):
+-        size_string = _("%(name)s | %(RAM)s RAM | %(VCPU)s VCPU "
+-                        "| %(disk)s Disk")
+-        vals = {'name': instance.full_flavor.name,
+-                'RAM': sizeformat.mbformat(instance.full_flavor.ram),
+-                'VCPU': instance.full_flavor.vcpus,
+-                'disk': sizeformat.diskgbformat(instance.full_flavor.disk)}
+-        return size_string % vals
+-    return _("Not available")
+-
+-
+-def get_keyname(instance):
+-    if hasattr(instance, "key_name"):
+-        keyname = instance.key_name
+-        return keyname
+-    return _("Not available")
+-
+-
+-def get_power_state(instance):
+-    return POWER_STATES.get(getattr(instance, "OS-EXT-STS:power_state", 0), '')
+-
+-
+-STATUS_DISPLAY_CHOICES = (
+-    ("resize", "Resize/Migrate"),
+-    ("verify_resize", "Confirm or Revert Resize/Migrate"),
+-    ("revert_resize", "Revert Resize/Migrate"),
+-)
+-
+-
+-TASK_DISPLAY_CHOICES = (
+-    ("image_snapshot", "Snapshotting"),
+-    ("resize_prep", "Preparing Resize or Migrate"),
+-    ("resize_migrating", "Resizing or Migrating"),
+-    ("resize_migrated", "Resized or Migrated"),
+-    ("resize_finish", "Finishing Resize or Migrate"),
+-    ("resize_confirming", "Confirming Resize or Nigrate"),
+-    ("resize_reverting", "Reverting Resize or Migrate"),
+-    ("unpausing", "Resuming"),
+-)
+-
+-
+-class ChargesTable(tables.DataTable):
+-    TASK_STATUS_CHOICES = (
+-        (None, True),
+-        ("none", True)
+-    )
+-    STATUS_CHOICES = (
+-        ("active", True),
+-        ("shutoff", True),
+-        ("suspended", True),
+-        ("paused", True),
+-        ("error", False),
+-    )
+-    product = tables.Column("product")
+-    name = tables.Column("name",
+-                         link=("horizon:project:instances:detail"),
+-                         verbose_name=_("Instance Name"))
+-    ip = tables.Column(get_ips, verbose_name=_("IP Address"))
+-    size = tables.Column(get_size,
+-                         verbose_name=_("Size"),
+-                         attrs={'data-type': 'size'})
+-    keypair = tables.Column(get_keyname, verbose_name=_("Keypair"))
+-    status = tables.Column("status",
+-                           filters=(title, replace_underscores),
+-                           verbose_name=_("Status"),
+-                           status=True,
+-                           status_choices=STATUS_CHOICES,
+-                           display_choices=STATUS_DISPLAY_CHOICES)
+-    task = tables.Column("OS-EXT-STS:task_state",
+-                         verbose_name=_("Task"),
+-                         filters=(title, replace_underscores),
+-                         status=True,
+-                         status_choices=TASK_STATUS_CHOICES,
+-                         display_choices=TASK_DISPLAY_CHOICES)
+-    state = tables.Column(get_power_state,
+-                          filters=(title, replace_underscores),
+-                          verbose_name=_("Power State"))
+-
+-    class Meta:
+-        name = "instances"
+-        verbose_name = _("Instances")
+-        status_columns = ["status", "task"]
+-        row_class = UpdateRow
+-        table_actions = (LaunchLink, TerminateInstance)
+-        row_actions = (ConfirmResize, RevertResize, CreateSnapshot,
+-                       SimpleAssociateIP, AssociateIP,
+-                       SimpleDisassociateIP, EditInstance,
+-                       EditInstanceSecurityGroups, ConsoleLink, LogLink,
+-                       TogglePause, ToggleSuspend, SoftRebootInstance,
+-                       RebootInstance, TerminateInstance)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tabs.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tabs.py
+deleted file mode 100644
+index 029c877..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/tabs.py
++++ /dev/null
+@@ -1,85 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-from django.utils.translation import ugettext_lazy as _
+-
+-from horizon import exceptions
+-from horizon import tabs
+-
+-from openstack_dashboard import api
+-
+-
+-class OverviewTab(tabs.Tab):
+-    name = _("Overview")
+-    slug = "overview"
+-    template_name = ("project/instances/"
+-                     "_detail_overview.html")
+-
+-    def get_context_data(self, request):
+-        return {"instance": self.tab_group.kwargs['instance']}
+-
+-
+-class LogTab(tabs.Tab):
+-    name = _("Log")
+-    slug = "log"
+-    template_name = "project/instances/_detail_log.html"
+-    preload = False
+-
+-    def get_context_data(self, request):
+-        instance = self.tab_group.kwargs['instance']
+-        try:
+-            data = api.nova.server_console_output(request,
+-                                                  instance.id,
+-                                                  tail_length=35)
+-        except:
+-            data = _('Unable to get log for instance "%s".') % instance.id
+-            exceptions.handle(request, ignore=True)
+-        return {"instance": instance,
+-                "console_log": data}
+-
+-
+-class ConsoleTab(tabs.Tab):
+-    name = _("Console")
+-    slug = "console"
+-    template_name = "project/instances/_detail_console.html"
+-    preload = False
+-
+-    def get_context_data(self, request):
+-        instance = self.tab_group.kwargs['instance']
+-        # Currently prefer VNC over SPICE, since noVNC has had much more
+-        # testing than spice-html5
+-        try:
+-            console = api.nova.server_vnc_console(request, instance.id)
+-            console_url = "%s&title=%s(%s)" % (
+-                console.url,
+-                getattr(instance, "name", ""),
+-                instance.id)
+-        except:
+-            try:
+-                console = api.nova.server_spice_console(request, instance.id)
+-                console_url = "%s&title=%s(%s)" % (
+-                    console.url,
+-                    getattr(instance, "name", ""),
+-                    instance.id)
+-            except:
+-                console_url = None
+-        return {'console_url': console_url, 'instance_id': instance.id}
+-
+-
+-class InstanceDetailTabs(tabs.TabGroup):
+-    slug = "instance_details"
+-    tabs = (OverviewTab, LogTab, ConsoleTab)
+-    sticky = True
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_console.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_console.html
+deleted file mode 100644
+index bc0a07b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_console.html
++++ /dev/null
+@@ -1,21 +0,0 @@
+-{% load i18n %}
+-
+-<h3>{% trans "Instance Console" %}</h3>
+-{% if console_url %}
+-<p class='alert alert-info'>{% blocktrans %}If console is not responding to keyboard input: click the grey status bar below.{% endblocktrans %} <a href="{{ console_url }}"  style="text-decoration: underline">{% trans "Click here to show only console" %}</a></p>
+-<iframe id="console_embed" src="{{ console_url }}" style="width:100%;height:100%"></iframe>
+-<script type="text/javascript">
+-    var fix_height = function() {
+-        $('iframe#console_embed').css({ height: $(document).height() + 'px' });
+-    };
+-    // there are two code paths to this particular block; handle them both
+-    if (typeof($) != 'undefined') {
+-        $(document).ready(fix_height);
+-    } else {
+-        addHorizonLoadEvent(fix_height);
+-    }
+-</script>
+-{% else %}
+-<p class='alert alert-error'>{% blocktrans %}console is currently unavailable. Please try again later.{% endblocktrans %}
+-<a class='btn btn-mini' href="{% url horizon:project:instances:detail instance_id %}">{% trans "Reload" %}</a></p>
+-{% endif %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_log.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_log.html
+deleted file mode 100644
+index 79ad909..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_log.html
++++ /dev/null
+@@ -1,17 +0,0 @@
+-{% load i18n %}
+-
+-<div class="clearfix">
+-  <h3 class="pull-left">{% trans "Instance Console Log" %}</h3>
+-
+-  <form id="tail_length" action="{% url horizon:project:instances:console instance.id %}" class="form-inline pull-right">
+-    <label for="tail_length_select">{% trans "Log Length" %}</label>
+-    <input class="span1" type="text" name="length" value="35" />
+-    <button class="btn btn-small btn-primary" type="submit">{% trans "Go" %}</button>
+-    {% url horizon:project:instances:console instance.id as console_url %}
+-    <a class="btn btn-small" target="_blank" href="{{ console_url }}">{% trans "View Full Log" %}</a>
+-  </form>
+-</div>
+-
+-<pre class="logs">
+-  {{ console_log }}
+-</pre>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_overview.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_overview.html
+deleted file mode 100644
+index b91000d..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_detail_overview.html
++++ /dev/null
+@@ -1,102 +0,0 @@
+-{% load i18n sizeformat %}
+-
+-<h3>{% trans "Instance Overview" %}</h3>
+-
+-<div class="status row-fluid detail">
+-  <h4>{% trans "Info" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    <dt>{% trans "Name" %}</dt>
+-    <dd>{{ instance.name }}</dd>
+-    <dt>{% trans "ID" %}</dt>
+-    <dd>{{ instance.id }}</dd>
+-    <dt>{% trans "Status" %}</dt>
+-    <dd>{{ instance.status|title }}</dd>
+-  </dl>
+-</div>
+-
+-<div class="specs row-fluid detail">
+-  <h4>{% trans "Specs" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    <dt>{% trans "Flavor" %}</dt>
+-    <dd>{{ instance.full_flavor.name }}</dd>
+-    <dt>{% trans "RAM" %}</dt>
+-    <dd>{{ instance.full_flavor.ram|mbformat }}</dd>
+-    <dt>{% trans "VCPUs" %}</dt>
+-    <dd>{{ instance.full_flavor.vcpus }} {% trans "VCPU" %}</dd>
+-    <dt>{% trans "Disk" %}</dt>
+-    <dd>{{ instance.full_flavor.disk }}{% trans "GB" %}</dd>
+-    {% if instance.full_flavor.ephemeral %}
+-    <dt>{% trans "Ephemeral Disk" %}</dt>
+-    <dd>{{ instance.full_flavor.ephemeral }}{% trans "GB" %}</dd>
+-    {% endif %}
+-  </dl>
+-</div>
+-
+-<div class="addresses row-fluid detail">
+-  <h4>{% trans "IP Addresses" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    {% for network, ip_list in instance.addresses.items %}
+-    <dt>{{ network|title }}</dt>
+-    <dd>
+-      {% for ip in ip_list %}
+-        {% if not forloop.last %}{{ ip.addr}},&nbsp;{% else %}{{ip.addr}}{% endif %}
+-      {% endfor %}
+-    </dd>
+-    {% endfor %}
+-  </dl>
+-</div>
+-
+-<div class="security_groups row-fluid detail">
+-  <h4>{% trans "Security Groups" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-  {% for group in instance.security_groups %}
+-    <dt>{{ group.name }}</dt>
+-    <dd>
+-      <ul>
+-      {% for rule in group.rules %}
+-        <li>{{ rule }}</li>
+-        {% empty %}
+-        <li><em>{% trans "No rules defined." %}</em></li>
+-      {% endfor %}
+-      </ul>
+-    </dd>
+-  {% endfor %}
+-  </dl>
+-</div>
+-
+-<div class="meta row-fluid detail">
+-  <h4>{% trans "Meta" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    <dt>{% trans "Key Name" %}</dt>
+-    <dd>{{ instance.key_name|default:"<em>None</em>" }}</dd>
+-    {% url horizon:project:images_and_snapshots:images:detail instance.image.id as image_url %}
+-    <dt>{% trans "Image Name" %}</dt>
+-    <dd><a href="{{ image_url }}">{{ instance.image_name }}</a></dd>
+-    {% for key, value in instance.metadata.items %}
+-    <dt>{{ key|force_escape }}</dt>
+-    <dd>{{ value|force_escape|default:"<em>N/A</em>" }}</dd>
+-    {% endfor%}
+-  </dl>
+-</div>
+-
+-<div class="volumes row-fluid detail">
+-  <h4>{% trans "Volumes Attached" %}</h4>
+-  <hr class="header_rule">
+-    <dl>
+-      {% for volume in instance.volumes %}
+-        <dt>{% trans "Attached To" %}</dt>
+-        <dd>
+-          <a href="{% url horizon:project:volumes:detail volume.volumeId %}">{{ volume.name }}</a><span> {% trans "on" %} {{ volume.device }}</span>
+-        </dd>
+-        {% empty %}
+-          <dt>{% trans "Volume" %}</dt>
+-          <dd><em>{% trans "No volumes attached." %}</em></dd>
+-      {% endfor %}
+-    </dl>
+-  </dl>
+-</div>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_instance_ips.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_instance_ips.html
+deleted file mode 100644
+index 72ed59f..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_instance_ips.html
++++ /dev/null
+@@ -1,10 +0,0 @@
+-{% for ip_group, addresses in instance.addresses.items %}
+-    {% if instance.addresses.items|length > 1 %}
+-    <h4>{{ ip_group }}</h4>
+-    {% endif %}
+-    <ul>
+-    {% for address in addresses %}
+-      <li>{{ address.addr }}</li>
+-    {% endfor %}
+-    </ul>
+-{% endfor %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_customize_help.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_customize_help.html
+deleted file mode 100644
+index eb947e4..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_customize_help.html
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{% load i18n %}
+-<p>{% blocktrans %}You can customize your instance after it's launched using the options available here.{% endblocktrans %}</p>
+-<p>{% blocktrans %}The "Customization Script" field is analogous to "User Data" in other systems.{% endblocktrans %}</p>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_details_help.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_details_help.html
+deleted file mode 100644
+index 93a2154..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_details_help.html
++++ /dev/null
+@@ -1,53 +0,0 @@
+-{% load i18n horizon humanize %}
+-
+-<p>{% blocktrans %}Specify the details for launching an instance.{% endblocktrans %}</p>
+-<p>{% blocktrans %}The chart below shows the resources used by this project in relation to the project's quotas.{% endblocktrans %}</p>
+-
+-<h4>{% trans "Flavor Details" %}</h4>
+-<table class="flavor_table table-striped">
+-  <tbody>
+-    <tr><td class="flavor_name">{% trans "Name" %}</td><td><span id="flavor_name"></span></td></tr>
+-    <tr><td class="flavor_name">{% trans "VCPUs" %}</td><td><span id="flavor_vcpus"></span></td></tr>
+-    <tr><td class="flavor_name">{% trans "Root Disk" %}</td><td><span id="flavor_disk"> </span> {% trans "GB" %}</td></tr>
+-    <tr><td class="flavor_name">{% trans "Ephemeral Disk" %}</td><td><span id="flavor_ephemeral"></span> {% trans "GB" %}</td></tr>
+-    <tr><td class="flavor_name">{% trans "Total Disk" %}</td><td><span id="flavor_disk_total"></span> {% trans "GB" %}</td></tr>
+-    <tr><td class="flavor_name">{% trans "RAM" %}</td><td><span id="flavor_ram"></span> {% trans "MB" %}</td></tr>
+-  </tbody>
+-</table>
+-
+-<div class="quota-dynamic">
+-  <h4>{% trans "Project Quotas" %}</h4>
+-  <div class="quota_title clearfix">
+-    <strong>{% trans "Number of Instances" %} <span>({{ usages.instances.used|intcomma }})</span></strong>
+-    <p>{{ usages.instances.available|quota|intcomma }}</p>
+-  </div>
+-  <div id="quota_instances" class="quota_bar" data-progress-indicator-flavor data-quota-limit="{{ usages.instances.quota }}" data-quota-used="{{ usages.instances.used }}">
+-    {% horizon_progress_bar usages.instances.used usages.instances.quota %}
+-  </div>
+-
+-  <div class="quota_title clearfix">
+-    <strong>{% trans "Number of VCPUs" %} <span>({{ usages.cores.used|intcomma }})</span></strong>
+-    <p>{{ usages.cores.available|quota|intcomma }}</p>
+-  </div>
+-  <div id="quota_vcpus" class="quota_bar" data-progress-indicator-flavor data-quota-limit="{{ usages.cores.quota }}" data-quota-used="{{ usages.cores.used }}">
+-    {% horizon_progress_bar usages.cores.used usages.cores.quota %}
+-  </div>
+-
+-  <div class="quota_title clearfix">
+-    <strong>{% trans "Total RAM" %} <span>({{ usages.ram.used|intcomma }} {% trans "MB" %})</span></strong>
+-    <p>{{ usages.ram.available|quota:"MB"|intcomma }}</p>
+-  </div>
+-  <div id="quota_ram" data-progress-indicator-flavor data-quota-limit="{{ usages.ram.quota }}" data-quota-used="{{ usages.ram.used }}" class="quota_bar">
+-    {% horizon_progress_bar usages.ram.used usages.ram.quota %}
+-  </div>
+-</div>
+-
+-<script type="text/javascript" charset="utf-8">
+-  if(typeof horizon.Quota !== 'undefined') {
+-    horizon.Quota.initWithFlavors({{ flavors|safe|default:"{}" }});
+-  } else {
+-    addHorizonLoadEvent(function() {
+-      horizon.Quota.initWithFlavors({{ flavors|safe|default:"{}" }});
+-    });
+-  }
+-</script>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_network_help.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_network_help.html
+deleted file mode 100644
+index 290b11d..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_network_help.html
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{% load i18n horizon %}
+-
+-<p>{% blocktrans %}Choose network from Available networks to Selected Networks by push button or drag and drop, you may change nic order by drag and drop as well. {% endblocktrans %}</p>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_volumes_help.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_volumes_help.html
+deleted file mode 100644
+index 26f4429..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_launch_volumes_help.html
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{% load i18n horizon %}
+-
+-<p>{% blocktrans %}An instance can be launched with varying types of attached storage. You may select from those options here.{% endblocktrans %}</p>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_update_networks.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_update_networks.html
+deleted file mode 100644
+index a8185f4..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/_update_networks.html
++++ /dev/null
+@@ -1,35 +0,0 @@
+-{% load i18n %}
+-
+-<noscript><h3>{{ step }}</h3></noscript>
+-<table class="table-fixed" id="networkListSortContainer">
+-  <tbody>
+-    <tr>
+-      <td class="actions">
+-        <h4 id="selected_network_h4">{% trans "Selected Networks" %}</h4>
+-        <ul id="selected_network" class="networklist">
+-        </ul>
+-        <h4>{% trans "Available networks" %}</h4>
+-        <ul id="available_network" class="networklist">
+-        </ul>
+-      </td>
+-      <td class="help_text">
+-          {% include "project/instances/_launch_network_help.html" %}
+-      </td>
+-    </tr>
+-  </tbody>
+-</table>
+-
+-<table class="table-fixed" id="networkListIdContainer">
+-  <tbody>
+-    <tr>
+-      <td class="actions">
+-          <div id="networkListId">
+-            {% include "horizon/common/_form_fields.html" %}
+-          </div>
+-      </td>
+-      <td class="help_text">
+-          {{ step.get_help_text }}
+-      </td>
+-    </tr>
+-  </tbody>
+-</table>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/detail.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/detail.html
+deleted file mode 100644
+index 82f1e0e..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/detail.html
++++ /dev/null
+@@ -1,15 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n sizeformat %}
+-{% block title %}{% trans "Instance Detail" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title="Instance Detail: "|add:instance.name %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-<div class="row-fluid">
+-  <div class="span12">
+-  {{ tab_group.render }}
+-  </div>
+-</div>
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/index.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/index.html
+deleted file mode 100644
+index 3ad412f..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/index.html
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n %}
+-{% block title %}{% trans "Charges" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title=_("Charges") %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-  {{ table.render }}
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/launch.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/launch.html
+deleted file mode 100644
+index 6353e05..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/launch.html
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n %}
+-{% block title %}{% trans "Launch Instance" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title=_("Launch Instance") %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-  {% include 'horizon/common/_workflow.html' %}
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/update.html b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/update.html
+deleted file mode 100644
+index e3aa915..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/templates/charges/update.html
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n %}
+-{% block title %}{% trans "Edit Instance" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title=_("Edit Instance") %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-  {% include 'horizon/common/_workflow.html' %}
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/urls.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/urls.py
+deleted file mode 100644
+index bb33327..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/urls.py
++++ /dev/null
+@@ -1,38 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-from django.conf.urls.defaults import patterns, url
+-
+-from .views import IndexView, UpdateView, DetailView, LaunchInstanceView
+-
+-
+-SUBSCRIPTIONS = r'^(?P<subscription_id>[^/]+)/%s$'
+-VIEW_MOD = 'openstack_dashboard.dashboards.admin.charges.views'
+-
+-
+-urlpatterns = patterns(VIEW_MOD,
+-    url(r'^$', IndexView.as_view(), name='index'),
+-    url(r'^launch$', LaunchInstanceView.as_view(), name='launch'),
+-    url(r'^(?P<instance_id>[^/]+)/$', DetailView.as_view(), name='detail'),
+-    url(SUBSCRIPTIONS % 'update', UpdateView.as_view(), name='update'),
+-    url(SUBSCRIPTIONS % 'console', 'console', name='console'),
+-    url(SUBSCRIPTIONS % 'vnc', 'vnc', name='vnc'),
+-    url(SUBSCRIPTIONS % 'spice', 'spice', name='spice'),
+-)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/views.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/views.py
+deleted file mode 100644
+index c3599bc..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/views.py
++++ /dev/null
+@@ -1,219 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-"""
+-Views for managing charges.
+-"""
+-import logging
+-import iso8601
+-
+-from django import http
+-from django import shortcuts
+-from django.core.urlresolvers import reverse, reverse_lazy
+-from django.utils.datastructures import SortedDict
+-from django.utils.translation import ugettext_lazy as _
+-
+-from horizon import exceptions
+-from horizon import forms
+-from horizon import tabs
+-from horizon import tables
+-from horizon import workflows
+-
+-from openstack_dashboard import api
+-from .tabs import InstanceDetailTabs
+-from .tables import ChargesTable
+-from .workflows import LaunchInstance, UpdateInstance
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-
+-class IndexView(tables.DataTableView):
+-    table_class = ChargesTable
+-    template_name = 'admin/charges/index.html'
+-
+-    def get_data(self):
+-        charge_subscriptions_by_user = []
+-        try:
+-            charge_subscriptions = api.nova.charge_subscription_list(self.request)
+-            for charge_subscription in charge_subscriptions: 
+-                if self.request.user.id == charge_subscription.user_id:
+-		    charge_subscription.user_id = api.keystone.user_get(self.request, charge_subscription.user_id).name
+-		    try: 
+-			#TODO: fixme need to test it into product envirment.
+-                        charge_subscription.resource_uuid = api.nova.server_get(self.request, charge_subscription.resource_uuid).name
+-		    except:
+-                        pass
+-
+-                    if charge_subscription.approver_id:
+-		        charge_subscription.approver_id = api.keystone.user_get(self.request, charge_subscription.approver_id).name 
+-                    else:
+-		        charge_subscription.approver_id = 'N/A'
+-
+-                    charge_subscription.applied_at = iso8601.parse_date(charge_subscription.applied_at).strftime("%Y-%m-%d %H:%M:%S")
+-                    charge_subscription.approved_at = iso8601.parse_date(charge_subscription.approved_at).strftime("%Y-%m-%d %H:%M:%S")
+-                    charge_subscription.expires_at = iso8601.parse_date(charge_subscription.expires_at).strftime("%Y-%m-%d %H:%M:%S")
+-	
+-                    charge_subscriptions_by_user.append(charge_subscription)
+-  
+-        except:
+-            exceptions.handle(self.request,
+-                              _('Unable to retrieve charge subscriptions'))
+-	
+-        # Gather our flavors and correlate our instances to them
+-        '''if charge_products:
+-            try:
+-                flavors = api.nova.flavor_list(self.request)
+-            except:
+-                flavors = []
+-                exceptions.handle(self.request, ignore=True)
+-
+-            full_flavors = SortedDict([(str(flavor.id), flavor)
+-                                        for flavor in flavors])
+-            # Loop through instances to get flavor info.
+-            for instance in instances:
+-                try:
+-                    flavor_id = instance.flavor["id"]
+-                    if flavor_id in full_flavors:
+-                        instance.full_flavor = full_flavors[flavor_id]
+-                    else:
+-                        # If the flavor_id is not in full_flavors list,
+-                        # get it via nova api.
+-                        instance.full_flavor = api.nova.flavor_get(
+-                            self.request, flavor_id)
+-                except:
+-                    msg = _('Unable to retrieve instance size information.')
+-                    exceptions.handle(self.request, msg)'''
+-        return charge_subscriptions_by_user
+-
+-
+-class LaunchInstanceView(workflows.WorkflowView):
+-    workflow_class = LaunchInstance
+-    template_name = "admin/instances/launch.html"
+-
+-    def get_initial(self):
+-        initial = super(LaunchInstanceView, self).get_initial()
+-        initial['project_id'] = self.request.user.tenant_id
+-        initial['user_id'] = self.request.user.id
+-        return initial
+-
+-
+-def console(request, instance_id):
+-    try:
+-        # TODO(jakedahn): clean this up once the api supports tailing.
+-        tail = request.GET.get('length', None)
+-        data = api.nova.server_console_output(request,
+-                                              instance_id,
+-                                              tail_length=tail)
+-    except:
+-        data = _('Unable to get log for instance "%s".') % instance_id
+-        exceptions.handle(request, ignore=True)
+-    response = http.HttpResponse(mimetype='text/plain')
+-    response.write(data)
+-    response.flush()
+-    return response
+-
+-
+-def vnc(request, instance_id):
+-    try:
+-        console = api.nova.server_vnc_console(request, instance_id)
+-        instance = api.nova.server_get(request, instance_id)
+-        return shortcuts.redirect(console.url +
+-                ("&title=%s(%s)" % (instance.name, instance_id)))
+-    except:
+-        redirect = reverse("horizon:project:instances:index")
+-        msg = _('Unable to get VNC console for instance "%s".') % instance_id
+-        exceptions.handle(request, msg, redirect=redirect)
+-
+-
+-def spice(request, instance_id):
+-    try:
+-        console = api.nova.server_spice_console(request, instance_id)
+-        instance = api.nova.server_get(request, instance_id)
+-        return shortcuts.redirect(console.url +
+-                ("&title=%s(%s)" % (instance.name, instance_id)))
+-    except:
+-        redirect = reverse("horizon:project:instances:index")
+-        msg = _('Unable to get SPICE console for instance "%s".') % instance_id
+-        exceptions.handle(request, msg, redirect=redirect)
+-
+-
+-class UpdateView(workflows.WorkflowView):
+-    workflow_class = UpdateInstance
+-    template_name = 'admin/instances/update.html'
+-    success_url = reverse_lazy("horizon:project:instances:index")
+-
+-    def get_context_data(self, **kwargs):
+-        context = super(UpdateView, self).get_context_data(**kwargs)
+-        context["instance_id"] = self.kwargs['instance_id']
+-        return context
+-
+-    def get_object(self, *args, **kwargs):
+-        if not hasattr(self, "_object"):
+-            instance_id = self.kwargs['instance_id']
+-            try:
+-                self._object = api.nova.server_get(self.request, instance_id)
+-            except:
+-                redirect = reverse("horizon:project:instances:index")
+-                msg = _('Unable to retrieve instance details.')
+-                exceptions.handle(self.request, msg, redirect=redirect)
+-        return self._object
+-
+-    def get_initial(self):
+-        initial = super(UpdateView, self).get_initial()
+-        initial.update({'instance_id': self.kwargs['instance_id'],
+-                'name': getattr(self.get_object(), 'name', '')})
+-        return initial
+-
+-
+-class DetailView(tabs.TabView):
+-    tab_group_class = InstanceDetailTabs
+-    template_name = 'project/instances/detail.html'
+-
+-    def get_context_data(self, **kwargs):
+-        context = super(DetailView, self).get_context_data(**kwargs)
+-        context["instance"] = self.get_data()
+-        return context
+-
+-    def get_data(self):
+-        if not hasattr(self, "_instance"):
+-            try:
+-                instance_id = self.kwargs['instance_id']
+-                instance = api.nova.server_get(self.request, instance_id)
+-                instance.volumes = api.nova.instance_volumes_list(self.request,
+-                                                                  instance_id)
+-                # Sort by device name
+-                instance.volumes.sort(key=lambda vol: vol.device)
+-                instance.full_flavor = api.nova.flavor_get(
+-                    self.request, instance.flavor["id"])
+-                instance.security_groups = api.nova.server_security_groups(
+-                                           self.request, instance_id)
+-            except:
+-                redirect = reverse('horizon:project:instances:index')
+-                exceptions.handle(self.request,
+-                                  _('Unable to retrieve details for '
+-                                    'instance "%s".') % instance_id,
+-                                    redirect=redirect)
+-            self._instance = instance
+-        return self._instance
+-
+-    def get_tabs(self, request, *args, **kwargs):
+-        instance = self.get_data()
+-        return self.tab_group_class(request, instance=instance, **kwargs)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/__init__.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/__init__.py
+deleted file mode 100644
+index d3823fc..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/__init__.py
++++ /dev/null
+@@ -1,2 +0,0 @@
+-from create_instance import *
+-from update_instance import *
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/create_instance.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/create_instance.py
+deleted file mode 100644
+index e3ba26b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/create_instance.py
++++ /dev/null
+@@ -1,528 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-import json
+-import logging
+-
+-from django.utils.text import normalize_newlines
+-from django.utils.translation import ugettext_lazy as _
+-
+-from horizon import exceptions
+-from horizon import forms
+-from horizon import workflows
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.api import cinder
+-from openstack_dashboard.api import glance
+-from openstack_dashboard.usage import quotas
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-
+-class SelectProjectUserAction(workflows.Action):
+-    project_id = forms.ChoiceField(label=_("Project"))
+-    user_id = forms.ChoiceField(label=_("User"))
+-
+-    def __init__(self, request, *args, **kwargs):
+-        super(SelectProjectUserAction, self).__init__(request, *args, **kwargs)
+-        # Set our project choices
+-        projects = [(tenant.id, tenant.name)
+-                    for tenant in request.user.authorized_tenants]
+-        self.fields['project_id'].choices = projects
+-
+-        # Set our user options
+-        users = [(request.user.id, request.user.username)]
+-        self.fields['user_id'].choices = users
+-
+-    class Meta:
+-        name = _("Project & User")
+-        # Unusable permission so this is always hidden. However, we
+-        # keep this step in the workflow for validation/verification purposes.
+-        permissions = ("!",)
+-
+-
+-class SelectProjectUser(workflows.Step):
+-    action_class = SelectProjectUserAction
+-    contributes = ("project_id", "user_id")
+-
+-
+-class VolumeOptionsAction(workflows.Action):
+-    VOLUME_CHOICES = (
+-        ('', _("Don't boot from a volume.")),
+-        ("volume_id", _("Boot from volume.")),
+-        ("volume_snapshot_id", _("Boot from volume snapshot "
+-                                 "(creates a new volume).")),
+-    )
+-    # Boot from volume options
+-    volume_type = forms.ChoiceField(label=_("Volume Options"),
+-                                    choices=VOLUME_CHOICES,
+-                                    required=False)
+-    volume_id = forms.ChoiceField(label=_("Volume"), required=False)
+-    volume_snapshot_id = forms.ChoiceField(label=_("Volume Snapshot"),
+-                                           required=False)
+-    device_name = forms.CharField(label=_("Device Name"),
+-                                  required=False,
+-                                  initial="vda",
+-                                  help_text=_("Volume mount point (e.g. 'vda' "
+-                                              "mounts at '/dev/vda')."))
+-    delete_on_terminate = forms.BooleanField(label=_("Delete on Terminate"),
+-                                             initial=False,
+-                                             required=False,
+-                                             help_text=_("Delete volume on "
+-                                                         "instance terminate"))
+-
+-    class Meta:
+-        name = _("Volume Options")
+-        permissions = ('openstack.services.volume',)
+-        help_text_template = ("project/instances/"
+-                              "_launch_volumes_help.html")
+-
+-    def clean(self):
+-        cleaned_data = super(VolumeOptionsAction, self).clean()
+-        volume_opt = cleaned_data.get('volume_type', None)
+-
+-        if volume_opt and not cleaned_data[volume_opt]:
+-            raise forms.ValidationError(_('Please choose a volume, or select '
+-                                          '%s.') % self.VOLUME_CHOICES[0][1])
+-        return cleaned_data
+-
+-    def _get_volume_display_name(self, volume):
+-        if hasattr(volume, "volume_id"):
+-            vol_type = "snap"
+-            visible_label = _("Snapshot")
+-        else:
+-            vol_type = "vol"
+-            visible_label = _("Volume")
+-        return (("%s:%s" % (volume.id, vol_type)),
+-                ("%s - %s GB (%s)" % (volume.display_name,
+-                                     volume.size,
+-                                     visible_label)))
+-
+-    def populate_volume_id_choices(self, request, context):
+-        volume_options = [("", _("Select Volume"))]
+-        try:
+-            volumes = [v for v in cinder.volume_list(self.request)
+-                       if v.status == api.cinder.VOLUME_STATE_AVAILABLE]
+-            volume_options.extend([self._get_volume_display_name(vol)
+-                                   for vol in volumes])
+-        except:
+-            exceptions.handle(self.request,
+-                              _('Unable to retrieve list of volumes.'))
+-        return volume_options
+-
+-    def populate_volume_snapshot_id_choices(self, request, context):
+-        volume_options = [("", _("Select Volume Snapshot"))]
+-        try:
+-            snapshots = cinder.volume_snapshot_list(self.request)
+-            snapshots = [s for s in snapshots
+-                         if s.status == api.cinder.VOLUME_STATE_AVAILABLE]
+-            volume_options.extend([self._get_volume_display_name(snap)
+-                                   for snap in snapshots])
+-        except:
+-            exceptions.handle(self.request,
+-                              _('Unable to retrieve list of volume '
+-                                'snapshots.'))
+-
+-        return volume_options
+-
+-
+-class VolumeOptions(workflows.Step):
+-    action_class = VolumeOptionsAction
+-    depends_on = ("project_id", "user_id")
+-    contributes = ("volume_type",
+-                   "volume_id",
+-                   "device_name",  # Can be None for an image.
+-                   "delete_on_terminate")
+-
+-    def contribute(self, data, context):
+-        context = super(VolumeOptions, self).contribute(data, context)
+-        # Translate form input to context for volume values.
+-        if "volume_type" in data and data["volume_type"]:
+-            context['volume_id'] = data.get(data['volume_type'], None)
+-
+-        if not context.get("volume_type", ""):
+-            context['volume_type'] = self.action.VOLUME_CHOICES[0][0]
+-            context['volume_id'] = None
+-            context['device_name'] = None
+-            context['delete_on_terminate'] = None
+-        return context
+-
+-
+-class SetInstanceDetailsAction(workflows.Action):
+-    SOURCE_TYPE_CHOICES = (
+-        ("image_id", _("Image")),
+-        ("instance_snapshot_id", _("Snapshot")),
+-    )
+-    source_type = forms.ChoiceField(label=_("Instance Source"),
+-                                    choices=SOURCE_TYPE_CHOICES)
+-    image_id = forms.ChoiceField(label=_("Image"), required=False)
+-    instance_snapshot_id = forms.ChoiceField(label=_("Instance Snapshot"),
+-                                             required=False)
+-    name = forms.CharField(max_length=80, label=_("Instance Name"))
+-    flavor = forms.ChoiceField(label=_("Flavor"),
+-                               help_text=_("Size of image to launch."))
+-    count = forms.ChoiceField(label=_("Instance Count"),
+-			       choices=[('1', _('1')),
+-                                             ('2', _('2')),
+-                                             ('3', _('3')),
+-                                             ('4', _('4'))],
+-                               help_text=_("Number of instances to lauch."))
+-    #count = forms.IntegerField(label=_("Instance Count"),
+-                              # min_value=1,
+-                              # initial=1,
+-                              # help_text=_("Number of instances to launch."))
+-
+-    class Meta:
+-        name = _("Details")
+-        help_text_template = ("project/instances/"
+-                              "_launch_details_help.html")
+-
+-    def clean(self):
+-        cleaned_data = super(SetInstanceDetailsAction, self).clean()
+-
+-        # Validate our instance source.
+-        source = cleaned_data['source_type']
+-        # There should always be at least one image_id choice, telling the user
+-        # that there are "No Images Available" so we check for 2 here...
+-        if source == 'image_id' and not \
+-                filter(lambda x: x[0] != '', self.fields['image_id'].choices):
+-            raise forms.ValidationError(_("There are no image sources "
+-                                          "available; you must first create "
+-                                          "an image before attempting to "
+-                                          "launch an instance."))
+-        if not cleaned_data[source]:
+-            raise forms.ValidationError(_("Please select an option for the "
+-                                          "instance source."))
+-
+-        # Prevent launching multiple instances with the same volume.
+-        # TODO(gabriel): is it safe to launch multiple instances with
+-        # a snapshot since it should be cloned to new volumes?
+-        count = cleaned_data.get('count', 1)
+-        volume_type = self.data.get('volume_type', None)
+-        if volume_type and count > 1:
+-            msg = _('Launching multiple instances is only supported for '
+-                    'images and instance snapshots.')
+-            raise forms.ValidationError(msg)
+-
+-        return cleaned_data
+-
+-    def _get_available_images(self, request, context):
+-        project_id = context.get('project_id', None)
+-        if not hasattr(self, "_public_images"):
+-            public = {"is_public": True,
+-                      "status": "active"}
+-            try:
+-                public_images, _more = glance.image_list_detailed(
+-                    request, filters=public)
+-            except:
+-                public_images = []
+-                exceptions.handle(request,
+-                                  _("Unable to retrieve public images."))
+-            self._public_images = public_images
+-
+-        # Preempt if we don't have a project_id yet.
+-        if project_id is None:
+-            setattr(self, "_images_for_%s" % project_id, [])
+-
+-        if not hasattr(self, "_images_for_%s" % project_id):
+-            owner = {"property-owner_id": project_id,
+-                     "status": "active"}
+-            try:
+-                owned_images, _more = glance.image_list_detailed(
+-                    request, filters=owner)
+-            except:
+-                owned_images = []
+-                exceptions.handle(request,
+-                                  _("Unable to retrieve images for "
+-                                    "the current project."))
+-            setattr(self, "_images_for_%s" % project_id, owned_images)
+-
+-        owned_images = getattr(self, "_images_for_%s" % project_id)
+-        images = owned_images + self._public_images
+-
+-        # Remove duplicate images
+-        image_ids = []
+-        final_images = []
+-        for image in images:
+-            if image.id not in image_ids:
+-                image_ids.append(image.id)
+-                final_images.append(image)
+-        return [image for image in final_images
+-                if image.container_format not in ('aki', 'ari')]
+-
+-    def populate_image_id_choices(self, request, context):
+-        images = self._get_available_images(request, context)
+-        choices = [(image.id, image.name)
+-                   for image in images
+-                   if image.properties.get("image_type", '') != "snapshot"]
+-        if choices:
+-            choices.insert(0, ("", _("Select Image")))
+-        else:
+-            choices.insert(0, ("", _("No images available.")))
+-        return choices
+-
+-    def populate_instance_snapshot_id_choices(self, request, context):
+-        images = self._get_available_images(request, context)
+-        choices = [(image.id, image.name)
+-                   for image in images
+-                   if image.properties.get("image_type", '') == "snapshot"]
+-        if choices:
+-            choices.insert(0, ("", _("Select Instance Snapshot")))
+-        else:
+-            choices.insert(0, ("", _("No snapshots available.")))
+-        return choices
+-
+-    def populate_flavor_choices(self, request, context):
+-        try:
+-            flavors = api.nova.flavor_list(request)
+-            flavor_list = [(flavor.id, "%s" % flavor.name)
+-                           for flavor in flavors]
+-        except:
+-            flavor_list = []
+-            exceptions.handle(request,
+-                              _('Unable to retrieve instance flavors.'))
+-        return sorted(flavor_list)
+-
+-    def get_help_text(self):
+-        extra = {}
+-        try:
+-            extra['usages'] = quotas.tenant_quota_usages(self.request)
+-            extra['usages_json'] = json.dumps(extra['usages'])
+-            flavors = json.dumps([f._info for f in
+-                                       api.nova.flavor_list(self.request)])
+-            extra['flavors'] = flavors
+-        except:
+-            exceptions.handle(self.request,
+-                              _("Unable to retrieve quota information."))
+-        return super(SetInstanceDetailsAction, self).get_help_text(extra)
+-
+-
+-class SetInstanceDetails(workflows.Step):
+-    action_class = SetInstanceDetailsAction
+-    contributes = ("source_type", "source_id", "name", "count", "flavor")
+-
+-    def prepare_action_context(self, request, context):
+-        if 'source_type' in context and 'source_id' in context:
+-            context[context['source_type']] = context['source_id']
+-        return context
+-
+-    def contribute(self, data, context):
+-        context = super(SetInstanceDetails, self).contribute(data, context)
+-        # Allow setting the source dynamically.
+-        if ("source_type" in context and "source_id" in context
+-                and context["source_type"] not in context):
+-            context[context["source_type"]] = context["source_id"]
+-
+-        # Translate form input to context for source values.
+-        if "source_type" in data:
+-            context["source_id"] = data.get(data['source_type'], None)
+-
+-        return context
+-
+-
+-KEYPAIR_IMPORT_URL = "horizon:project:access_and_security:keypairs:import"
+-
+-
+-class SetAccessControlsAction(workflows.Action):
+-    keypair = forms.DynamicChoiceField(label=_("Keypair"),
+-                                       required=False,
+-                                       help_text=_("Which keypair to use for "
+-                                                   "authentication."),
+-                                       add_item_link=KEYPAIR_IMPORT_URL)
+-    groups = forms.MultipleChoiceField(label=_("Security Groups"),
+-                                       required=True,
+-                                       initial=["default"],
+-                                       widget=forms.CheckboxSelectMultiple(),
+-                                       help_text=_("Launch instance in these "
+-                                                   "security groups."))
+-
+-    class Meta:
+-        name = _("Access & Security")
+-        help_text = _("Control access to your instance via keypairs, "
+-                      "security groups, and other mechanisms.")
+-
+-    def populate_keypair_choices(self, request, context):
+-        try:
+-            keypairs = api.nova.keypair_list(request)
+-            keypair_list = [(kp.name, kp.name) for kp in keypairs]
+-        except:
+-            keypair_list = []
+-            exceptions.handle(request,
+-                              _('Unable to retrieve keypairs.'))
+-        if keypair_list:
+-            if len(keypair_list) == 1:
+-                self.fields['keypair'].initial = keypair_list[0][0]
+-            keypair_list.insert(0, ("", _("Select a keypair")))
+-        else:
+-            keypair_list = (("", _("No keypairs available.")),)
+-        return keypair_list
+-
+-    def populate_groups_choices(self, request, context):
+-        try:
+-            groups = api.nova.security_group_list(request)
+-            security_group_list = [(sg.name, sg.name) for sg in groups]
+-        except:
+-            exceptions.handle(request,
+-                              _('Unable to retrieve list of security groups'))
+-            security_group_list = []
+-        return security_group_list
+-
+-
+-class SetAccessControls(workflows.Step):
+-    action_class = SetAccessControlsAction
+-    depends_on = ("project_id", "user_id")
+-    contributes = ("keypair_id", "security_group_ids")
+-
+-    def contribute(self, data, context):
+-        if data:
+-            post = self.workflow.request.POST
+-            context['security_group_ids'] = post.getlist("groups")
+-            context['keypair_id'] = data.get("keypair", "")
+-        return context
+-
+-
+-class CustomizeAction(workflows.Action):
+-    customization_script = forms.CharField(widget=forms.Textarea,
+-                                           label=_("Customization Script"),
+-                                           required=False,
+-                                           help_text=_("A script or set of "
+-                                                       "commands to be "
+-                                                       "executed after the "
+-                                                       "instance has been "
+-                                                       "built (max 16kb)."))
+-
+-    class Meta:
+-        name = _("Post-Creation")
+-        help_text_template = ("project/instances/"
+-                              "_launch_customize_help.html")
+-
+-
+-class PostCreationStep(workflows.Step):
+-    action_class = CustomizeAction
+-    contributes = ("customization_script",)
+-
+-
+-class SetNetworkAction(workflows.Action):
+-    network = forms.MultipleChoiceField(label=_("Networks"),
+-                                        required=True,
+-                                        widget=forms.CheckboxSelectMultiple(),
+-                                        error_messages={
+-                                            'required': _(
+-                                                "At least one network must"
+-                                                " be specified.")},
+-                                        help_text=_("Launch instance with"
+-                                                    "these networks"))
+-
+-    class Meta:
+-        name = _("Networking")
+-        permissions = ('openstack.services.network',)
+-        help_text = _("Select networks for your instance.")
+-
+-    def populate_network_choices(self, request, context):
+-        try:
+-            tenant_id = self.request.user.tenant_id
+-            networks = api.quantum.network_list_for_tenant(request, tenant_id)
+-            for n in networks:
+-                n.set_id_as_name_if_empty()
+-            network_list = [(network.id, network.name) for network in networks]
+-        except:
+-            network_list = []
+-            exceptions.handle(request,
+-                              _('Unable to retrieve networks.'))
+-        return network_list
+-
+-
+-class SetNetwork(workflows.Step):
+-    action_class = SetNetworkAction
+-    template_name = "project/instances/_update_networks.html"
+-    contributes = ("network_id",)
+-
+-    def contribute(self, data, context):
+-        if data:
+-            networks = self.workflow.request.POST.getlist("network")
+-            # If no networks are explicitly specified, network list
+-            # contains an empty string, so remove it.
+-            networks = [n for n in networks if n != '']
+-            if networks:
+-                context['network_id'] = networks
+-        return context
+-
+-
+-class LaunchInstance(workflows.Workflow):
+-    slug = "launch_instance"
+-    name = _("Launch Instance")
+-    finalize_button_name = _("Launch")
+-    success_message = _('Launched %(count)s named "%(name)s".')
+-    failure_message = _('Unable to launch %(count)s named "%(name)s".')
+-    success_url = "horizon:project:instances:index"
+-    default_steps = (SelectProjectUser,
+-                     SetInstanceDetails,
+-                     SetAccessControls,
+-                     SetNetwork,
+-                     #VolumeOptions,
+-                     PostCreationStep)
+-
+-    def format_status_message(self, message):
+-        name = self.context.get('name', 'unknown instance')
+-        count = self.context.get('count', 1)
+-        if int(count) > 1:
+-            return message % {"count": _("%s instances") % count,
+-                              "name": name}
+-        else:
+-            return message % {"count": _("instance"), "name": name}
+-
+-    def handle(self, request, context):
+-        custom_script = context.get('customization_script', '')
+-
+-        # Determine volume mapping options
+-        if context.get('volume_type', None):
+-            if(context['delete_on_terminate']):
+-                del_on_terminate = 1
+-            else:
+-                del_on_terminate = 0
+-            mapping_opts = ("%s::%s"
+-                            % (context['volume_id'], del_on_terminate))
+-            dev_mapping = {context['device_name']: mapping_opts}
+-        else:
+-            dev_mapping = None
+-
+-        netids = context.get('network_id', None)
+-        if netids:
+-            nics = [{"net-id": netid, "v4-fixed-ip": ""}
+-                    for netid in netids]
+-        else:
+-            nics = None
+-
+-        try:
+-            api.nova.server_create(request,
+-                                   context['name'],
+-                                   context['source_id'],
+-                                   context['flavor'],
+-                                   context['keypair_id'],
+-                                   normalize_newlines(custom_script),
+-                                   context['security_group_ids'],
+-                                   dev_mapping,
+-                                   nics=nics,
+-                                   instance_count=int(context['count']))
+-            return True
+-        except:
+-            exceptions.handle(request)
+-            return False
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/update_instance.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/update_instance.py
+deleted file mode 100644
+index c90789b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/charges/workflows/update_instance.py
++++ /dev/null
+@@ -1,178 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-
+-from django.utils.translation import ugettext as _
+-from django.core.urlresolvers import reverse
+-
+-from horizon import exceptions
+-from horizon import workflows
+-from horizon import forms
+-from horizon import messages
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.api import cinder, nova
+-from openstack_dashboard.api.base import is_service_enabled
+-
+-
+-INDEX_URL = "horizon:projects:instances:index"
+-ADD_USER_URL = "horizon:projects:instances:create_user"
+-
+-
+-class UpdateInstanceSecurityGroupsAction(workflows.Action):
+-    default_role = forms.CharField(required=False)
+-    role_member = forms.MultipleChoiceField(required=False)
+-
+-    def __init__(self, request, *args, **kwargs):
+-        super(UpdateInstanceSecurityGroupsAction, self).__init__(request,
+-                                                                 *args,
+-                                                                 **kwargs)
+-        err_msg = _('Unable to retrieve security group list. '
+-                    'Please try again later.')
+-        context = args[0]
+-        instance_id = context.get('instance_id', '')
+-
+-        self.fields['default_role'].initial = 'member'
+-
+-        # Get list of available security groups
+-        all_groups = []
+-        try:
+-            all_groups = api.nova.security_group_list(request)
+-        except:
+-            exceptions.handle(request, err_msg)
+-        groups_list = [(group.name, group.name) for group in all_groups]
+-
+-        instance_groups = []
+-        try:
+-            instance_groups = api.nova.server_security_groups(request,
+-                                                              instance_id)
+-        except Exception:
+-            exceptions.handle(request, err_msg)
+-        self.fields['role_member'].choices = groups_list
+-        self.fields['role_member'].initial = [group.name
+-                                              for group in instance_groups]
+-
+-    def handle(self, request, data):
+-        instance_id = data['instance_id']
+-
+-        # update instance security groups
+-        wanted_groups = set(data['wanted_groups'])
+-        try:
+-            current_groups = api.nova.server_security_groups(request,
+-                                                             instance_id)
+-        except:
+-            exceptions.handle(request, _("Couldn't get current security group "
+-                                         "list for instance %s."
+-                                         % instance_id))
+-            return False
+-
+-        current_group_names = set(map(lambda g: g.name, current_groups))
+-        groups_to_add = wanted_groups - current_group_names
+-        groups_to_remove = current_group_names - wanted_groups
+-
+-        num_groups_to_modify = len(groups_to_add | groups_to_remove)
+-        try:
+-            for group in groups_to_add:
+-                api.nova.server_add_security_group(request,
+-                                                   instance_id,
+-                                                   group)
+-                num_groups_to_modify -= 1
+-            for group in groups_to_remove:
+-                api.nova.server_remove_security_group(request,
+-                                                      instance_id,
+-                                                      group)
+-                num_groups_to_modify -= 1
+-        except Exception:
+-            exceptions.handle(request, _('Failed to modify %d instance '
+-                                         'security groups.'
+-                                         % num_groups_to_modify))
+-            return False
+-
+-        return True
+-
+-    class Meta:
+-        name = _("Security Groups")
+-        slug = "update_security_groups"
+-
+-
+-class UpdateInstanceSecurityGroups(workflows.UpdateMembersStep):
+-    action_class = UpdateInstanceSecurityGroupsAction
+-    help_text = _("From here you can add and remove security groups to "
+-                  "this project from the list of available security groups.")
+-    available_list_title = _("All Security Groups")
+-    members_list_title = _("Instance Security Groups")
+-    no_available_text = _("No security groups found.")
+-    no_members_text = _("No security groups enabled.")
+-    show_roles = False
+-    depends_on = ("instance_id",)
+-    contributes = ("wanted_groups",)
+-
+-    def contribute(self, data, context):
+-        request = self.workflow.request
+-        if data:
+-            context["wanted_groups"] = request.POST.getlist("role_member")
+-        return context
+-
+-
+-class UpdateInstanceInfoAction(workflows.Action):
+-    name = forms.CharField(required=True)
+-
+-    def handle(self, request, data):
+-        try:
+-            api.nova.server_update(request,
+-                                   data['instance_id'],
+-                                   data['name'])
+-        except:
+-            exceptions.handle(request, ignore=True)
+-            return False
+-        return True
+-
+-    class Meta:
+-        name = _("Info")
+-        slug = 'instance_info'
+-        help_text = _("From here you can edit the instance details.")
+-
+-
+-class UpdateInstanceInfo(workflows.Step):
+-    action_class = UpdateInstanceInfoAction
+-    depends_on = ("instance_id",)
+-    contributes = ("name",)
+-
+-
+-class UpdateInstance(workflows.Workflow):
+-    slug = "update_instance"
+-    name = _("Edit Instance")
+-    finalize_button_name = _("Save")
+-    success_message = _('Modified instance "%s".')
+-    failure_message = _('Unable to modify instance "%s".')
+-    success_url = "horizon:project:instances:index"
+-    default_steps = (UpdateInstanceInfo,
+-                     UpdateInstanceSecurityGroups)
+-
+-    def format_status_message(self, message):
+-        return message % self.context.get('name', 'unknown instance')
+-
+-
+-# NOTE(kspear): nova doesn't support instance security group management
+-#               by an admin. This isn't really the place for this code,
+-#               but the other ways of special-casing this are even messier.
+-class AdminUpdateInstance(UpdateInstance):
+-    success_url = "horizon:admin:instances:index"
+-    default_steps = (UpdateInstanceInfo,)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/admin/dashboard.py b/openstack-dashboard/openstack_dashboard/dashboards/admin/dashboard.py
+index 32dd86a..f661973 100644
+--- a/openstack-dashboard/openstack_dashboard/dashboards/admin/dashboard.py
++++ b/openstack-dashboard/openstack_dashboard/dashboards/admin/dashboard.py
+@@ -23,7 +23,7 @@ class SystemPanels(horizon.PanelGroup):
+     slug = "admin"
+     name = _("System Panel")
+     panels = ('overview', 'physical_servers','instances',  'flavors',
+-              'images', 'charges', 'projects', 'users', 'networks', 'routers', 'info')
++              'images', 'charge_subscriptions', 'projects', 'users', 'networks', 'routers', 'info')
+ 
+ 
+ class Admin(horizon.Dashboard):
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charge_subscriptions/tables.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charge_subscriptions/tables.py
+index 30b370b..1273b24 100644
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charge_subscriptions/tables.py
++++ b/openstack-dashboard/openstack_dashboard/dashboards/project/charge_subscriptions/tables.py
+@@ -63,21 +63,33 @@ def is_deleting(instance):
+         return False
+     return task_state.lower() == "deleting"
+ 
++class ApproveChargeSubscription(tables.BatchAction):
++    name = "approve"
++    action_present = _("Approve")
++    action_past = _("Scheduled approval of")
++    data_type_singular = _("Subscription")
++    data_type_plural = _("Subscriptions")
++    classes = ('btn-danger', 'btn-reboot')
+ 
+-class TerminateChargeSubscription(tables.BatchAction):
+-    name = "terminate"
+-    action_present = _("Terminate")
+-    action_past = _("Scheduled termination of")
+-    data_type_singular = _("Charge_subscription")
+-    data_type_plural = _("Charge_subscriptions")
+-    classes = ('btn-danger', 'btn-terminate')
++    def allowed(self, request, charge_subcription=None):
++        return True
++
++    def action(self, request, obj_id):
++        api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id)
++
++class DenyChargeSubscription(tables.BatchAction):
++    name = "deny"
++    action_present = _("Deny")
++    action_past = _("Scheduled denial of")
++    data_type_singular = _("Subscription")
++    data_type_plural = _("Subscriptions")
++    classes = ('btn-danger', 'btn-reboot')
+ 
+     def allowed(self, request, charge_subcription=None):
+         return True
+ 
+     def action(self, request, obj_id):
+-        #api.nova.server_delete(request, obj_id)
+-        api.nova.charge_subscription_update(request, 1, "test")
++        api.nova.charge_subscription_update(request, obj_id, status='denied', approver_id=request.user.id)
+ 
+ class UpdateRow(tables.Row):
+     ajax = True
+@@ -176,4 +188,4 @@ class ChargeSubscriptionTable(tables.DataTable):
+         verbose_name = _("Charge Subscriptions")
+         #status_columns = ["status", "task"]
+         row_class = UpdateRow
+-        table_actions = (TerminateChargeSubscription,)
++        #table_actions = (ApproveChargeSubscription, DenyChargeSubscription)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/__init__.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/__init__.py
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/panel.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/panel.py
+deleted file mode 100644
+index d27145f..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/panel.py
++++ /dev/null
+@@ -1,29 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-from django.utils.translation import ugettext_lazy as _
+-
+-import horizon
+-
+-from openstack_dashboard.dashboards.project import dashboard
+-
+-
+-class Charges(horizon.Panel):
+-    name = _("Charges")
+-    slug = 'charges'
+-
+-
+-dashboard.Project.register(Charges)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/tables.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/tables.py
+deleted file mode 100644
+index 1b4503b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/tables.py
++++ /dev/null
+@@ -1,481 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-import logging
+-
+-from django import shortcuts
+-from django import template
+-from django.core import urlresolvers
+-from django.template.defaultfilters import title
+-from django.utils.http import urlencode
+-from django.utils.translation import string_concat, ugettext_lazy as _
+-
+-from horizon.conf import HORIZON_CONFIG
+-from horizon import exceptions
+-from horizon import messages
+-from horizon import tables
+-from horizon.templatetags import sizeformat
+-from horizon.utils.filters import replace_underscores
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.dashboards.project.access_and_security \
+-        .floating_ips.workflows import IPAssociationWorkflow
+-from .tabs import InstanceDetailTabs, LogTab, ConsoleTab
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-ACTIVE_STATES = ("ACTIVE",)
+-
+-POWER_STATES = {
+-    0: "NO STATE",
+-    1: "RUNNING",
+-    2: "BLOCKED",
+-    3: "PAUSED",
+-    4: "SHUTDOWN",
+-    5: "SHUTOFF",
+-    6: "CRASHED",
+-    7: "SUSPENDED",
+-    8: "FAILED",
+-    9: "BUILDING",
+-}
+-
+-PAUSE = 0
+-UNPAUSE = 1
+-SUSPEND = 0
+-RESUME = 1
+-
+-
+-def is_deleting(instance):
+-    task_state = getattr(instance, "OS-EXT-STS:task_state", None)
+-    if not task_state:
+-        return False
+-    return task_state.lower() == "deleting"
+-
+-
+-class TerminateInstance(tables.BatchAction):
+-    name = "terminate"
+-    action_present = _("Terminate")
+-    action_past = _("Scheduled termination of")
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ('btn-danger', 'btn-terminate')
+-
+-    def allowed(self, request, instance=None):
+-        return True
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_delete(request, obj_id)
+-
+-
+-class RebootInstance(tables.BatchAction):
+-    name = "reboot"
+-    action_present = _("Hard Reboot")
+-    action_past = _("Hard Rebooted")
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ('btn-danger', 'btn-reboot')
+-
+-    def allowed(self, request, instance=None):
+-        return ((instance.status in ACTIVE_STATES
+-                 or instance.status == 'SHUTOFF')
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_HARD)
+-
+-
+-class SoftRebootInstance(RebootInstance):
+-    name = "soft_reboot"
+-    action_present = _("Soft Reboot")
+-    action_past = _("Soft Rebooted")
+-
+-    def action(self, request, obj_id):
+-        api.nova.server_reboot(request, obj_id, api.nova.REBOOT_SOFT)
+-
+-
+-class TogglePause(tables.BatchAction):
+-    name = "pause"
+-    action_present = (_("Pause"), _("Resume"))
+-    action_past = (_("Paused"), _("Resumed"))
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ("btn-pause",)
+-
+-    def allowed(self, request, instance=None):
+-        self.paused = False
+-        if not instance:
+-            return self.paused
+-        self.paused = instance.status == "PAUSED"
+-        if self.paused:
+-            self.current_present_action = UNPAUSE
+-        else:
+-            self.current_present_action = PAUSE
+-        return ((instance.status in ACTIVE_STATES or self.paused)
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        if self.paused:
+-            api.nova.server_unpause(request, obj_id)
+-            self.current_past_action = UNPAUSE
+-        else:
+-            api.nova.server_pause(request, obj_id)
+-            self.current_past_action = PAUSE
+-
+-
+-class ToggleSuspend(tables.BatchAction):
+-    name = "suspend"
+-    action_present = (_("Suspend"), _("Resume"))
+-    action_past = (_("Suspended"), _("Resumed"))
+-    data_type_singular = _("Instance")
+-    data_type_plural = _("Instances")
+-    classes = ("btn-suspend",)
+-
+-    def allowed(self, request, instance=None):
+-        self.suspended = False
+-        if not instance:
+-            self.suspended
+-        self.suspended = instance.status == "SUSPENDED"
+-        if self.suspended:
+-            self.current_present_action = RESUME
+-        else:
+-            self.current_present_action = SUSPEND
+-        return ((instance.status in ACTIVE_STATES or self.suspended)
+-                and not is_deleting(instance))
+-
+-    def action(self, request, obj_id):
+-        if self.suspended:
+-            api.nova.server_resume(request, obj_id)
+-            self.current_past_action = RESUME
+-        else:
+-            api.nova.server_suspend(request, obj_id)
+-            self.current_past_action = SUSPEND
+-
+-
+-class LaunchLink(tables.LinkAction):
+-    name = "launch"
+-    verbose_name = _("Launch Instance")
+-    url = "horizon:project:instances:launch"
+-    classes = ("btn-launch", "ajax-modal")
+-
+-    def allowed(self, request, datum):
+-        try:
+-            limits = api.nova.tenant_absolute_limits(request, reserved=True)
+-
+-            instances_available = limits['maxTotalInstances'] \
+-                - limits['totalInstancesUsed']
+-            cores_available = limits['maxTotalCores'] \
+-                - limits['totalCoresUsed']
+-            ram_available = limits['maxTotalRAMSize'] - limits['totalRAMUsed']
+-
+-            if instances_available <= 0 or cores_available <= 0 \
+-                    or ram_available <= 0:
+-                if "disabled" not in self.classes:
+-                    self.classes = [c for c in self.classes] + ['disabled']
+-                    self.verbose_name = string_concat(self.verbose_name, ' ',
+-                                                      _("(Quota exceeded)"))
+-            else:
+-                self.verbose_name = _("Launch Instance")
+-                classes = [c for c in self.classes if c != "disabled"]
+-                self.classes = classes
+-        except:
+-            LOG.exception("Failed to retrieve quota information")
+-            # If we can't get the quota information, leave it to the
+-            # API to check when launching
+-
+-        return True  # The action should always be displayed
+-
+-
+-class EditInstance(tables.LinkAction):
+-    name = "edit"
+-    verbose_name = _("Edit Instance")
+-    url = "horizon:project:instances:update"
+-    classes = ("ajax-modal", "btn-edit")
+-
+-    def get_link_url(self, project):
+-        return self._get_link_url(project, 'instance_info')
+-
+-    def _get_link_url(self, project, step_slug):
+-        base_url = urlresolvers.reverse(self.url, args=[project.id])
+-        param = urlencode({"step": step_slug})
+-        return "?".join([base_url, param])
+-
+-    def allowed(self, request, instance):
+-        return not is_deleting(instance)
+-
+-
+-class EditInstanceSecurityGroups(EditInstance):
+-    name = "edit_secgroups"
+-    verbose_name = _("Edit Security Groups")
+-
+-    def get_link_url(self, project):
+-        return self._get_link_url(project, 'update_security_groups')
+-
+-    def allowed(self, request, instance=None):
+-        return (instance.status in ACTIVE_STATES and
+-                not is_deleting(instance) and
+-                request.user.tenant_id == instance.tenant_id)
+-
+-
+-class CreateSnapshot(tables.LinkAction):
+-    name = "snapshot"
+-    verbose_name = _("Create Snapshot")
+-    url = "horizon:project:images_and_snapshots:snapshots:create"
+-    classes = ("ajax-modal", "btn-camera")
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-
+-class ConsoleLink(tables.LinkAction):
+-    name = "console"
+-    verbose_name = _("Console")
+-    url = "horizon:project:instances:detail"
+-    classes = ("btn-console",)
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = super(ConsoleLink, self).get_link_url(datum)
+-        tab_query_string = ConsoleTab(InstanceDetailTabs).get_query_string()
+-        return "?".join([base_url, tab_query_string])
+-
+-
+-class LogLink(tables.LinkAction):
+-    name = "log"
+-    verbose_name = _("View Log")
+-    url = "horizon:project:instances:detail"
+-    classes = ("btn-log",)
+-
+-    def allowed(self, request, instance=None):
+-        return instance.status in ACTIVE_STATES and not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = super(LogLink, self).get_link_url(datum)
+-        tab_query_string = LogTab(InstanceDetailTabs).get_query_string()
+-        return "?".join([base_url, tab_query_string])
+-
+-
+-class ConfirmResize(tables.Action):
+-    name = "confirm"
+-    verbose_name = _("Confirm Resize/Migrate")
+-    classes = ("btn-confirm", "btn-action-required")
+-
+-    def allowed(self, request, instance):
+-        return instance.status == 'VERIFY_RESIZE'
+-
+-    def single(self, table, request, instance):
+-        api.nova.server_confirm_resize(request, instance)
+-
+-
+-class RevertResize(tables.Action):
+-    name = "revert"
+-    verbose_name = _("Revert Resize/Migrate")
+-    classes = ("btn-revert", "btn-action-required")
+-
+-    def allowed(self, request, instance):
+-        return instance.status == 'VERIFY_RESIZE'
+-
+-    def single(self, table, request, instance):
+-        api.nova.server_revert_resize(request, instance)
+-
+-
+-class AssociateIP(tables.LinkAction):
+-    name = "associate"
+-    verbose_name = _("Associate Floating IP")
+-    url = "horizon:project:access_and_security:floating_ips:associate"
+-    classes = ("ajax-modal", "btn-associate")
+-
+-    def allowed(self, request, instance):
+-        fip = api.network.NetworkClient(request).floating_ips
+-        if fip.is_simple_associate_supported():
+-            return False
+-        return not is_deleting(instance)
+-
+-    def get_link_url(self, datum):
+-        base_url = urlresolvers.reverse(self.url)
+-        next = urlresolvers.reverse("horizon:project:instances:index")
+-        params = {"instance_id": self.table.get_object_id(datum),
+-                  IPAssociationWorkflow.redirect_param_name: next}
+-        params = urlencode(params)
+-        return "?".join([base_url, params])
+-
+-
+-class SimpleAssociateIP(tables.Action):
+-    name = "associate-simple"
+-    verbose_name = _("Associate Floating IP")
+-    classes = ("btn-associate-simple",)
+-
+-    def allowed(self, request, instance):
+-        fip = api.network.NetworkClient(request).floating_ips
+-        if not fip.is_simple_associate_supported():
+-            return False
+-        return not is_deleting(instance)
+-
+-    def single(self, table, request, instance):
+-        try:
+-            fip = api.network.tenant_floating_ip_allocate(request)
+-            api.network.floating_ip_associate(request, fip.id, instance)
+-            messages.success(request,
+-                             _("Successfully associated floating IP: %s")
+-                             % fip.ip)
+-        except:
+-            exceptions.handle(request,
+-                              _("Unable to associate floating IP."))
+-        return shortcuts.redirect("horizon:project:instances:index")
+-
+-
+-class SimpleDisassociateIP(tables.Action):
+-    name = "disassociate"
+-    verbose_name = _("Disassociate Floating IP")
+-    classes = ("btn-danger", "btn-disassociate",)
+-
+-    def allowed(self, request, instance):
+-        if not HORIZON_CONFIG["simple_ip_management"]:
+-            return False
+-        return not is_deleting(instance)
+-
+-    def single(self, table, request, instance_id):
+-        try:
+-            fips = [fip for fip in api.network.tenant_floating_ip_list(request)
+-                    if fip.port_id == instance_id]
+-            # Removing multiple floating IPs at once doesn't work, so this pops
+-            # off the first one.
+-            if fips:
+-                fip = fips.pop()
+-                api.network.floating_ip_disassociate(request,
+-                                                     fip.id, instance_id)
+-                api.network.tenant_floating_ip_release(request, fip.id)
+-                messages.success(request,
+-                                 _("Successfully disassociated "
+-                                   "floating IP: %s") % fip.ip)
+-            else:
+-                messages.info(request, _("No floating IPs to disassociate."))
+-        except:
+-            exceptions.handle(request,
+-                              _("Unable to disassociate floating IP."))
+-        return shortcuts.redirect("horizon:project:instances:index")
+-
+-
+-class UpdateRow(tables.Row):
+-    ajax = True
+-
+-    def get_data(self, request, charge_product_id):
+-	charge_product = api.nova.charge_product_get(self.request, charge_product_id)
+-        #instance = api.nova.server_get(request, instance_id)
+-        #instance.full_flavor = api.nova.flavor_get(request,
+-        #                                           instance.flavor["id"])
+-        return charge_product
+-
+-
+-def get_ips(instance):
+-    template_name = 'project/instances/_instance_ips.html'
+-    context = {"instance": instance}
+-    return template.loader.render_to_string(template_name, context)
+-
+-
+-def get_size(instance):
+-    if hasattr(instance, "full_flavor"):
+-        size_string = _("%(name)s | %(RAM)s RAM | %(VCPU)s VCPU "
+-                        "| %(disk)s Disk")
+-        vals = {'name': instance.full_flavor.name,
+-                'RAM': sizeformat.mbformat(instance.full_flavor.ram),
+-                'VCPU': instance.full_flavor.vcpus,
+-                'disk': sizeformat.diskgbformat(instance.full_flavor.disk)}
+-        return size_string % vals
+-    return _("Not available")
+-
+-
+-def get_keyname(instance):
+-    if hasattr(instance, "key_name"):
+-        keyname = instance.key_name
+-        return keyname
+-    return _("Not available")
+-
+-
+-def get_power_state(instance):
+-    return POWER_STATES.get(getattr(instance, "OS-EXT-STS:power_state", 0), '')
+-
+-
+-STATUS_DISPLAY_CHOICES = (
+-    ("resize", "Resize/Migrate"),
+-    ("verify_resize", "Confirm or Revert Resize/Migrate"),
+-    ("revert_resize", "Revert Resize/Migrate"),
+-)
+-
+-
+-TASK_DISPLAY_CHOICES = (
+-    ("image_snapshot", "Snapshotting"),
+-    ("resize_prep", "Preparing Resize or Migrate"),
+-    ("resize_migrating", "Resizing or Migrating"),
+-    ("resize_migrated", "Resized or Migrated"),
+-    ("resize_finish", "Finishing Resize or Migrate"),
+-    ("resize_confirming", "Confirming Resize or Nigrate"),
+-    ("resize_reverting", "Reverting Resize or Migrate"),
+-    ("unpausing", "Resuming"),
+-)
+-
+-
+-class ChargesTable(tables.DataTable):
+-    TASK_STATUS_CHOICES = (
+-        (None, True),
+-        ("none", True)
+-    )
+-    STATUS_CHOICES = (
+-        ("apply", True),
+-        ("verified", True),
+-        ("teminated", True),
+-        ("error", False),
+-    )
+-
+-    item = tables.Column("item",
+-			    verbose_name=_("Charge Product"))
+-
+-    resource = tables.Column("resource_name",
+-			     verbose_name=_("Resource Name"))
+-
+-    resource_uuid = tables.Column("resource_uuid",
+-			     verbose_name=_("Resource UUID"))
+-
+-    user = tables.Column("user_id",
+-			     verbose_name=_("Applyer"))
+-
+-    approver = tables.Column("approver_id",
+-			     verbose_name=_("Approver"))
+-
+-    status = tables.Column("status",
+-                           filters=(title, replace_underscores),
+-                           verbose_name=_("Status"),
+-                           status=True,
+-                           status_choices=STATUS_CHOICES,
+-                           display_choices=STATUS_DISPLAY_CHOICES)
+-
+-    applied_at = tables.Column("applied_at",
+-                            verbose_name=_("Apply Time"))
+- 
+-    approved_at = tables.Column("approved_at",
+-                            verbose_name=_("Approved Time"))
+-
+-    expires_at = tables.Column("expires_at",
+-                            verbose_name=_("Expires Time"))
+-
+-    class Meta:
+-        name = "Charge Management"
+-        verbose_name = _("Charge Management")
+-        status_columns = ["status"]
+-        row_class = UpdateRow
+-        table_actions = (LaunchLink, TerminateInstance)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/tabs.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/tabs.py
+deleted file mode 100644
+index 029c877..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/tabs.py
++++ /dev/null
+@@ -1,85 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-from django.utils.translation import ugettext_lazy as _
+-
+-from horizon import exceptions
+-from horizon import tabs
+-
+-from openstack_dashboard import api
+-
+-
+-class OverviewTab(tabs.Tab):
+-    name = _("Overview")
+-    slug = "overview"
+-    template_name = ("project/instances/"
+-                     "_detail_overview.html")
+-
+-    def get_context_data(self, request):
+-        return {"instance": self.tab_group.kwargs['instance']}
+-
+-
+-class LogTab(tabs.Tab):
+-    name = _("Log")
+-    slug = "log"
+-    template_name = "project/instances/_detail_log.html"
+-    preload = False
+-
+-    def get_context_data(self, request):
+-        instance = self.tab_group.kwargs['instance']
+-        try:
+-            data = api.nova.server_console_output(request,
+-                                                  instance.id,
+-                                                  tail_length=35)
+-        except:
+-            data = _('Unable to get log for instance "%s".') % instance.id
+-            exceptions.handle(request, ignore=True)
+-        return {"instance": instance,
+-                "console_log": data}
+-
+-
+-class ConsoleTab(tabs.Tab):
+-    name = _("Console")
+-    slug = "console"
+-    template_name = "project/instances/_detail_console.html"
+-    preload = False
+-
+-    def get_context_data(self, request):
+-        instance = self.tab_group.kwargs['instance']
+-        # Currently prefer VNC over SPICE, since noVNC has had much more
+-        # testing than spice-html5
+-        try:
+-            console = api.nova.server_vnc_console(request, instance.id)
+-            console_url = "%s&title=%s(%s)" % (
+-                console.url,
+-                getattr(instance, "name", ""),
+-                instance.id)
+-        except:
+-            try:
+-                console = api.nova.server_spice_console(request, instance.id)
+-                console_url = "%s&title=%s(%s)" % (
+-                    console.url,
+-                    getattr(instance, "name", ""),
+-                    instance.id)
+-            except:
+-                console_url = None
+-        return {'console_url': console_url, 'instance_id': instance.id}
+-
+-
+-class InstanceDetailTabs(tabs.TabGroup):
+-    slug = "instance_details"
+-    tabs = (OverviewTab, LogTab, ConsoleTab)
+-    sticky = True
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_console.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_console.html
+deleted file mode 100644
+index bc0a07b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_console.html
++++ /dev/null
+@@ -1,21 +0,0 @@
+-{% load i18n %}
+-
+-<h3>{% trans "Instance Console" %}</h3>
+-{% if console_url %}
+-<p class='alert alert-info'>{% blocktrans %}If console is not responding to keyboard input: click the grey status bar below.{% endblocktrans %} <a href="{{ console_url }}"  style="text-decoration: underline">{% trans "Click here to show only console" %}</a></p>
+-<iframe id="console_embed" src="{{ console_url }}" style="width:100%;height:100%"></iframe>
+-<script type="text/javascript">
+-    var fix_height = function() {
+-        $('iframe#console_embed').css({ height: $(document).height() + 'px' });
+-    };
+-    // there are two code paths to this particular block; handle them both
+-    if (typeof($) != 'undefined') {
+-        $(document).ready(fix_height);
+-    } else {
+-        addHorizonLoadEvent(fix_height);
+-    }
+-</script>
+-{% else %}
+-<p class='alert alert-error'>{% blocktrans %}console is currently unavailable. Please try again later.{% endblocktrans %}
+-<a class='btn btn-mini' href="{% url horizon:project:instances:detail instance_id %}">{% trans "Reload" %}</a></p>
+-{% endif %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_log.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_log.html
+deleted file mode 100644
+index 79ad909..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_log.html
++++ /dev/null
+@@ -1,17 +0,0 @@
+-{% load i18n %}
+-
+-<div class="clearfix">
+-  <h3 class="pull-left">{% trans "Instance Console Log" %}</h3>
+-
+-  <form id="tail_length" action="{% url horizon:project:instances:console instance.id %}" class="form-inline pull-right">
+-    <label for="tail_length_select">{% trans "Log Length" %}</label>
+-    <input class="span1" type="text" name="length" value="35" />
+-    <button class="btn btn-small btn-primary" type="submit">{% trans "Go" %}</button>
+-    {% url horizon:project:instances:console instance.id as console_url %}
+-    <a class="btn btn-small" target="_blank" href="{{ console_url }}">{% trans "View Full Log" %}</a>
+-  </form>
+-</div>
+-
+-<pre class="logs">
+-  {{ console_log }}
+-</pre>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_overview.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_overview.html
+deleted file mode 100644
+index b91000d..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_detail_overview.html
++++ /dev/null
+@@ -1,102 +0,0 @@
+-{% load i18n sizeformat %}
+-
+-<h3>{% trans "Instance Overview" %}</h3>
+-
+-<div class="status row-fluid detail">
+-  <h4>{% trans "Info" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    <dt>{% trans "Name" %}</dt>
+-    <dd>{{ instance.name }}</dd>
+-    <dt>{% trans "ID" %}</dt>
+-    <dd>{{ instance.id }}</dd>
+-    <dt>{% trans "Status" %}</dt>
+-    <dd>{{ instance.status|title }}</dd>
+-  </dl>
+-</div>
+-
+-<div class="specs row-fluid detail">
+-  <h4>{% trans "Specs" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    <dt>{% trans "Flavor" %}</dt>
+-    <dd>{{ instance.full_flavor.name }}</dd>
+-    <dt>{% trans "RAM" %}</dt>
+-    <dd>{{ instance.full_flavor.ram|mbformat }}</dd>
+-    <dt>{% trans "VCPUs" %}</dt>
+-    <dd>{{ instance.full_flavor.vcpus }} {% trans "VCPU" %}</dd>
+-    <dt>{% trans "Disk" %}</dt>
+-    <dd>{{ instance.full_flavor.disk }}{% trans "GB" %}</dd>
+-    {% if instance.full_flavor.ephemeral %}
+-    <dt>{% trans "Ephemeral Disk" %}</dt>
+-    <dd>{{ instance.full_flavor.ephemeral }}{% trans "GB" %}</dd>
+-    {% endif %}
+-  </dl>
+-</div>
+-
+-<div class="addresses row-fluid detail">
+-  <h4>{% trans "IP Addresses" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    {% for network, ip_list in instance.addresses.items %}
+-    <dt>{{ network|title }}</dt>
+-    <dd>
+-      {% for ip in ip_list %}
+-        {% if not forloop.last %}{{ ip.addr}},&nbsp;{% else %}{{ip.addr}}{% endif %}
+-      {% endfor %}
+-    </dd>
+-    {% endfor %}
+-  </dl>
+-</div>
+-
+-<div class="security_groups row-fluid detail">
+-  <h4>{% trans "Security Groups" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-  {% for group in instance.security_groups %}
+-    <dt>{{ group.name }}</dt>
+-    <dd>
+-      <ul>
+-      {% for rule in group.rules %}
+-        <li>{{ rule }}</li>
+-        {% empty %}
+-        <li><em>{% trans "No rules defined." %}</em></li>
+-      {% endfor %}
+-      </ul>
+-    </dd>
+-  {% endfor %}
+-  </dl>
+-</div>
+-
+-<div class="meta row-fluid detail">
+-  <h4>{% trans "Meta" %}</h4>
+-  <hr class="header_rule">
+-  <dl>
+-    <dt>{% trans "Key Name" %}</dt>
+-    <dd>{{ instance.key_name|default:"<em>None</em>" }}</dd>
+-    {% url horizon:project:images_and_snapshots:images:detail instance.image.id as image_url %}
+-    <dt>{% trans "Image Name" %}</dt>
+-    <dd><a href="{{ image_url }}">{{ instance.image_name }}</a></dd>
+-    {% for key, value in instance.metadata.items %}
+-    <dt>{{ key|force_escape }}</dt>
+-    <dd>{{ value|force_escape|default:"<em>N/A</em>" }}</dd>
+-    {% endfor%}
+-  </dl>
+-</div>
+-
+-<div class="volumes row-fluid detail">
+-  <h4>{% trans "Volumes Attached" %}</h4>
+-  <hr class="header_rule">
+-    <dl>
+-      {% for volume in instance.volumes %}
+-        <dt>{% trans "Attached To" %}</dt>
+-        <dd>
+-          <a href="{% url horizon:project:volumes:detail volume.volumeId %}">{{ volume.name }}</a><span> {% trans "on" %} {{ volume.device }}</span>
+-        </dd>
+-        {% empty %}
+-          <dt>{% trans "Volume" %}</dt>
+-          <dd><em>{% trans "No volumes attached." %}</em></dd>
+-      {% endfor %}
+-    </dl>
+-  </dl>
+-</div>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_instance_ips.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_instance_ips.html
+deleted file mode 100644
+index 72ed59f..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_instance_ips.html
++++ /dev/null
+@@ -1,10 +0,0 @@
+-{% for ip_group, addresses in instance.addresses.items %}
+-    {% if instance.addresses.items|length > 1 %}
+-    <h4>{{ ip_group }}</h4>
+-    {% endif %}
+-    <ul>
+-    {% for address in addresses %}
+-      <li>{{ address.addr }}</li>
+-    {% endfor %}
+-    </ul>
+-{% endfor %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_customize_help.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_customize_help.html
+deleted file mode 100644
+index eb947e4..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_customize_help.html
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{% load i18n %}
+-<p>{% blocktrans %}You can customize your instance after it's launched using the options available here.{% endblocktrans %}</p>
+-<p>{% blocktrans %}The "Customization Script" field is analogous to "User Data" in other systems.{% endblocktrans %}</p>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_details_help.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_details_help.html
+deleted file mode 100644
+index 93a2154..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_details_help.html
++++ /dev/null
+@@ -1,53 +0,0 @@
+-{% load i18n horizon humanize %}
+-
+-<p>{% blocktrans %}Specify the details for launching an instance.{% endblocktrans %}</p>
+-<p>{% blocktrans %}The chart below shows the resources used by this project in relation to the project's quotas.{% endblocktrans %}</p>
+-
+-<h4>{% trans "Flavor Details" %}</h4>
+-<table class="flavor_table table-striped">
+-  <tbody>
+-    <tr><td class="flavor_name">{% trans "Name" %}</td><td><span id="flavor_name"></span></td></tr>
+-    <tr><td class="flavor_name">{% trans "VCPUs" %}</td><td><span id="flavor_vcpus"></span></td></tr>
+-    <tr><td class="flavor_name">{% trans "Root Disk" %}</td><td><span id="flavor_disk"> </span> {% trans "GB" %}</td></tr>
+-    <tr><td class="flavor_name">{% trans "Ephemeral Disk" %}</td><td><span id="flavor_ephemeral"></span> {% trans "GB" %}</td></tr>
+-    <tr><td class="flavor_name">{% trans "Total Disk" %}</td><td><span id="flavor_disk_total"></span> {% trans "GB" %}</td></tr>
+-    <tr><td class="flavor_name">{% trans "RAM" %}</td><td><span id="flavor_ram"></span> {% trans "MB" %}</td></tr>
+-  </tbody>
+-</table>
+-
+-<div class="quota-dynamic">
+-  <h4>{% trans "Project Quotas" %}</h4>
+-  <div class="quota_title clearfix">
+-    <strong>{% trans "Number of Instances" %} <span>({{ usages.instances.used|intcomma }})</span></strong>
+-    <p>{{ usages.instances.available|quota|intcomma }}</p>
+-  </div>
+-  <div id="quota_instances" class="quota_bar" data-progress-indicator-flavor data-quota-limit="{{ usages.instances.quota }}" data-quota-used="{{ usages.instances.used }}">
+-    {% horizon_progress_bar usages.instances.used usages.instances.quota %}
+-  </div>
+-
+-  <div class="quota_title clearfix">
+-    <strong>{% trans "Number of VCPUs" %} <span>({{ usages.cores.used|intcomma }})</span></strong>
+-    <p>{{ usages.cores.available|quota|intcomma }}</p>
+-  </div>
+-  <div id="quota_vcpus" class="quota_bar" data-progress-indicator-flavor data-quota-limit="{{ usages.cores.quota }}" data-quota-used="{{ usages.cores.used }}">
+-    {% horizon_progress_bar usages.cores.used usages.cores.quota %}
+-  </div>
+-
+-  <div class="quota_title clearfix">
+-    <strong>{% trans "Total RAM" %} <span>({{ usages.ram.used|intcomma }} {% trans "MB" %})</span></strong>
+-    <p>{{ usages.ram.available|quota:"MB"|intcomma }}</p>
+-  </div>
+-  <div id="quota_ram" data-progress-indicator-flavor data-quota-limit="{{ usages.ram.quota }}" data-quota-used="{{ usages.ram.used }}" class="quota_bar">
+-    {% horizon_progress_bar usages.ram.used usages.ram.quota %}
+-  </div>
+-</div>
+-
+-<script type="text/javascript" charset="utf-8">
+-  if(typeof horizon.Quota !== 'undefined') {
+-    horizon.Quota.initWithFlavors({{ flavors|safe|default:"{}" }});
+-  } else {
+-    addHorizonLoadEvent(function() {
+-      horizon.Quota.initWithFlavors({{ flavors|safe|default:"{}" }});
+-    });
+-  }
+-</script>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_network_help.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_network_help.html
+deleted file mode 100644
+index 290b11d..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_network_help.html
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{% load i18n horizon %}
+-
+-<p>{% blocktrans %}Choose network from Available networks to Selected Networks by push button or drag and drop, you may change nic order by drag and drop as well. {% endblocktrans %}</p>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_volumes_help.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_volumes_help.html
+deleted file mode 100644
+index 26f4429..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_launch_volumes_help.html
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{% load i18n horizon %}
+-
+-<p>{% blocktrans %}An instance can be launched with varying types of attached storage. You may select from those options here.{% endblocktrans %}</p>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_update_networks.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_update_networks.html
+deleted file mode 100644
+index a8185f4..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/_update_networks.html
++++ /dev/null
+@@ -1,35 +0,0 @@
+-{% load i18n %}
+-
+-<noscript><h3>{{ step }}</h3></noscript>
+-<table class="table-fixed" id="networkListSortContainer">
+-  <tbody>
+-    <tr>
+-      <td class="actions">
+-        <h4 id="selected_network_h4">{% trans "Selected Networks" %}</h4>
+-        <ul id="selected_network" class="networklist">
+-        </ul>
+-        <h4>{% trans "Available networks" %}</h4>
+-        <ul id="available_network" class="networklist">
+-        </ul>
+-      </td>
+-      <td class="help_text">
+-          {% include "project/instances/_launch_network_help.html" %}
+-      </td>
+-    </tr>
+-  </tbody>
+-</table>
+-
+-<table class="table-fixed" id="networkListIdContainer">
+-  <tbody>
+-    <tr>
+-      <td class="actions">
+-          <div id="networkListId">
+-            {% include "horizon/common/_form_fields.html" %}
+-          </div>
+-      </td>
+-      <td class="help_text">
+-          {{ step.get_help_text }}
+-      </td>
+-    </tr>
+-  </tbody>
+-</table>
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/detail.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/detail.html
+deleted file mode 100644
+index 82f1e0e..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/detail.html
++++ /dev/null
+@@ -1,15 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n sizeformat %}
+-{% block title %}{% trans "Instance Detail" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title="Instance Detail: "|add:instance.name %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-<div class="row-fluid">
+-  <div class="span12">
+-  {{ tab_group.render }}
+-  </div>
+-</div>
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/index.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/index.html
+deleted file mode 100644
+index 3ad412f..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/index.html
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n %}
+-{% block title %}{% trans "Charges" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title=_("Charges") %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-  {{ table.render }}
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/launch.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/launch.html
+deleted file mode 100644
+index 6353e05..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/launch.html
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n %}
+-{% block title %}{% trans "Launch Instance" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title=_("Launch Instance") %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-  {% include 'horizon/common/_workflow.html' %}
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/update.html b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/update.html
+deleted file mode 100644
+index e3aa915..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/templates/charges/update.html
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{% extends 'base.html' %}
+-{% load i18n %}
+-{% block title %}{% trans "Edit Instance" %}{% endblock %}
+-
+-{% block page_header %}
+-  {% include "horizon/common/_page_header.html" with title=_("Edit Instance") %}
+-{% endblock page_header %}
+-
+-{% block main %}
+-  {% include 'horizon/common/_workflow.html' %}
+-{% endblock %}
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/urls.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/urls.py
+deleted file mode 100644
+index d1bee9a..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/urls.py
++++ /dev/null
+@@ -1,38 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-from django.conf.urls.defaults import patterns, url
+-
+-from .views import IndexView, UpdateView, DetailView, LaunchInstanceView
+-
+-
+-SUBSCRIPTIONS = r'^(?P<subscription_id>[^/]+)/%s$'
+-VIEW_MOD = 'openstack_dashboard.dashboards.project.charges.views'
+-
+-
+-urlpatterns = patterns(VIEW_MOD,
+-    url(r'^$', IndexView.as_view(), name='index'),
+-    url(r'^launch$', LaunchInstanceView.as_view(), name='launch'),
+-    url(r'^(?P<instance_id>[^/]+)/$', DetailView.as_view(), name='detail'),
+-    url(SUBSCRIPTIONS % 'update', UpdateView.as_view(), name='update'),
+-    url(SUBSCRIPTIONS % 'console', 'console', name='console'),
+-    url(SUBSCRIPTIONS % 'vnc', 'vnc', name='vnc'),
+-    url(SUBSCRIPTIONS % 'spice', 'spice', name='spice'),
+-)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/views.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/views.py
+deleted file mode 100644
+index 3d2b3ea..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/views.py
++++ /dev/null
+@@ -1,219 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-"""
+-Views for managing charges.
+-"""
+-import logging
+-import iso8601
+-
+-from django import http
+-from django import shortcuts
+-from django.core.urlresolvers import reverse, reverse_lazy
+-from django.utils.datastructures import SortedDict
+-from django.utils.translation import ugettext_lazy as _
+-
+-from horizon import exceptions
+-from horizon import forms
+-from horizon import tabs
+-from horizon import tables
+-from horizon import workflows
+-
+-from openstack_dashboard import api
+-from .tabs import InstanceDetailTabs
+-from .tables import ChargesTable
+-from .workflows import LaunchInstance, UpdateInstance
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-
+-class IndexView(tables.DataTableView):
+-    table_class = ChargesTable
+-    template_name = 'project/charges/index.html'
+-
+-    def get_data(self):
+-        charge_subscriptions_by_user = []
+-        try:
+-            charge_subscriptions = api.nova.charge_subscription_list(self.request)
+-            for charge_subscription in charge_subscriptions: 
+-                if self.request.user.id == charge_subscription.user_id:
+-		    charge_subscription.user_id = api.keystone.user_get(self.request, charge_subscription.user_id).name
+-		    try: 
+-			#TODO: fixme need to test it into product envirment.
+-                        charge_subscription.resource_uuid = api.nova.server_get(self.request, charge_subscription.resource_uuid).name
+-		    except:
+-                        pass
+-
+-                    if charge_subscription.approver_id:
+-		        charge_subscription.approver_id = api.keystone.user_get(self.request, charge_subscription.approver_id).name 
+-                    else:
+-		        charge_subscription.approver_id = 'N/A'
+- 		       
+-                    charge_subscription.applied_at = iso8601.parse_date(charge_subscription.applied_at).strftime("%Y-%m-%d %H:%M:%S")
+-                    charge_subscription.approved_at = iso8601.parse_date(charge_subscription.approved_at).strftime("%Y-%m-%d %H:%M:%S")
+-                    charge_subscription.expires_at = iso8601.parse_date(charge_subscription.expires_at).strftime("%Y-%m-%d %H:%M:%S")
+-
+-                    charge_subscriptions_by_user.append(charge_subscription)
+-  
+-        except:
+-            exceptions.handle(self.request,
+-                              _('Unable to retrieve charge subscriptions'))
+-	
+-        # Gather our flavors and correlate our instances to them
+-        '''if charge_products:
+-            try:
+-                flavors = api.nova.flavor_list(self.request)
+-            except:
+-                flavors = []
+-                exceptions.handle(self.request, ignore=True)
+-
+-            full_flavors = SortedDict([(str(flavor.id), flavor)
+-                                        for flavor in flavors])
+-            # Loop through instances to get flavor info.
+-            for instance in instances:
+-                try:
+-                    flavor_id = instance.flavor["id"]
+-                    if flavor_id in full_flavors:
+-                        instance.full_flavor = full_flavors[flavor_id]
+-                    else:
+-                        # If the flavor_id is not in full_flavors list,
+-                        # get it via nova api.
+-                        instance.full_flavor = api.nova.flavor_get(
+-                            self.request, flavor_id)
+-                except:
+-                    msg = _('Unable to retrieve instance size information.')
+-                    exceptions.handle(self.request, msg)'''
+-        return charge_subscriptions_by_user
+-
+-
+-class LaunchInstanceView(workflows.WorkflowView):
+-    workflow_class = LaunchInstance
+-    template_name = "project/instances/launch.html"
+-
+-    def get_initial(self):
+-        initial = super(LaunchInstanceView, self).get_initial()
+-        initial['project_id'] = self.request.user.tenant_id
+-        initial['user_id'] = self.request.user.id
+-        return initial
+-
+-
+-def console(request, instance_id):
+-    try:
+-        # TODO(jakedahn): clean this up once the api supports tailing.
+-        tail = request.GET.get('length', None)
+-        data = api.nova.server_console_output(request,
+-                                              instance_id,
+-                                              tail_length=tail)
+-    except:
+-        data = _('Unable to get log for instance "%s".') % instance_id
+-        exceptions.handle(request, ignore=True)
+-    response = http.HttpResponse(mimetype='text/plain')
+-    response.write(data)
+-    response.flush()
+-    return response
+-
+-
+-def vnc(request, instance_id):
+-    try:
+-        console = api.nova.server_vnc_console(request, instance_id)
+-        instance = api.nova.server_get(request, instance_id)
+-        return shortcuts.redirect(console.url +
+-                ("&title=%s(%s)" % (instance.name, instance_id)))
+-    except:
+-        redirect = reverse("horizon:project:instances:index")
+-        msg = _('Unable to get VNC console for instance "%s".') % instance_id
+-        exceptions.handle(request, msg, redirect=redirect)
+-
+-
+-def spice(request, instance_id):
+-    try:
+-        console = api.nova.server_spice_console(request, instance_id)
+-        instance = api.nova.server_get(request, instance_id)
+-        return shortcuts.redirect(console.url +
+-                ("&title=%s(%s)" % (instance.name, instance_id)))
+-    except:
+-        redirect = reverse("horizon:project:instances:index")
+-        msg = _('Unable to get SPICE console for instance "%s".') % instance_id
+-        exceptions.handle(request, msg, redirect=redirect)
+-
+-
+-class UpdateView(workflows.WorkflowView):
+-    workflow_class = UpdateInstance
+-    template_name = 'project/instances/update.html'
+-    success_url = reverse_lazy("horizon:project:instances:index")
+-
+-    def get_context_data(self, **kwargs):
+-        context = super(UpdateView, self).get_context_data(**kwargs)
+-        context["instance_id"] = self.kwargs['instance_id']
+-        return context
+-
+-    def get_object(self, *args, **kwargs):
+-        if not hasattr(self, "_object"):
+-            instance_id = self.kwargs['instance_id']
+-            try:
+-                self._object = api.nova.server_get(self.request, instance_id)
+-            except:
+-                redirect = reverse("horizon:project:instances:index")
+-                msg = _('Unable to retrieve instance details.')
+-                exceptions.handle(self.request, msg, redirect=redirect)
+-        return self._object
+-
+-    def get_initial(self):
+-        initial = super(UpdateView, self).get_initial()
+-        initial.update({'instance_id': self.kwargs['instance_id'],
+-                'name': getattr(self.get_object(), 'name', '')})
+-        return initial
+-
+-
+-class DetailView(tabs.TabView):
+-    tab_group_class = InstanceDetailTabs
+-    template_name = 'project/instances/detail.html'
+-
+-    def get_context_data(self, **kwargs):
+-        context = super(DetailView, self).get_context_data(**kwargs)
+-        context["instance"] = self.get_data()
+-        return context
+-
+-    def get_data(self):
+-        if not hasattr(self, "_instance"):
+-            try:
+-                instance_id = self.kwargs['instance_id']
+-                instance = api.nova.server_get(self.request, instance_id)
+-                instance.volumes = api.nova.instance_volumes_list(self.request,
+-                                                                  instance_id)
+-                # Sort by device name
+-                instance.volumes.sort(key=lambda vol: vol.device)
+-                instance.full_flavor = api.nova.flavor_get(
+-                    self.request, instance.flavor["id"])
+-                instance.security_groups = api.nova.server_security_groups(
+-                                           self.request, instance_id)
+-            except:
+-                redirect = reverse('horizon:project:instances:index')
+-                exceptions.handle(self.request,
+-                                  _('Unable to retrieve details for '
+-                                    'instance "%s".') % instance_id,
+-                                    redirect=redirect)
+-            self._instance = instance
+-        return self._instance
+-
+-    def get_tabs(self, request, *args, **kwargs):
+-        instance = self.get_data()
+-        return self.tab_group_class(request, instance=instance, **kwargs)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/__init__.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/__init__.py
+deleted file mode 100644
+index d3823fc..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/__init__.py
++++ /dev/null
+@@ -1,2 +0,0 @@
+-from create_instance import *
+-from update_instance import *
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/create_instance.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/create_instance.py
+deleted file mode 100644
+index e3ba26b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/create_instance.py
++++ /dev/null
+@@ -1,528 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-import json
+-import logging
+-
+-from django.utils.text import normalize_newlines
+-from django.utils.translation import ugettext_lazy as _
+-
+-from horizon import exceptions
+-from horizon import forms
+-from horizon import workflows
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.api import cinder
+-from openstack_dashboard.api import glance
+-from openstack_dashboard.usage import quotas
+-
+-
+-LOG = logging.getLogger(__name__)
+-
+-
+-class SelectProjectUserAction(workflows.Action):
+-    project_id = forms.ChoiceField(label=_("Project"))
+-    user_id = forms.ChoiceField(label=_("User"))
+-
+-    def __init__(self, request, *args, **kwargs):
+-        super(SelectProjectUserAction, self).__init__(request, *args, **kwargs)
+-        # Set our project choices
+-        projects = [(tenant.id, tenant.name)
+-                    for tenant in request.user.authorized_tenants]
+-        self.fields['project_id'].choices = projects
+-
+-        # Set our user options
+-        users = [(request.user.id, request.user.username)]
+-        self.fields['user_id'].choices = users
+-
+-    class Meta:
+-        name = _("Project & User")
+-        # Unusable permission so this is always hidden. However, we
+-        # keep this step in the workflow for validation/verification purposes.
+-        permissions = ("!",)
+-
+-
+-class SelectProjectUser(workflows.Step):
+-    action_class = SelectProjectUserAction
+-    contributes = ("project_id", "user_id")
+-
+-
+-class VolumeOptionsAction(workflows.Action):
+-    VOLUME_CHOICES = (
+-        ('', _("Don't boot from a volume.")),
+-        ("volume_id", _("Boot from volume.")),
+-        ("volume_snapshot_id", _("Boot from volume snapshot "
+-                                 "(creates a new volume).")),
+-    )
+-    # Boot from volume options
+-    volume_type = forms.ChoiceField(label=_("Volume Options"),
+-                                    choices=VOLUME_CHOICES,
+-                                    required=False)
+-    volume_id = forms.ChoiceField(label=_("Volume"), required=False)
+-    volume_snapshot_id = forms.ChoiceField(label=_("Volume Snapshot"),
+-                                           required=False)
+-    device_name = forms.CharField(label=_("Device Name"),
+-                                  required=False,
+-                                  initial="vda",
+-                                  help_text=_("Volume mount point (e.g. 'vda' "
+-                                              "mounts at '/dev/vda')."))
+-    delete_on_terminate = forms.BooleanField(label=_("Delete on Terminate"),
+-                                             initial=False,
+-                                             required=False,
+-                                             help_text=_("Delete volume on "
+-                                                         "instance terminate"))
+-
+-    class Meta:
+-        name = _("Volume Options")
+-        permissions = ('openstack.services.volume',)
+-        help_text_template = ("project/instances/"
+-                              "_launch_volumes_help.html")
+-
+-    def clean(self):
+-        cleaned_data = super(VolumeOptionsAction, self).clean()
+-        volume_opt = cleaned_data.get('volume_type', None)
+-
+-        if volume_opt and not cleaned_data[volume_opt]:
+-            raise forms.ValidationError(_('Please choose a volume, or select '
+-                                          '%s.') % self.VOLUME_CHOICES[0][1])
+-        return cleaned_data
+-
+-    def _get_volume_display_name(self, volume):
+-        if hasattr(volume, "volume_id"):
+-            vol_type = "snap"
+-            visible_label = _("Snapshot")
+-        else:
+-            vol_type = "vol"
+-            visible_label = _("Volume")
+-        return (("%s:%s" % (volume.id, vol_type)),
+-                ("%s - %s GB (%s)" % (volume.display_name,
+-                                     volume.size,
+-                                     visible_label)))
+-
+-    def populate_volume_id_choices(self, request, context):
+-        volume_options = [("", _("Select Volume"))]
+-        try:
+-            volumes = [v for v in cinder.volume_list(self.request)
+-                       if v.status == api.cinder.VOLUME_STATE_AVAILABLE]
+-            volume_options.extend([self._get_volume_display_name(vol)
+-                                   for vol in volumes])
+-        except:
+-            exceptions.handle(self.request,
+-                              _('Unable to retrieve list of volumes.'))
+-        return volume_options
+-
+-    def populate_volume_snapshot_id_choices(self, request, context):
+-        volume_options = [("", _("Select Volume Snapshot"))]
+-        try:
+-            snapshots = cinder.volume_snapshot_list(self.request)
+-            snapshots = [s for s in snapshots
+-                         if s.status == api.cinder.VOLUME_STATE_AVAILABLE]
+-            volume_options.extend([self._get_volume_display_name(snap)
+-                                   for snap in snapshots])
+-        except:
+-            exceptions.handle(self.request,
+-                              _('Unable to retrieve list of volume '
+-                                'snapshots.'))
+-
+-        return volume_options
+-
+-
+-class VolumeOptions(workflows.Step):
+-    action_class = VolumeOptionsAction
+-    depends_on = ("project_id", "user_id")
+-    contributes = ("volume_type",
+-                   "volume_id",
+-                   "device_name",  # Can be None for an image.
+-                   "delete_on_terminate")
+-
+-    def contribute(self, data, context):
+-        context = super(VolumeOptions, self).contribute(data, context)
+-        # Translate form input to context for volume values.
+-        if "volume_type" in data and data["volume_type"]:
+-            context['volume_id'] = data.get(data['volume_type'], None)
+-
+-        if not context.get("volume_type", ""):
+-            context['volume_type'] = self.action.VOLUME_CHOICES[0][0]
+-            context['volume_id'] = None
+-            context['device_name'] = None
+-            context['delete_on_terminate'] = None
+-        return context
+-
+-
+-class SetInstanceDetailsAction(workflows.Action):
+-    SOURCE_TYPE_CHOICES = (
+-        ("image_id", _("Image")),
+-        ("instance_snapshot_id", _("Snapshot")),
+-    )
+-    source_type = forms.ChoiceField(label=_("Instance Source"),
+-                                    choices=SOURCE_TYPE_CHOICES)
+-    image_id = forms.ChoiceField(label=_("Image"), required=False)
+-    instance_snapshot_id = forms.ChoiceField(label=_("Instance Snapshot"),
+-                                             required=False)
+-    name = forms.CharField(max_length=80, label=_("Instance Name"))
+-    flavor = forms.ChoiceField(label=_("Flavor"),
+-                               help_text=_("Size of image to launch."))
+-    count = forms.ChoiceField(label=_("Instance Count"),
+-			       choices=[('1', _('1')),
+-                                             ('2', _('2')),
+-                                             ('3', _('3')),
+-                                             ('4', _('4'))],
+-                               help_text=_("Number of instances to lauch."))
+-    #count = forms.IntegerField(label=_("Instance Count"),
+-                              # min_value=1,
+-                              # initial=1,
+-                              # help_text=_("Number of instances to launch."))
+-
+-    class Meta:
+-        name = _("Details")
+-        help_text_template = ("project/instances/"
+-                              "_launch_details_help.html")
+-
+-    def clean(self):
+-        cleaned_data = super(SetInstanceDetailsAction, self).clean()
+-
+-        # Validate our instance source.
+-        source = cleaned_data['source_type']
+-        # There should always be at least one image_id choice, telling the user
+-        # that there are "No Images Available" so we check for 2 here...
+-        if source == 'image_id' and not \
+-                filter(lambda x: x[0] != '', self.fields['image_id'].choices):
+-            raise forms.ValidationError(_("There are no image sources "
+-                                          "available; you must first create "
+-                                          "an image before attempting to "
+-                                          "launch an instance."))
+-        if not cleaned_data[source]:
+-            raise forms.ValidationError(_("Please select an option for the "
+-                                          "instance source."))
+-
+-        # Prevent launching multiple instances with the same volume.
+-        # TODO(gabriel): is it safe to launch multiple instances with
+-        # a snapshot since it should be cloned to new volumes?
+-        count = cleaned_data.get('count', 1)
+-        volume_type = self.data.get('volume_type', None)
+-        if volume_type and count > 1:
+-            msg = _('Launching multiple instances is only supported for '
+-                    'images and instance snapshots.')
+-            raise forms.ValidationError(msg)
+-
+-        return cleaned_data
+-
+-    def _get_available_images(self, request, context):
+-        project_id = context.get('project_id', None)
+-        if not hasattr(self, "_public_images"):
+-            public = {"is_public": True,
+-                      "status": "active"}
+-            try:
+-                public_images, _more = glance.image_list_detailed(
+-                    request, filters=public)
+-            except:
+-                public_images = []
+-                exceptions.handle(request,
+-                                  _("Unable to retrieve public images."))
+-            self._public_images = public_images
+-
+-        # Preempt if we don't have a project_id yet.
+-        if project_id is None:
+-            setattr(self, "_images_for_%s" % project_id, [])
+-
+-        if not hasattr(self, "_images_for_%s" % project_id):
+-            owner = {"property-owner_id": project_id,
+-                     "status": "active"}
+-            try:
+-                owned_images, _more = glance.image_list_detailed(
+-                    request, filters=owner)
+-            except:
+-                owned_images = []
+-                exceptions.handle(request,
+-                                  _("Unable to retrieve images for "
+-                                    "the current project."))
+-            setattr(self, "_images_for_%s" % project_id, owned_images)
+-
+-        owned_images = getattr(self, "_images_for_%s" % project_id)
+-        images = owned_images + self._public_images
+-
+-        # Remove duplicate images
+-        image_ids = []
+-        final_images = []
+-        for image in images:
+-            if image.id not in image_ids:
+-                image_ids.append(image.id)
+-                final_images.append(image)
+-        return [image for image in final_images
+-                if image.container_format not in ('aki', 'ari')]
+-
+-    def populate_image_id_choices(self, request, context):
+-        images = self._get_available_images(request, context)
+-        choices = [(image.id, image.name)
+-                   for image in images
+-                   if image.properties.get("image_type", '') != "snapshot"]
+-        if choices:
+-            choices.insert(0, ("", _("Select Image")))
+-        else:
+-            choices.insert(0, ("", _("No images available.")))
+-        return choices
+-
+-    def populate_instance_snapshot_id_choices(self, request, context):
+-        images = self._get_available_images(request, context)
+-        choices = [(image.id, image.name)
+-                   for image in images
+-                   if image.properties.get("image_type", '') == "snapshot"]
+-        if choices:
+-            choices.insert(0, ("", _("Select Instance Snapshot")))
+-        else:
+-            choices.insert(0, ("", _("No snapshots available.")))
+-        return choices
+-
+-    def populate_flavor_choices(self, request, context):
+-        try:
+-            flavors = api.nova.flavor_list(request)
+-            flavor_list = [(flavor.id, "%s" % flavor.name)
+-                           for flavor in flavors]
+-        except:
+-            flavor_list = []
+-            exceptions.handle(request,
+-                              _('Unable to retrieve instance flavors.'))
+-        return sorted(flavor_list)
+-
+-    def get_help_text(self):
+-        extra = {}
+-        try:
+-            extra['usages'] = quotas.tenant_quota_usages(self.request)
+-            extra['usages_json'] = json.dumps(extra['usages'])
+-            flavors = json.dumps([f._info for f in
+-                                       api.nova.flavor_list(self.request)])
+-            extra['flavors'] = flavors
+-        except:
+-            exceptions.handle(self.request,
+-                              _("Unable to retrieve quota information."))
+-        return super(SetInstanceDetailsAction, self).get_help_text(extra)
+-
+-
+-class SetInstanceDetails(workflows.Step):
+-    action_class = SetInstanceDetailsAction
+-    contributes = ("source_type", "source_id", "name", "count", "flavor")
+-
+-    def prepare_action_context(self, request, context):
+-        if 'source_type' in context and 'source_id' in context:
+-            context[context['source_type']] = context['source_id']
+-        return context
+-
+-    def contribute(self, data, context):
+-        context = super(SetInstanceDetails, self).contribute(data, context)
+-        # Allow setting the source dynamically.
+-        if ("source_type" in context and "source_id" in context
+-                and context["source_type"] not in context):
+-            context[context["source_type"]] = context["source_id"]
+-
+-        # Translate form input to context for source values.
+-        if "source_type" in data:
+-            context["source_id"] = data.get(data['source_type'], None)
+-
+-        return context
+-
+-
+-KEYPAIR_IMPORT_URL = "horizon:project:access_and_security:keypairs:import"
+-
+-
+-class SetAccessControlsAction(workflows.Action):
+-    keypair = forms.DynamicChoiceField(label=_("Keypair"),
+-                                       required=False,
+-                                       help_text=_("Which keypair to use for "
+-                                                   "authentication."),
+-                                       add_item_link=KEYPAIR_IMPORT_URL)
+-    groups = forms.MultipleChoiceField(label=_("Security Groups"),
+-                                       required=True,
+-                                       initial=["default"],
+-                                       widget=forms.CheckboxSelectMultiple(),
+-                                       help_text=_("Launch instance in these "
+-                                                   "security groups."))
+-
+-    class Meta:
+-        name = _("Access & Security")
+-        help_text = _("Control access to your instance via keypairs, "
+-                      "security groups, and other mechanisms.")
+-
+-    def populate_keypair_choices(self, request, context):
+-        try:
+-            keypairs = api.nova.keypair_list(request)
+-            keypair_list = [(kp.name, kp.name) for kp in keypairs]
+-        except:
+-            keypair_list = []
+-            exceptions.handle(request,
+-                              _('Unable to retrieve keypairs.'))
+-        if keypair_list:
+-            if len(keypair_list) == 1:
+-                self.fields['keypair'].initial = keypair_list[0][0]
+-            keypair_list.insert(0, ("", _("Select a keypair")))
+-        else:
+-            keypair_list = (("", _("No keypairs available.")),)
+-        return keypair_list
+-
+-    def populate_groups_choices(self, request, context):
+-        try:
+-            groups = api.nova.security_group_list(request)
+-            security_group_list = [(sg.name, sg.name) for sg in groups]
+-        except:
+-            exceptions.handle(request,
+-                              _('Unable to retrieve list of security groups'))
+-            security_group_list = []
+-        return security_group_list
+-
+-
+-class SetAccessControls(workflows.Step):
+-    action_class = SetAccessControlsAction
+-    depends_on = ("project_id", "user_id")
+-    contributes = ("keypair_id", "security_group_ids")
+-
+-    def contribute(self, data, context):
+-        if data:
+-            post = self.workflow.request.POST
+-            context['security_group_ids'] = post.getlist("groups")
+-            context['keypair_id'] = data.get("keypair", "")
+-        return context
+-
+-
+-class CustomizeAction(workflows.Action):
+-    customization_script = forms.CharField(widget=forms.Textarea,
+-                                           label=_("Customization Script"),
+-                                           required=False,
+-                                           help_text=_("A script or set of "
+-                                                       "commands to be "
+-                                                       "executed after the "
+-                                                       "instance has been "
+-                                                       "built (max 16kb)."))
+-
+-    class Meta:
+-        name = _("Post-Creation")
+-        help_text_template = ("project/instances/"
+-                              "_launch_customize_help.html")
+-
+-
+-class PostCreationStep(workflows.Step):
+-    action_class = CustomizeAction
+-    contributes = ("customization_script",)
+-
+-
+-class SetNetworkAction(workflows.Action):
+-    network = forms.MultipleChoiceField(label=_("Networks"),
+-                                        required=True,
+-                                        widget=forms.CheckboxSelectMultiple(),
+-                                        error_messages={
+-                                            'required': _(
+-                                                "At least one network must"
+-                                                " be specified.")},
+-                                        help_text=_("Launch instance with"
+-                                                    "these networks"))
+-
+-    class Meta:
+-        name = _("Networking")
+-        permissions = ('openstack.services.network',)
+-        help_text = _("Select networks for your instance.")
+-
+-    def populate_network_choices(self, request, context):
+-        try:
+-            tenant_id = self.request.user.tenant_id
+-            networks = api.quantum.network_list_for_tenant(request, tenant_id)
+-            for n in networks:
+-                n.set_id_as_name_if_empty()
+-            network_list = [(network.id, network.name) for network in networks]
+-        except:
+-            network_list = []
+-            exceptions.handle(request,
+-                              _('Unable to retrieve networks.'))
+-        return network_list
+-
+-
+-class SetNetwork(workflows.Step):
+-    action_class = SetNetworkAction
+-    template_name = "project/instances/_update_networks.html"
+-    contributes = ("network_id",)
+-
+-    def contribute(self, data, context):
+-        if data:
+-            networks = self.workflow.request.POST.getlist("network")
+-            # If no networks are explicitly specified, network list
+-            # contains an empty string, so remove it.
+-            networks = [n for n in networks if n != '']
+-            if networks:
+-                context['network_id'] = networks
+-        return context
+-
+-
+-class LaunchInstance(workflows.Workflow):
+-    slug = "launch_instance"
+-    name = _("Launch Instance")
+-    finalize_button_name = _("Launch")
+-    success_message = _('Launched %(count)s named "%(name)s".')
+-    failure_message = _('Unable to launch %(count)s named "%(name)s".')
+-    success_url = "horizon:project:instances:index"
+-    default_steps = (SelectProjectUser,
+-                     SetInstanceDetails,
+-                     SetAccessControls,
+-                     SetNetwork,
+-                     #VolumeOptions,
+-                     PostCreationStep)
+-
+-    def format_status_message(self, message):
+-        name = self.context.get('name', 'unknown instance')
+-        count = self.context.get('count', 1)
+-        if int(count) > 1:
+-            return message % {"count": _("%s instances") % count,
+-                              "name": name}
+-        else:
+-            return message % {"count": _("instance"), "name": name}
+-
+-    def handle(self, request, context):
+-        custom_script = context.get('customization_script', '')
+-
+-        # Determine volume mapping options
+-        if context.get('volume_type', None):
+-            if(context['delete_on_terminate']):
+-                del_on_terminate = 1
+-            else:
+-                del_on_terminate = 0
+-            mapping_opts = ("%s::%s"
+-                            % (context['volume_id'], del_on_terminate))
+-            dev_mapping = {context['device_name']: mapping_opts}
+-        else:
+-            dev_mapping = None
+-
+-        netids = context.get('network_id', None)
+-        if netids:
+-            nics = [{"net-id": netid, "v4-fixed-ip": ""}
+-                    for netid in netids]
+-        else:
+-            nics = None
+-
+-        try:
+-            api.nova.server_create(request,
+-                                   context['name'],
+-                                   context['source_id'],
+-                                   context['flavor'],
+-                                   context['keypair_id'],
+-                                   normalize_newlines(custom_script),
+-                                   context['security_group_ids'],
+-                                   dev_mapping,
+-                                   nics=nics,
+-                                   instance_count=int(context['count']))
+-            return True
+-        except:
+-            exceptions.handle(request)
+-            return False
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/update_instance.py b/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/update_instance.py
+deleted file mode 100644
+index c90789b..0000000
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/charges/workflows/update_instance.py
++++ /dev/null
+@@ -1,178 +0,0 @@
+-# vim: tabstop=4 shiftwidth=4 softtabstop=4
+-
+-# Copyright 2012 United States Government as represented by the
+-# Administrator of the National Aeronautics and Space Administration.
+-# All Rights Reserved.
+-#
+-# Copyright 2012 Nebula, Inc.
+-#
+-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+-#    not use this file except in compliance with the License. You may obtain
+-#    a copy of the License at
+-#
+-#         http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#    Unless required by applicable law or agreed to in writing, software
+-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+-#    License for the specific language governing permissions and limitations
+-#    under the License.
+-
+-
+-from django.utils.translation import ugettext as _
+-from django.core.urlresolvers import reverse
+-
+-from horizon import exceptions
+-from horizon import workflows
+-from horizon import forms
+-from horizon import messages
+-
+-from openstack_dashboard import api
+-from openstack_dashboard.api import cinder, nova
+-from openstack_dashboard.api.base import is_service_enabled
+-
+-
+-INDEX_URL = "horizon:projects:instances:index"
+-ADD_USER_URL = "horizon:projects:instances:create_user"
+-
+-
+-class UpdateInstanceSecurityGroupsAction(workflows.Action):
+-    default_role = forms.CharField(required=False)
+-    role_member = forms.MultipleChoiceField(required=False)
+-
+-    def __init__(self, request, *args, **kwargs):
+-        super(UpdateInstanceSecurityGroupsAction, self).__init__(request,
+-                                                                 *args,
+-                                                                 **kwargs)
+-        err_msg = _('Unable to retrieve security group list. '
+-                    'Please try again later.')
+-        context = args[0]
+-        instance_id = context.get('instance_id', '')
+-
+-        self.fields['default_role'].initial = 'member'
+-
+-        # Get list of available security groups
+-        all_groups = []
+-        try:
+-            all_groups = api.nova.security_group_list(request)
+-        except:
+-            exceptions.handle(request, err_msg)
+-        groups_list = [(group.name, group.name) for group in all_groups]
+-
+-        instance_groups = []
+-        try:
+-            instance_groups = api.nova.server_security_groups(request,
+-                                                              instance_id)
+-        except Exception:
+-            exceptions.handle(request, err_msg)
+-        self.fields['role_member'].choices = groups_list
+-        self.fields['role_member'].initial = [group.name
+-                                              for group in instance_groups]
+-
+-    def handle(self, request, data):
+-        instance_id = data['instance_id']
+-
+-        # update instance security groups
+-        wanted_groups = set(data['wanted_groups'])
+-        try:
+-            current_groups = api.nova.server_security_groups(request,
+-                                                             instance_id)
+-        except:
+-            exceptions.handle(request, _("Couldn't get current security group "
+-                                         "list for instance %s."
+-                                         % instance_id))
+-            return False
+-
+-        current_group_names = set(map(lambda g: g.name, current_groups))
+-        groups_to_add = wanted_groups - current_group_names
+-        groups_to_remove = current_group_names - wanted_groups
+-
+-        num_groups_to_modify = len(groups_to_add | groups_to_remove)
+-        try:
+-            for group in groups_to_add:
+-                api.nova.server_add_security_group(request,
+-                                                   instance_id,
+-                                                   group)
+-                num_groups_to_modify -= 1
+-            for group in groups_to_remove:
+-                api.nova.server_remove_security_group(request,
+-                                                      instance_id,
+-                                                      group)
+-                num_groups_to_modify -= 1
+-        except Exception:
+-            exceptions.handle(request, _('Failed to modify %d instance '
+-                                         'security groups.'
+-                                         % num_groups_to_modify))
+-            return False
+-
+-        return True
+-
+-    class Meta:
+-        name = _("Security Groups")
+-        slug = "update_security_groups"
+-
+-
+-class UpdateInstanceSecurityGroups(workflows.UpdateMembersStep):
+-    action_class = UpdateInstanceSecurityGroupsAction
+-    help_text = _("From here you can add and remove security groups to "
+-                  "this project from the list of available security groups.")
+-    available_list_title = _("All Security Groups")
+-    members_list_title = _("Instance Security Groups")
+-    no_available_text = _("No security groups found.")
+-    no_members_text = _("No security groups enabled.")
+-    show_roles = False
+-    depends_on = ("instance_id",)
+-    contributes = ("wanted_groups",)
+-
+-    def contribute(self, data, context):
+-        request = self.workflow.request
+-        if data:
+-            context["wanted_groups"] = request.POST.getlist("role_member")
+-        return context
+-
+-
+-class UpdateInstanceInfoAction(workflows.Action):
+-    name = forms.CharField(required=True)
+-
+-    def handle(self, request, data):
+-        try:
+-            api.nova.server_update(request,
+-                                   data['instance_id'],
+-                                   data['name'])
+-        except:
+-            exceptions.handle(request, ignore=True)
+-            return False
+-        return True
+-
+-    class Meta:
+-        name = _("Info")
+-        slug = 'instance_info'
+-        help_text = _("From here you can edit the instance details.")
+-
+-
+-class UpdateInstanceInfo(workflows.Step):
+-    action_class = UpdateInstanceInfoAction
+-    depends_on = ("instance_id",)
+-    contributes = ("name",)
+-
+-
+-class UpdateInstance(workflows.Workflow):
+-    slug = "update_instance"
+-    name = _("Edit Instance")
+-    finalize_button_name = _("Save")
+-    success_message = _('Modified instance "%s".')
+-    failure_message = _('Unable to modify instance "%s".')
+-    success_url = "horizon:project:instances:index"
+-    default_steps = (UpdateInstanceInfo,
+-                     UpdateInstanceSecurityGroups)
+-
+-    def format_status_message(self, message):
+-        return message % self.context.get('name', 'unknown instance')
+-
+-
+-# NOTE(kspear): nova doesn't support instance security group management
+-#               by an admin. This isn't really the place for this code,
+-#               but the other ways of special-casing this are even messier.
+-class AdminUpdateInstance(UpdateInstance):
+-    success_url = "horizon:admin:instances:index"
+-    default_steps = (UpdateInstanceInfo,)
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/dashboard.py b/openstack-dashboard/openstack_dashboard/dashboards/project/dashboard.py
+index 781092a..f2c059f 100644
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/dashboard.py
++++ b/openstack-dashboard/openstack_dashboard/dashboards/project/dashboard.py
+@@ -27,7 +27,7 @@ class BasePanels(horizon.PanelGroup):
+               'instances',
+               'images_and_snapshots',
+               'access_and_security',
+-	      'charges',
++	      'charge_subscriptions',
+               'lvcc',
+               'lvdi',)
+ 
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/instances/tables.py b/openstack-dashboard/openstack_dashboard/dashboards/project/instances/tables.py
+index 9114a53..7c1e306 100644
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/instances/tables.py
++++ b/openstack-dashboard/openstack_dashboard/dashboards/project/instances/tables.py
+@@ -78,7 +78,9 @@ class TerminateInstance(tables.BatchAction):
+         return True
+ 
+     def action(self, request, obj_id):
+-        api.nova.server_delete(request, obj_id)
++        #api.nova.server_delete(request, obj_id)
++        LOG.debug('sunxin333')
++        api.nova.charge_subscription_update(request, 1, "test")
+ 
+ 
+ class RebootInstance(tables.BatchAction):
+diff --git a/openstack-dashboard/openstack_dashboard/dashboards/project/physical_servers/tables.py b/openstack-dashboard/openstack_dashboard/dashboards/project/physical_servers/tables.py
+index 1fa5549..dc6b177 100644
+--- a/openstack-dashboard/openstack_dashboard/dashboards/project/physical_servers/tables.py
++++ b/openstack-dashboard/openstack_dashboard/dashboards/project/physical_servers/tables.py
+@@ -40,6 +40,7 @@ class DeletePhysicalServer(tables.DeleteAction):
+         return False
+ 
+     def delete(self, request, obj_id):
++        api.nova.charge_subscription_update(request, 1, "tes1t")
+         return
+ 
+ 
+diff --git a/thinkcloud/doc/db/nova.sql b/thinkcloud/doc/db/nova.sql
+index 9be548b..f2fc01e 100644
+--- a/thinkcloud/doc/db/nova.sql
++++ b/thinkcloud/doc/db/nova.sql
+@@ -139,3 +139,29 @@ ALTER TABLE `thkcld_physical_servers`
+ /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+ /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+ /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
++
++
++-- --------------------------------------------------------
++
++--
++-- Table structure for table `thkcld_server_models`
++--
++
++DROP TABLE IF EXISTS `thkcld_charge_regions`;
++CREATE TABLE IF NOT EXISTS `thkcld_charge_regions` (
++  `id` int(11) NOT NULL AUTO_INCREMENT,
++  `created_at` datetime DEFAULT NULL,
++  `updated_at` datetime DEFAULT NULL,
++  `deleted_at` datetime DEFAULT NULL,
++  `deleted` tinyint(1) DEFAULT NULL,
++  `name` varchar(255) DEFAULT NULL,
++  PRIMARY KEY (`id`)
++) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=6 ;
++
++
++INSERT INTO `thkcld_charge_regions` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `name`) VALUES
++(1, NULL, NULL, NULL, 0, 'Beijing'),
++(2, NULL, NULL, NULL, 0, 'Daqing'),
++(3, '2013-12-07 02:58:16', NULL, '2013-12-07 05:59:01', 3, 'RD220'),
++(4, '2013-12-07 07:11:24', NULL, NULL, 0, 'RD320'),
++(5, '2013-12-07 07:16:34', NULL, '2013-12-07 07:32:16', 5, 'RD520');
+diff --git a/thinkcloud/novaclient/v1_1/contrib/charge_subscriptions.py b/thinkcloud/novaclient/v1_1/contrib/charge_subscriptions.py
+index 708a994..d198a9f 100644
+--- a/thinkcloud/novaclient/v1_1/contrib/charge_subscriptions.py
++++ b/thinkcloud/novaclient/v1_1/contrib/charge_subscriptions.py
+@@ -46,8 +46,19 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
+         body = {'charge_subscription':{'name':subscription_name}}
+         return self._create('/thkcld-charge_subscriptions', body, 'charge_subscription')
+ 
+-    def update(self, charge_subscription_id, charge_subscription_status):
+-        body = {'charge_subscription':{'status':charge_subscription_status}}
++    def update(self, charge_subscription_id,status=None,approver_id=None, resource_name=None, approved_at=None, deleted=None, expires_at=None):
++        body = {'charge_subscription': {
++		'status':status,
++		'approver_id':approver_id,
++		'resource_name':resource_name,
++		'approved_at':approved_at,
++		'deleted':deleted,
++                'expires_at':expires_at}}
++
++        for key in list(body['charge_subscription']):
++            if body['charge_subscription'][key] is None:
++                body['charge_subscription'].pop(key)
++
+ 	url = '/thkcld-charge_subscriptions/%s' % charge_subscription_id
+         return self._update(url, body, 'charge_subscription')
+ 
