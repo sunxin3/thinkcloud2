@@ -21,7 +21,9 @@ def physical_server_get(context,server_id):
 def physical_server_get_all(context):
         server_list = []
         session = get_session()
-        resultset = session.query(models.PhysicalServer).all()
+        query = model_query(context,models.PhysicalServer,session=session,
+                            read_deleted="no");
+        resultset = query.all()
         for row in resultset:
             row['state'] = row.rel_power_state.state
             row['model'] = row.rel_model.name
@@ -32,6 +34,14 @@ def physical_server_get_all(context):
             row['ram_ids'] = ','.join(str(v) for v in ram_ids)
             server_list.append(row)
         return server_list;    
+
+@require_admin_context        
+def physical_server_delete(context, server_id):
+    result = model_query(context, models.PhysicalServer).\
+             filter_by(id=server_id).\
+             soft_delete()
+
+    return result
 
     
 @require_admin_context    

@@ -28,7 +28,9 @@ from nova.api.openstack import wsgi
 from nova import db
 from nova import exception
 from nova.api.openstack import extensions
+from nova.openstack.common import log as logging
 
+LOG = logging.getLogger(__name__)
 authorize = extensions.extension_authorizer('compute', 'physical_servers')
  
 # Controller which would response for the request
@@ -75,7 +77,19 @@ class Physical_serversController(wsgi.Controller):
         return physical_servers 
  
     def delete(self, req, id):
+        
+        context = req.environ['nova.context']
+        authorize(context)
+
+        LOG.debug(_("Delete physical server with id: %s"), id, context=context)
+
+        rows_deleted = db.physical_server_delete(context, id)
+        LOG.debug(_("Delete physical server rows: %s"), rows_deleted, context=context)
+        if rows_deleted == 0:
+            raise exc.HTTPNotFound()
         return webob.Response(status_int=202)
+        
+    
     
 # extension declaration 
 class Physical_servers(extensions.ExtensionDescriptor):  
