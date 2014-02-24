@@ -16,6 +16,7 @@
 
 import logging
 import types
+from  datetime import * 
 
 from django import shortcuts
 from django import template
@@ -75,7 +76,8 @@ class ApproveChargeSubscription(tables.BatchAction):
         return True
 
     def action(self, request, obj_id):
-        api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id)
+	now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id, approved_at=now)
 
 class DenyChargeSubscription(tables.BatchAction):
     name = "deny"

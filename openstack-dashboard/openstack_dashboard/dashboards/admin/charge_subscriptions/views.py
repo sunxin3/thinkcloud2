@@ -40,11 +40,11 @@ class AdminIndexView(tables.DataTableView):
     template_name = 'admin/charge_subscriptions/index.html'
 
     def get_data(self):
-        charge_subscriptions_by_user = []
+        charge_subscriptions_to_approve = []
         try:
             charge_subscriptions = api.nova.charge_subscription_list(self.request)
             for charge_subscription in charge_subscriptions:
-                if self.request.user.id == charge_subscription.user_id:
+                if charge_subscription.status == 'apply':
                     charge_subscription.user_id = api.keystone.user_get(self.request, charge_subscription.user_id).name
                     try:
                         #TODO: fixme need to test it into product envirment.
@@ -61,8 +61,8 @@ class AdminIndexView(tables.DataTableView):
                     charge_subscription.approved_at = iso8601.parse_date(charge_subscription.approved_at).strftime("%Y-%m-%d %H:%M:%S")
                     charge_subscription.expires_at = iso8601.parse_date(charge_subscription.expires_at).strftime("%Y-%m-%d %H:%M:%S")
 
-                    charge_subscriptions_by_user.append(charge_subscription)
+                    charge_subscriptions_to_approve.append(charge_subscription)
         except:
             exceptions.handle(self.request,
                               _('Unable to retrieve charge subscriptions'))
-        return charge_subscriptions_by_user
+        return charge_subscriptions_to_approve

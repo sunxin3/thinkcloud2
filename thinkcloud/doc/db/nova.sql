@@ -25,7 +25,7 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `thkcld_disks`
 --
-
+DROP TABLE IF EXISTS `thkcld_disks`;
 CREATE TABLE IF NOT EXISTS `thkcld_disks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `manufacture` varchar(255) NOT NULL,
@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `thkcld_disks` (
 -- Table structure for table `thkcld_hbas`
 --
 
+DROP TABLE IF EXISTS `thkcld_hbas`;
 CREATE TABLE IF NOT EXISTS `thkcld_hbas` (
   `sn` varchar(255) NOT NULL,
   `type_id` int(11) NOT NULL,
@@ -62,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `thkcld_hbas` (
 --
 -- Table structure for table `thkcld_hba_types`
 --
-
+DROP TABLE IF EXISTS `thkcld_hba_types`;
 CREATE TABLE IF NOT EXISTS `thkcld_hba_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `model` varchar(64) NOT NULL,
@@ -89,7 +90,7 @@ INSERT INTO `thkcld_hba_types` (`id`, `model`, `manufacture`, `bandwidth`, `port
 --
 -- Table structure for table `thkcld_nics`
 --
-
+DROP TABLE IF EXISTS `thkcld_nics`;
 CREATE TABLE IF NOT EXISTS `thkcld_nics` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `is_onboard` tinyint(1) NOT NULL,
@@ -108,7 +109,7 @@ CREATE TABLE IF NOT EXISTS `thkcld_nics` (
 --
 -- Table structure for table `thkcld_physical_servers`
 --
-
+DROP TABLE IF EXISTS `thkcld_physical_servers`;
 CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created_at` datetime DEFAULT NULL,
@@ -160,6 +161,7 @@ INSERT INTO `thkcld_physical_servers` (`id`, `created_at`, `updated_at`, `delete
 -- Table structure for table `thkcld_power_states`
 --
 
+DROP TABLE IF EXISTS `thkcld_power_states`;
 CREATE TABLE IF NOT EXISTS `thkcld_power_states` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created_at` datetime DEFAULT NULL,
@@ -183,7 +185,7 @@ INSERT INTO `thkcld_power_states` (`id`, `created_at`, `updated_at`, `deleted_at
 --
 -- Table structure for table `thkcld_rams`
 --
-
+DROP TABLE IF EXISTS `thkcld_rams`;
 CREATE TABLE IF NOT EXISTS `thkcld_rams` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(64) NOT NULL,
@@ -212,6 +214,7 @@ INSERT INTO `thkcld_rams` (`id`, `type`, `frequence`, `capacity`, `quantity`, `c
 -- Table structure for table `thkcld_server_models`
 --
 
+DROP TABLE IF EXISTS `thkcld_server_models`;
 CREATE TABLE IF NOT EXISTS `thkcld_server_models` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created_at` datetime DEFAULT NULL,
@@ -239,6 +242,7 @@ INSERT INTO `thkcld_server_models` (`id`, `created_at`, `updated_at`, `deleted_a
 -- Table structure for table `thkcld_server_ram_map`
 --
 
+DROP TABLE IF EXISTS `thkcld_server_ram_map`;
 CREATE TABLE IF NOT EXISTS `thkcld_server_ram_map` (
   `server_id` int(11) NOT NULL,
   `ram_id` int(11) NOT NULL
