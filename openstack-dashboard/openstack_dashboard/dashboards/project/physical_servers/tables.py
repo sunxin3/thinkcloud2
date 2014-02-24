@@ -40,7 +40,7 @@ class DeletePhysicalServer(tables.DeleteAction):
         return False
 
     def delete(self, request, obj_id):
-        return
+        api.nova.physical_server_delete(request, obj_id)
 
 
 class AddPhysicalServer(tables.LinkAction):
