@@ -119,8 +119,10 @@ def get_server_categories(server,user_tenant_id):
     return categories
 
 def  total_memory(server):
-    return _("%sGB") % server.mem_total
+    return _("%sGB") % server.ram_sum
 
+def  total_disk(server):
+    return _("%sT") % server.disk_sum
 
 class ModelFilterAction(tables.LinkAction):
     name  = "model"
@@ -154,7 +156,7 @@ class PhysicalserversTable(tables.DataTable):
     
     memory = tables.Column(total_memory, verbose_name=_("Memory"))
     
-    storage = tables.Column("disk_total", verbose_name=_("Storage"))
+    storage = tables.Column(total_disk, verbose_name=_("Storage"))
     
     nics    = tables.Column("nic_num", verbose_name=_("Nics"))
 

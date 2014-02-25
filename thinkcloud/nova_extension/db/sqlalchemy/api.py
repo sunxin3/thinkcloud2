@@ -29,9 +29,27 @@ def physical_server_get_all(context):
             row['model'] = row.rel_model.name
             # get RAMs of server
             ram_ids = []
+            row['ram_sum'] = 0
             for ram_item in row.rel_ram:
                 ram_ids.append(ram_item.id)
+                row['ram_sum'] = row['ram_sum'] + ram_item.capacity * ram_item.quantity
             row['ram_ids'] = ','.join(str(v) for v in ram_ids)
+           
+            
+            disk_ids = []
+            row['disk_sum'] = 0 
+            for  disk_item in row.rel_disk:
+                disk_ids.append(disk_item.id)
+                row['disk_sum'] = row['disk_sum'] + disk_item.capacity
+            row['disk_ids'] = ','.join(str(v) for v in disk_ids)            
+            
+            nic_ids = []
+            row['nic_sum'] = "" 
+            for  nic_item in row.rel_nic:
+                nic_ids.append(nic_item.id)
+                row['nic_sum'] +=  str(nic_item.interface_number) + " X " + str(nic_item.interface) + "G\n"
+            row['nic_ids'] = ','.join(str(v) for v in nic_ids)      
+                        
             server_list.append(row)
         return server_list;    
 

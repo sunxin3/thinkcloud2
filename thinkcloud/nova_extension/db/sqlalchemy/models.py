@@ -11,6 +11,26 @@ server_ram_map = Table('thkcld_server_ram_map',BASE.metadata,
                               ForeignKey('thkcld_rams.id')),
                        )
 
+server_disk_map = Table('thkcld_server_disk_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('disk_id',Integer,
+                              ForeignKey('thkcld_disks.id')),
+                       )
+
+server_nic_map = Table('thkcld_server_nic_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('nic_id',Integer,
+                              ForeignKey('thkcld_nics.id')),
+                       )
+
+server_hba_map = Table('thkcld_server_hba_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('hba_id',String(128),
+                              ForeignKey('thkcld_hbas.sn')),
+                       )
 
 class PhysicalServer(BASE,NovaBase):
     """ Represents physical server of customized extension"""
@@ -53,6 +73,12 @@ class PhysicalServer(BASE,NovaBase):
     rel_ram = relationship("Ram",
                            secondary=server_ram_map,
                            backref="servers")
+    rel_disk = relationship("Disk",
+                           secondary=server_disk_map,
+                           backref="servers")
+    rel_nic  = relationship("Nic",
+                           secondary=server_nic_map,
+                           backref="servers")
     
     
 class ServerModel (BASE,NovaBase):
@@ -84,6 +110,7 @@ class Disk (BASE,NovaBase):
     manufacture = Column(String(255))
     model = Column(String(255))
     interface = Column(String(255))
+    capacity = Column(Float())
     rpm = Column(Integer)
     description = Column(String(255))
 
@@ -114,10 +141,11 @@ class Hba (BASE,NovaBase):
     """ Represents RAMs of customized extension"""
     __tablename__ = 'thkcld_hbas'
     
-    sn = Column(String(255),primary_key=True,nullable=False,)
+    sn = Column(String(128),primary_key=True,nullable=False,)
     
-    type_id = Column(Integer)
+    type_id = Column(Integer,ForeignKey('thkcld_hba_types.id'))
     description = Column(String(255))
+    rel_type = relationship("HbaType",backref=backref("Hba",uselist=False) )
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""
