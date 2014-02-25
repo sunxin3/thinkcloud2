@@ -124,6 +124,10 @@ def  total_memory(server):
 def  total_disk(server):
     return _("%sT") % server.disk_sum
 
+def  nic_sum(server):
+    return server.nic_sum
+
+
 class ModelFilterAction(tables.LinkAction):
     name  = "model"
     classes = ("btn-list")
@@ -158,7 +162,7 @@ class PhysicalserversTable(tables.DataTable):
     
     storage = tables.Column(total_disk, verbose_name=_("Storage"))
     
-    nics    = tables.Column("nic_num", verbose_name=_("Nics"))
+    nics    = tables.Column(nic_sum, verbose_name=_("Nics"))
 
     class Meta:
         name = "physicalservers"
