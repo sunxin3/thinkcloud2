@@ -76,7 +76,16 @@ class ApplyPhysicalServer(tables.BatchAction):
 
     def action(self, request, obj_id):
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        api.nova.charge_subscription_create(request, status='apply', product_id='2',resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name='test', applied_at=now)
+
+	charge_product_id = None
+	charge_products = api.nova.charge_product_list(request)
+        for charge_product in charge_products:
+	    if charge_product.item_name == 'physical_server':
+		charge_product_id = charge_product.id
+
+	resource_displayname = api.nova.physical_server_get(request, obj_id).name
+
+        api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
 
 def filter_tenants():
     return getattr(settings, 'IMAGES_LIST_FILTER_TENANTS', [])

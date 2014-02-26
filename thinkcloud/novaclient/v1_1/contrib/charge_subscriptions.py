@@ -47,8 +47,8 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
                 'user_id':user_id,
                 'project_id':project_id,
                 'product_id':product_id,
-                'resource_uuid':product_id,
-                'resource_name':product_id,
+                'resource_uuid':resource_uuid,
+                'resource_name':resource_name,
                 'applied_at':applied_at,
                 'status':status}}
 
