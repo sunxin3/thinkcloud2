@@ -42,8 +42,20 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
     def delete(self, charge_subscription):
         self._delete('/thkcld-charge_subscriptions/%s' % base.getid(charge_subscription))
 
-    def create(self, subscription_name):
-        body = {'charge_subscription':{'name':subscription_name}}
+    def create(self, user_id=None, project_id=None, product_id=None, resource_uuid=None, resource_name=None, applied_at=None, status=None):
+        body = {'charge_subscription': {
+                'user_id':user_id,
+                'project_id':project_id,
+                'product_id':product_id,
+                'resource_uuid':product_id,
+                'resource_name':product_id,
+                'applied_at':applied_at,
+                'status':status}}
+
+        for key in list(body['charge_subscription']):
+            if body['charge_subscription'][key] is None:
+                body['charge_subscription'].pop(key)
+
         return self._create('/thkcld-charge_subscriptions', body, 'charge_subscription')
 
     def update(self, charge_subscription_id,status=None,approver_id=None, resource_name=None, approved_at=None, deleted=None, expires_at=None):

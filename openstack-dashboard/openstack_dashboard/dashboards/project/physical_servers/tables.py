@@ -16,6 +16,7 @@
 
 import logging
 from collections import defaultdict
+from datetime import *
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -64,6 +65,18 @@ class EditPhysicalServer(tables.LinkAction):
         # authorized, don't allow the action.
         return False
 
+class ApplyPhysicalServer(tables.BatchAction):
+    name = "apply"
+    action_present = _("Apply")
+    action_past = _("Scheduled application of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    def allowed(self, request, server=None):
+        return True 
+
+    def action(self, request, obj_id):
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        api.nova.charge_subscription_create(request, status='apply', product_id='2',resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name='test', applied_at=now)
 
 def filter_tenants():
     return getattr(settings, 'IMAGES_LIST_FILTER_TENANTS', [])
@@ -171,5 +184,5 @@ class PhysicalserversTable(tables.DataTable):
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
         columns = ["name","nc_num" "model","status","ipmi", "public", "cpu","memory","storage","nics"]
-        table_actions = (ModelFilterAction,OwnerFilter,)
+        table_actions = (ModelFilterAction,OwnerFilter,ApplyPhysicalServer)
 
