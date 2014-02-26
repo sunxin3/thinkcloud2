@@ -61,7 +61,7 @@ class EditPhysicalServer(tables.LinkAction):
             return image.status in ("active",) and \
                 image.owner == request.user.tenant_id
         # We don't have bulk editing, so if there isn't an image that's
-        # authorized, don't allow the action.
+        # authorized, don't allow the action. filters
         return False
 
 
@@ -124,9 +124,6 @@ def  total_memory(server):
 def  total_disk(server):
     return _("%sT") % server.disk_sum
 
-def  nic_sum(server):
-    return server.nic_sum
-
 
 class ModelFilterAction(tables.LinkAction):
     name  = "model"
@@ -162,7 +159,8 @@ class PhysicalserversTable(tables.DataTable):
     
     storage = tables.Column(total_disk, verbose_name=_("Storage"))
     
-    nics    = tables.Column(nic_sum, verbose_name=_("Nics"))
+    nics    = tables.Column("nic_sum", verbose_name=_("Nics"),
+                            filters=(filters.linebreaksbr,))
 
     class Meta:
         name = "physicalservers"
