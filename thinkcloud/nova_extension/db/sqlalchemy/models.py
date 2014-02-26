@@ -41,7 +41,7 @@ class PhysicalServer(BASE,NovaBase):
     server_models_id = Column(Integer, ForeignKey('thkcld_server_models.id'),
                        nullable=False)
     is_public = Column(Boolean())
-    locked_by = Column(Integer)
+    subscription_id = Column(String(36))
     power_states_id = Column(Integer, ForeignKey('thkcld_power_states.id'),
                        nullable=False)
     nc_number = Column(String(64))
@@ -272,7 +272,7 @@ class ChargeSubscription(BASE,NovaBase):
 
     user_id = Column(String(64), nullable=False, index=True)
 
-    approver_id = Column(String(64), nullable=False, index=True)
+    approver_id = Column(String(64))
 
     project_id = Column(String(64), nullable=False, index=True)
 
@@ -291,11 +291,11 @@ class ChargeSubscription(BASE,NovaBase):
 
     resource_name = Column(String(255), nullable=False)
 
-    applied_at = Column(DateTime, nullable=False, index=True)
+    applied_at = Column(DateTime, nullable=False)
 
-    expires_at = Column(DateTime, nullable=False, index=True)
+    expires_at = Column(DateTime)
 
-    approved_at = Column(DateTime, nullable=False, index=True)
+    approved_at = Column(DateTime)
 
     status = Column(String(255), nullable=False)
 

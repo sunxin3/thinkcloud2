@@ -44,7 +44,7 @@ class Physical_ServerManager(base.ManagerWithFind):
         self._delete('/thkcld-physical_servers/%s' % base.getid(physical_server))
 
     def create(self, user_id,server_models_id,region_id,
-               locked_by,is_public,power_states_id,
+               subscription_id,is_public,power_states_id,
                nc_number,name, description,ipmi_address,
                cpu_fre,cpu_core_num,cpu_desc,
                mem_total,mem_desc,disk_num,disk_desc,
@@ -56,10 +56,10 @@ class Physical_ServerManager(base.ManagerWithFind):
         """
         Create a physical server.
 
-        :param user_id: Physical server user
+        :param user_id: Physical server owner user
         :param server_models_id: server model id
         :param region_id: server location id
-        :param locked_by: server was reserved by one request 
+        :param subscription_id: server related to user application
         :param is_public: the physical server resource is public or private
         :param power_states_id: server power state
         :param nic_number: the count number of nics
@@ -87,7 +87,7 @@ class Physical_ServerManager(base.ManagerWithFind):
         body = {'physical_server':{'user_id':user_id,
                                    'server_models_id':server_models_id,
                                    'region_id':region_id,
-                                   'locked_by':locked_by,
+                                   'subscription_id':subscription_id,
                                    'is_public':is_public,
                                    'power_states_id':power_states_id,
                                    'nc_number':nc_number,
@@ -147,10 +147,9 @@ def do_physical_server_list(cs, args):
     metavar='<region_id>',
     type=int,
     help='server location id')
-@utils.arg('locked_by',
-    metavar='<locked_by>',
-    type=int,
-    help='Server was reserved by one request')
+@utils.arg('subscription_id',
+    metavar='<subscription_id>',
+    help='Server related to user application')
 @utils.arg('is_public',
     metavar='<is_public>',
     help='Server is public or not')
@@ -222,7 +221,7 @@ def do_server_model_create(cs, args):
     Create a server model record
     """
     model = cs.server_models.create(args.user_id,args.server_models_id,
-               args.region_id,args.locked_by,args.is_public,
+               args.region_id,args.subscription_id,args.is_public,
                args.power_states_id,args.nc_number,args.name, 
                args.description,args.ipmi_address,args.cpu_fre,
                args.cpu_core_num,args.cpu_desc,args.mem_total,args.mem_desc,
