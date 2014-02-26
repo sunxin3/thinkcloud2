@@ -582,3 +582,7 @@ def charge_subscription_get(request, charge_subscription_id):
 def charge_subscription_update(request, charge_subscription_id, **kwargs):
     """update charge subscription."""
     return novaclient(request).charge_subscriptions.update(charge_subscription_id, **kwargs);
+
+def charge_subscription_create(request, **kwargs):
+    """update charge subscription."""
+    return novaclient(request).charge_subscriptions.create(**kwargs);

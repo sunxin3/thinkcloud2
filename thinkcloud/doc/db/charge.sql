@@ -141,13 +141,13 @@ CREATE TABLE `thkcld_charge_subscriptions` (
 
   `deleted_at` datetime DEFAULT NULL,
 
-  `deleted` tinyint(1) DEFAULT NULL,
+  `deleted` tinyint(1) DEFAULT 0,
 
   `id` int(11) NOT NULL AUTO_INCREMENT,
 
   `user_id` varchar(64) NOT NULL,
 
-  `approver_id` varchar(64) NOT NULL,
+  `approver_id` varchar(64) DEFAULT NULL,
 
   `project_id` varchar(64) NOT NULL,
 
@@ -157,13 +157,13 @@ CREATE TABLE `thkcld_charge_subscriptions` (
 
   `resource_name` varchar(255) NOT NULL,
 
-  `applied_at` datetime DEFAULT NULL,
+  `applied_at` datetime NOT NULL,
 
   `expires_at` datetime DEFAULT NULL,
 
   `approved_at` datetime DEFAULT NULL,
 
-  `status` varchar(255) DEFAULT NULL,  # comfirmed, creating, deleting
+  `status` varchar(255) NOT NULL,  # comfirmed, creating, deleting
 
   PRIMARY KEY (`id`),
 

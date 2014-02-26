@@ -48,7 +48,7 @@ class Charge_subscriptionsController(wsgi.Controller):
     
     
  
-    def create(self, req, id, body):
+    def create(self, req, body):
         charge_subscription = {}
         context = req.environ['nova.context']
         authorize(context)
