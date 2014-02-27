@@ -58,8 +58,10 @@ class AdminIndexView(tables.DataTableView):
                         charge_subscription.approver_id = 'N/A'
 
                     charge_subscription.applied_at = iso8601.parse_date(charge_subscription.applied_at).strftime("%Y-%m-%d %H:%M:%S")
-                    charge_subscription.approved_at = iso8601.parse_date(charge_subscription.approved_at).strftime("%Y-%m-%d %H:%M:%S")
-                    charge_subscription.expires_at = iso8601.parse_date(charge_subscription.expires_at).strftime("%Y-%m-%d %H:%M:%S")
+		    if charge_subscription.approved_at:
+                        charge_subscription.approved_at = iso8601.parse_date(charge_subscription.approved_at).strftime("%Y-%m-%d %H:%M:%S")
+		    if charge_subscription.expires_at:
+                        charge_subscription.expires_at = iso8601.parse_date(charge_subscription.expires_at).strftime("%Y-%m-%d %H:%M:%S")
 
                     charge_subscriptions_to_approve.append(charge_subscription)
         except:

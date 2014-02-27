@@ -217,6 +217,10 @@ insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,n
 
 insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'m1.xlarge');
 
+insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'server');
+
+insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'hph');
+
 #items
 insert into thkcld_charge_items (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'instance');
 
@@ -239,6 +243,10 @@ insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,reg
 insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,1,4,1,'hours',6000,4,'yuan');
 
 insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,1,5,1,'hours',6000,5,'yuan');
+
+insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,2,6,1,'hours',6000,6,'yuan');
+
+insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,3,7,1,'hours',6000,7,'yuan');
 
 # regions
 insert into thkcld_charge_regions (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'lenovo');

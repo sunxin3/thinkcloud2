@@ -571,6 +571,10 @@ def charge_product_list(request):
     """Get the list of available charge product."""
     return novaclient(request).charge_products.list();
 
+def charge_product_get(request, charge_product_id):
+    """Get charge product."""
+    return novaclient(request).charge_products.get(charge_product_id);
+
 def charge_subscription_list(request):
     """Get the list of available charge subscription."""
     return novaclient(request).charge_subscriptions.list();

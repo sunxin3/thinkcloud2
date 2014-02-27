@@ -434,8 +434,15 @@ def charge_product_delete(context, product_id):
 
 @require_admin_context
 def charge_product_get_all(context):
-    query = model_query(context, models.ChargeProduct)
-    return query.all();
+    product_list = []
+    session = get_session()
+    with session.begin():
+	resultset = session.query(models.ChargeProduct).all()
+    	for row in resultset:
+            row['item_name'] = row.item.name
+            row['item_type_name'] = row.item_type.name
+            product_list.append(row)
+    return product_list;
 
 @require_admin_context
 def charge_subscription_get(context, subscription_id):
