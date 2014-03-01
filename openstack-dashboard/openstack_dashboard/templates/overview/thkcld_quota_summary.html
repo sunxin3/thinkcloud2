@@ -13,15 +13,6 @@
 		<strong>{% trans "Available RAM" %}</strong>
 		<div id="jRamGauge" class="jgauge"></div>
 	</div>
-	<div class="thkcld_gauge">
-		<strong>{% trans "Available volumes" %}</strong>
-		<div id="jVolumeGauge" class="jgauge"></div>
-
-	</div>
-	<div class="thkcld_gauge">
-		<strong>{% trans "Available volume storage" %}</strong>
-		<div id="jGigaBytesGauge" class="jgauge"></div>
-	</div>
 
 </div>
 <div style="clear: both""></div>
@@ -51,7 +42,6 @@
 	instanceGauge.ticks.color = 'rgba(35, 200, 255, 0)';
 	instanceGauge.range.color = 'rgba(0, 0, 0, 0)';
 	
-	instanceGauge.value= {{ usage.quotas.instances.used|intcomma  }};
 	
 	// vCpuGauge
     var vCpuGauge = new jGauge(); // Create a new jGauge.
@@ -78,8 +68,7 @@
     vCpuGauge.ticks.color = 'rgba(35, 200, 255, 0)';
     vCpuGauge.range.color = 'rgba(0, 0, 0, 0)';
     
-    vCpuGauge.value= {{ usage.quotas.cores.used|intcomma  }};
-    
+     
  // ramGauge
     var ramGauge = new jGauge(); // Create a new jGauge.
     ramGauge.id = 'jRamGauge'; // Link the new jGauge to the placeholder DIV.
@@ -105,71 +94,21 @@
     ramGauge.ticks.color = 'rgba(35, 200, 255, 0)';
     ramGauge.range.color = 'rgba(0, 0, 0, 0)';
     
-    ramGauge.value= {{ usage.quotas.ram.used|intcomma  }};
+       
     
-    
- // volumeGauge
-    var volumeGauge = new jGauge(); // Create a new jGauge.
-    volumeGauge.id = 'jVolumeGauge'; // Link the new jGauge to the placeholder DIV.
-    volumeGauge.autoPrefix = autoPrefix.si; // Use SI prefixing (i.e. 1k = 1000).
-    volumeGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
-    volumeGauge.segmentStart = -225
-    volumeGauge.segmentEnd = 45
-    volumeGauge.width = 170;
-    volumeGauge.height = 170;
-    volumeGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
-    volumeGauge.needle.xOffset = 0;
-    volumeGauge.needle.yOffset = 0;
-    volumeGauge.label.yOffset = 55;
-    volumeGauge.label.color = '#0ce';
-    volumeGauge.label.precision = 0; // 0 decimals (whole numbers).
-    volumeGauge.label.suffix = '/{{ usage.quotas.volumes.quota|intcomma }}'; 
-    volumeGauge.ticks.labelRadius = 45;
-
-    volumeGauge.ticks.labelColor = '#0ce';
-    volumeGauge.ticks.start = 0;
-    volumeGauge.ticks.end = {{ usage.quotas.volumes.quota|intcomma }};
-    volumeGauge.ticks.count = 11;
-    volumeGauge.ticks.color = 'rgba(35, 200, 255, 0)';
-    volumeGauge.range.color = 'rgba(0, 0, 0, 0)';
-    
-    volumeGauge.value= {{ usage.quotas.volumes.used|intcomma  }};
-    
- // gigaBytesGauge
-    var gigaBytesGauge = new jGauge(); // Create a new jGauge.
-    gigaBytesGauge.id = 'jGigaBytesGauge'; // Link the new jGauge to the placeholder DIV.
-    gigaBytesGauge.autoPrefix = autoPrefix.binary; // Use SI prefixing (i.e. 1k = 1000).
-    gigaBytesGauge.imagePath = '/static/dashboard/img/jgauge_face_taco.png';
-    gigaBytesGauge.segmentStart = -225
-    gigaBytesGauge.segmentEnd = 45
-    gigaBytesGauge.width = 170;
-    gigaBytesGauge.height = 170;
-    gigaBytesGauge.needle.imagePath = '/static/dashboard/img/jgauge_needle_taco.png';
-    gigaBytesGauge.needle.xOffset = 0;
-    gigaBytesGauge.needle.yOffset = 0;
-    gigaBytesGauge.label.yOffset = 55;
-    gigaBytesGauge.label.color = '#0ce';
-    gigaBytesGauge.label.precision = 1; // 0 decimals (whole numbers).
-    gigaBytesGauge.label.suffix = 'GB/{{ usage.quotas.gigabytes.quota|intcomma }}GB'; 
-    gigaBytesGauge.ticks.labelRadius = 45;
-
-    gigaBytesGauge.ticks.labelColor = '#0ce';
-    gigaBytesGauge.ticks.start = 0;
-    gigaBytesGauge.ticks.end = {{ usage.quotas.gigabytes.quota|intcomma }};
-    gigaBytesGauge.ticks.count = 11;
-    gigaBytesGauge.ticks.color = 'rgba(35, 200, 255, 0)';
-    gigaBytesGauge.range.color = 'rgba(0, 0, 0, 0)';
-    
-    gigaBytesGauge.value= {{ usage.quotas.gigabytes.used|intcomma  }};
-    
+ 
     
 
 	// This function is called by jQuery once the page has finished loading.
 	$(document).ready(function() {
 		instanceGauge.init(); // Put the jGauge on the page by initializing it.
+		
 		vCpuGauge.init();
 		ramGauge.init();
-		volumeGauge.init();
-		gigaBytesGauge.init();
+		instanceGauge.setValue({{ usage.quotas.instances.used|intcomma  }},instanceGauge.needle[0]);
+		vCpuGauge.setValue ({{ usage.quotas.cores.used|intcomma  }},vCpuGauge.needle[0]);
+		ramGauge.setValue({{ usage.quotas.ram.used|intcomma  }},ramGauge.needle[0]);
+
+		
 	});
 </script>

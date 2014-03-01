@@ -79,6 +79,8 @@ class PhysicalServer(BASE,NovaBase):
     rel_nic  = relationship("Nic",
                            secondary=server_nic_map,
                            backref="servers")
+    rel_subscription  = relationship("ChargeSubscription",
+                             backref="servers")
     
     
 class ServerModel (BASE,NovaBase):
