@@ -21,9 +21,7 @@ from horizon import tables
 
 from openstack_dashboard.dashboards.project.physical_servers\
         .tables import (PhysicalserversTable, AddPhysicalServer, \
-                       EditPhysicalServer,  DeletePhysicalServer,\
-                       OwnerFilter,UpdateRow,\
-                       UpdateRow)
+                       EditPhysicalServer,  DeletePhysicalServer,)
 
 
 class AdminAddPhysicalServer(AddPhysicalServer):
@@ -42,7 +40,7 @@ class AdminEditPhysicalServer(EditPhysicalServer):
         return True
 
 
-class AdminOwnerFilter(OwnerFilter):
+class AdminOwnerFilter(tables.FixedFilterAction):
     def get_fixed_buttons(self):
         def make_dict(text, tenant, icon):
             return dict(text=text, value=tenant, icon=icon)
@@ -73,8 +71,22 @@ def get_server_categories(server,user_tenant_id):
     return categories
 
 
-class AdminUpdateRow(UpdateRow):pass
+class UpdateRow(tables.Row):
+    ajax = True
 
+    def get_data(self, request, server_id):
+        server = api.nova.physical_server_get(request, server_id)
+        return server
+
+    def load_cells(self, server=None):
+        super(UpdateRow, self).load_cells(server)
+        # Tag the row with the server category for client-side filtering.
+        server = self.datum
+        my_tenant_id = self.table.request.user.tenant_id
+        server_categories = get_server_categories(server, my_tenant_id)
+        for category in server_categories:
+            self.classes.append('category-' + category)
+            
 
 class AdminPhysicalserversTable(PhysicalserversTable):
     name = tables.Column("name",
@@ -83,7 +95,7 @@ class AdminPhysicalserversTable(PhysicalserversTable):
 
     class Meta:
         name = "physicalservers"
-        row_class = AdminUpdateRow
+        row_class = UpdateRow
         verbose_name = _("Physical Servers")
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
         table_actions = (AdminOwnerFilter,AdminAddPhysicalServer, AdminDeletePhysicalServer)
