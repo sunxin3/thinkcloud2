@@ -110,6 +110,6 @@ class AdminChargesTable(tables.DataTable):
     class Meta:
         name = "instances"
         verbose_name = _("Instances")
-        status_columns = ["status"]
+        #status_columns = ["status"]
         table_actions = (ApproveChargeSubscription, DenyChargeSubscription)
         row_class = AdminUpdateRow
