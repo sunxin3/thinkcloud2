@@ -13,6 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from collections import defaultdict
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,7 +21,9 @@ from horizon import tables
 
 from openstack_dashboard.dashboards.project.physical_servers\
         .tables import (PhysicalserversTable, AddPhysicalServer, \
-                       EditPhysicalServer,  DeletePhysicalServer)
+                       EditPhysicalServer,  DeletePhysicalServer,\
+                       OwnerFilter,UpdateRow,\
+                       UpdateRow)
 
 
 class AdminAddPhysicalServer(AddPhysicalServer):
@@ -28,15 +31,49 @@ class AdminAddPhysicalServer(AddPhysicalServer):
 
 
 class AdminDeletePhysicalServer(DeletePhysicalServer):
-    def allowed(self, request, image=None):
+    def allowed(self, request, server=None):
         return True
 
 
 class AdminEditPhysicalServer(EditPhysicalServer):
     url = "horizon:admin:images:update"
 
-    def allowed(self, request, image=None):
+    def allowed(self, request, server=None):
         return True
+
+
+class AdminOwnerFilter(OwnerFilter):
+    def get_fixed_buttons(self):
+        def make_dict(text, tenant, icon):
+            return dict(text=text, value=tenant, icon=icon)
+        buttons = [make_dict('Public', 'public', 'icon-star')]
+        buttons.append(make_dict('Private Reserved', 'private_reserved', 'icon-home'))
+        buttons.append(make_dict('Private Free', 'private_free', 'icon-fire'))
+      
+        return buttons
+
+    def categorize(self, table, servers):
+        user_tenant_id = table.request.user.tenant_id
+        tenants = defaultdict(list)
+        for server in servers:
+            categories = get_server_categories(server,user_tenant_id)
+            for category in categories:
+                tenants[category].append(server)
+        return tenants
+
+def get_server_categories(server,user_tenant_id):
+    categories = []
+    if server.is_public: 
+        categories.append('public')
+    else:
+        if server.subscription_id == None: 
+            categories.append('private_free')
+        else:
+            categories.append('private_reserved')
+    return categories
+
+
+class AdminUpdateRow(UpdateRow):pass
 
 
 class AdminPhysicalserversTable(PhysicalserversTable):
@@ -46,6 +83,8 @@ class AdminPhysicalserversTable(PhysicalserversTable):
 
     class Meta:
         name = "physicalservers"
+        row_class = AdminUpdateRow
         verbose_name = _("Physical Servers")
-        table_actions = (AdminAddPhysicalServer, AdminDeletePhysicalServer)
+        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
+        table_actions = (AdminOwnerFilter,AdminAddPhysicalServer, AdminDeletePhysicalServer)
         row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer)

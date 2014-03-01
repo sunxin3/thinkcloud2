@@ -106,7 +106,7 @@ class UpdateRow(tables.Row):
 
     def load_cells(self, server=None):
         super(UpdateRow, self).load_cells(server)
-        # Tag the row with the image category for client-side filtering.
+        # Tag the row with the server category for client-side filtering.
         server = self.datum
         my_tenant_id = self.table.request.user.tenant_id
         server_categories = get_server_categories(server, my_tenant_id)
@@ -118,7 +118,7 @@ class OwnerFilter(tables.FixedFilterAction):
         def make_dict(text, tenant, icon):
             return dict(text=text, value=tenant, icon=icon)
         buttons = [make_dict('Reserved by Me', 'reserved', 'icon-star')]
-        buttons.append(make_dict('Free Avaiale', 'free', 'icon-home'))
+        buttons.append(make_dict('Free Available', 'free', 'icon-home'))
       
         return buttons
 
@@ -128,6 +128,8 @@ class OwnerFilter(tables.FixedFilterAction):
         for server in servers:
             categories = get_server_categories(server,user_tenant_id)
             for category in categories:
+                if category == "free":
+                    server.ipmi_address = "N/A"
                 tenants[category].append(server)
         return tenants
     
@@ -186,10 +188,9 @@ class PhysicalserversTable(tables.DataTable):
     class Meta:
         name = "physicalservers"
         row_class = UpdateRow
-        status_columns = ["status"]
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name","nc_num" "model","status","ipmi", "public", "cpu","memory","storage","nics"]
+        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
         table_actions = (OwnerFilter,ApplyPhysicalServer)
 

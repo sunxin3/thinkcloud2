@@ -114,6 +114,7 @@ class Disk (BASE,NovaBase):
     interface = Column(String(255))
     capacity = Column(Float())
     rpm = Column(Integer)
+    quantity =  Column(Integer)
     description = Column(String(255))
 
 class Nic (BASE,NovaBase):
@@ -124,7 +125,7 @@ class Nic (BASE,NovaBase):
     
     is_onboard = Column(Boolean())
     interface_number = Column(Integer)
-    interface = Column(String(255))
+    interface = Column(Integer)
     description = Column(String(255))
 
 class HbaType (BASE,NovaBase):

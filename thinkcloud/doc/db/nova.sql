@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 25, 2014 at 09:39 PM
+-- Generation Time: Mar 01, 2014 at 09:27 PM
 -- Server version: 5.5.34
 -- PHP Version: 5.3.10-1ubuntu3.8
 
@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS `thkcld_disks` (
   `capacity` float NOT NULL COMMENT 'Unit:TB',
   `interface` varchar(255) NOT NULL,
   `rpm` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime NOT NULL,
@@ -46,12 +47,12 @@ CREATE TABLE IF NOT EXISTS `thkcld_disks` (
 -- Dumping data for table `thkcld_disks`
 --
 
-INSERT INTO `thkcld_disks` (`id`, `manufacture`, `model`, `capacity`, `interface`, `rpm`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
-(1, 'SEAGATE', 'ST1000NM0033', 1, 'SATA', 7200, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
-(2, 'IBM', '39M4514', 0.5, 'SATA', 7200, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
-(3, 'Western Digital', 'WD3001BKHG', 0.3, 'SAS 6Gb/s', 10000, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
-(4, 'Western Digital', 'WD2001FYYG', 2, 'SAS 6Gb/s', 7200, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
-(5, 'IBM', '81Y9794', 2, 'SATA', 7200, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
+INSERT INTO `thkcld_disks` (`id`, `manufacture`, `model`, `capacity`, `interface`, `rpm`, `quantity`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
+(1, 'SEAGATE', 'ST1000NM0033', 1, 'SATA', 7200, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(2, 'IBM', '39M4514', 0.5, 'SATA', 7200, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(3, 'Western Digital', 'WD3001BKHG', 0.3, 'SAS 6Gb/s', 10000, 4, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(4, 'Western Digital', 'WD2001FYYG', 2, 'SAS 6Gb/s', 7200, 2, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(5, 'IBM', '81Y9794', 2, 'SATA', 7200, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
 
 -- --------------------------------------------------------
 
@@ -154,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
   `user_id` varchar(255) DEFAULT NULL,
   `server_models_id` int(11) NOT NULL,
   `region_id` int(11) DEFAULT NULL,
-  `subscription_id` varchar(36) DEFAULT NULL COMMENT 'server related to user application',
+  `subscription_id` varchar(64) DEFAULT NULL COMMENT 'server can be locked by one server apply',
   `is_public` tinyint(1) DEFAULT NULL,
   `power_states_id` int(11) NOT NULL DEFAULT '0',
   `nc_number` varchar(64) DEFAULT NULL,
@@ -180,15 +181,17 @@ CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
   PRIMARY KEY (`id`),
   KEY `fk_servers_server_models_idx` (`server_models_id`),
   KEY `fk_servers_power_states1_idx` (`power_states_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
 
 --
 -- Dumping data for table `thkcld_physical_servers`
 --
 
 INSERT INTO `thkcld_physical_servers` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `user_id`, `server_models_id`, `region_id`, `subscription_id`, `is_public`, `power_states_id`, `nc_number`, `name`, `description`, `ipmi_address`, `cpu_fre`, `cpu_core_num`, `cpu_desc`, `mem_total`, `mem_desc`, `disk_num`, `disk_desc`, `nic_num`, `nic_desc`, `hba_attached`, `hba_port_num`, `cpu_socket_num`, `disk_total`, `raid_internal`, `raid_external`, `hba_cards_id`) VALUES
-(1, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, NULL, 1, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', 3.4, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0),
-(2, '2013-11-27 00:00:00', '2013-12-03 00:00:00', '2014-02-24 08:02:05', 0, NULL, 2, NULL, NULL, 1, 1, 'NC10001', 'Spiderman', NULL, '12.12.12.13', 3.5, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, '1 x 500 GB 7200 RPM 3.5" DC SATA', NULL, NULL, NULL, NULL, 2, 500, NULL, NULL, NULL);
+(1, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, '2', 1, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', 3.4, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0),
+(2, '2013-11-27 00:00:00', '2014-03-01 13:15:34', '2014-02-24 08:02:05', 0, NULL, 2, NULL, NULL, 1, 1, 'NC10001', 'Spiderman', NULL, '12.12.12.13', 3.5, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, '1 x 500 GB 7200 RPM 3.5" DC SATA', NULL, NULL, NULL, NULL, 2, 500, NULL, NULL, NULL),
+(3, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, NULL, NULL, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', 3.4, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0),
+(4, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, '2', NULL, 1, 'NC100004', 'Ironman4', NULL, '10.12.12.14', 3.4, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0);
 
 -- --------------------------------------------------------
 

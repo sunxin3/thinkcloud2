@@ -40,7 +40,7 @@ def physical_server_get_all(context):
             row['disk_sum'] = 0 
             for  disk_item in row.rel_disk:
                 disk_ids.append(disk_item.id)
-                row['disk_sum'] = row['disk_sum'] + disk_item.capacity
+                row['disk_sum'] = row['disk_sum'] + disk_item.capacity * disk_item.quantity
             row['disk_ids'] = ','.join(str(v) for v in disk_ids)            
             
             nic_ids = []
@@ -48,10 +48,17 @@ def physical_server_get_all(context):
             for  nic_item in row.rel_nic:
                 nic_ids.append(nic_item.id)
                 row['nic_sum'] +=  str(nic_item.interface_number) + " X " + str(nic_item.interface) + "G\n"
-            row['nic_ids'] = ','.join(str(v) for v in nic_ids)      
-                        
+            row['nic_ids'] = ','.join(str(v) for v in nic_ids) 
+                 
+            row['subscrib_project_id']  = None           
             if row.subscription_id != None :
-                row['subscrib_project_id'] = row.rel_subscription.project_id         
+                try:
+                    charge_subscription_get(context,row.subscription_id)
+                except :
+                    row.subscription_id = None
+                    print "throw exception go away!"
+                else:    
+                    row['subscrib_project_id'] = row.rel_subscription.project_id         
             
             server_list.append(row)
         return server_list;    
