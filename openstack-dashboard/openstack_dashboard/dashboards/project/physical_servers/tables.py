@@ -106,7 +106,12 @@ class UpdateRow(tables.Row):
 
     def load_cells(self, server=None):
         super(UpdateRow, self).load_cells(server)
-
+        # Tag the row with the image category for client-side filtering.
+        server = self.datum
+        my_tenant_id = self.table.request.user.tenant_id
+        server_categories = get_server_categories(server, my_tenant_id)
+        for category in server_categories:
+            self.classes.append('category-' + category)
       
 class OwnerFilter(tables.FixedFilterAction):
     def get_fixed_buttons(self):
@@ -180,6 +185,7 @@ class PhysicalserversTable(tables.DataTable):
 
     class Meta:
         name = "physicalservers"
+        row_class = UpdateRow
         status_columns = ["status"]
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
