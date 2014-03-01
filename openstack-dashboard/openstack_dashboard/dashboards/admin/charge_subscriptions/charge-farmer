@@ -18,19 +18,13 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 if __name__ == '__main__':
-    mail_to_list = ["chenzg4@lenovo.com", "sunxin3@lenovo.com"]
-    mail_host="localhost"
 
     while True:
-#        current_time = utils.utcnow()
-#        print "-" * 30, str(current_time)
         print "------------ farming ----------"
 
         tomorrow = datetime_safe.datetime.now() + timedelta(days=10)
         expiration = datetime_safe.datetime.isoformat(tomorrow)
-	print expiration
-	print "xxxxx"
-        send_mail(mail_to_list, "test", "Think Cloud Register Mail", "xxxxx")
+        send_mail("test", "Think Cloud Register Mail")
 
 	charge_subscriptions = session.query(models.ChargeSubscription).all()
         for sub in charge_subscriptions:
