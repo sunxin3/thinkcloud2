@@ -50,6 +50,9 @@ def physical_server_get_all(context):
                 row['nic_sum'] +=  str(nic_item.interface_number) + " X " + str(nic_item.interface) + "G\n"
             row['nic_ids'] = ','.join(str(v) for v in nic_ids)      
                         
+            if row.subscription_id != None :
+                row['subscrib_project_id'] = row.rel_subscription.project_id         
+            
             server_list.append(row)
         return server_list;    
 

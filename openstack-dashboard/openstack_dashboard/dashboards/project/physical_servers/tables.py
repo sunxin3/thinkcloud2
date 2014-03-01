@@ -100,44 +100,44 @@ def filter_tenant_ids():
 class UpdateRow(tables.Row):
     ajax = True
 
-    def get_data(self, request, image_id):
-        image = api.glance.image_get(request, image_id)
-        return image
+    def get_data(self, request, server_id):
+        server = api.nova.physical_server_get(request, server_id)
+        return server
 
-    def load_cells(self, image=None):
-        super(UpdateRow, self).load_cells(image)
+    def load_cells(self, server=None):
+        super(UpdateRow, self).load_cells(server)
 
       
 class OwnerFilter(tables.FixedFilterAction):
     def get_fixed_buttons(self):
         def make_dict(text, tenant, icon):
             return dict(text=text, value=tenant, icon=icon)
-
-        buttons = [make_dict('Free Avaiale', 'project', 'icon-home')]
-        buttons.append(make_dict('Reserved by Me', 'shared', 'icon-star'))
-        buttons.append(make_dict('Power On', 'public', 'icon-play'))
-        buttons.append(make_dict('Power Off', 'public', 'icon-stop'))
+        buttons = [make_dict('Reserved by Me', 'reserved', 'icon-star')]
+        buttons.append(make_dict('Free Avaiale', 'free', 'icon-home'))
+      
         return buttons
 
-    def categorize(self, table, images):
+    def categorize(self, table, servers):
         user_tenant_id = table.request.user.tenant_id
         tenants = defaultdict(list)
-        for im in images:
-            categories = [] #get_image_categories(im, user_tenant_id)
+        for server in servers:
+            categories = get_server_categories(server,user_tenant_id)
             for category in categories:
-                tenants[category].append(im)
+                tenants[category].append(server)
         return tenants
     
 def get_server_categories(server,user_tenant_id):
     categories = []
-    if server.is_public:
-        categories.append('public')
-    if server.owner == user_tenant_id:
-        categories.append('project')
-    elif server.owner in filter_tenant_ids():
-        categories.append(server.owner)
-    elif not server.is_public:
-        categories.append('shared')
+    if server.is_public: 
+        if server.subscription_id == None:
+            categories.append('free')
+        elif server.subscrib_project_id == user_tenant_id:
+            categories.append('reserved')
+    else:
+        if server.subscription_id == None: 
+            categories.append('private_free')
+        else:
+            categories.append('private_reserved')
     return categories
 
 def  total_memory(server):
@@ -147,12 +147,6 @@ def  total_disk(server):
     return _("%sT") % server.disk_sum
 
 
-class ModelFilterAction(tables.LinkAction):
-    name  = "model"
-    classes = ("btn-list")
-    def get_link_url(self, datum=None):
-        
-        return 
 
 
 class PhysicalserversTable(tables.DataTable):
@@ -191,5 +185,5 @@ class PhysicalserversTable(tables.DataTable):
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
         columns = ["name","nc_num" "model","status","ipmi", "public", "cpu","memory","storage","nics"]
-        table_actions = (ModelFilterAction,OwnerFilter,ApplyPhysicalServer)
+        table_actions = (OwnerFilter,ApplyPhysicalServer)
 
