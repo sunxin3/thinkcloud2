@@ -76,7 +76,19 @@ def physical_server_delete(context, server_id):
 
     return result
 
-    
+@require_admin_context
+def physical_server_update(context,server_id,values):
+    LOG.debug("Update physical server with id: %s" % server_id)
+    session = get_session()
+    with session.begin():
+	query = model_query(context,models.PhysicalServer,session=session,
+                            read_deleted="yes").filter_by(id=server_id)
+        physical_server_ref= query.first()
+
+#	physical_server_ref = physical_server_get(context, server_id)
+    	physical_server_ref.update(values)
+    	physical_server_ref.save(session=session)
+
 @require_admin_context    
 def server_model_get(context,model_id):
     session = get_session()

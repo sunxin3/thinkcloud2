@@ -87,7 +87,10 @@ class ApplyPhysicalServer(tables.BatchAction):
 		         charge_product_id = charge_product.id
 
         resource_displayname = api.nova.physical_server_get(request, obj_id).name
-        api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+        subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+
+        #LOG.debug("test for sunxin %s" % subscription.id)
+        api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
 
         #Send people mail
         applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name

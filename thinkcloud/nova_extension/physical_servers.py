@@ -51,8 +51,8 @@ class Physical_serversController(wsgi.Controller):
         physical_servers = {}
         context = req.environ['nova.context']
         authorize(context)
- 
-        # real logic to create the object
+        physical_servers["physical_servers"] = db.physical_server_create(context, body['physical_server'])
+
         return physical_servers 
  
     def show(self, req, id):
@@ -68,13 +68,17 @@ class Physical_serversController(wsgi.Controller):
         physical_servers["physical_server"] = physical_server 
         return physical_servers 
  
-    def update(self, req):
+    def update(self, req, id, body):
         physical_servers = {}
         context = req.environ['nova.context']
         authorize(context)
  
-        # real logic for update object
-        return physical_servers 
+        LOG.debug("Update physical server with id: %s" % id)
+        num_updated = db.physical_server_update(context, id,  body['physical_server'])
+        LOG.debug("Update physical server rows: %s" %  num_updated)
+        if num_updated == 0:
+            raise exc.HTTPNotFound()
+        return webob.Response(status_int=202)      
  
     def delete(self, req, id):
         

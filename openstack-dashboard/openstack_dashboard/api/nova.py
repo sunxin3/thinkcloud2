@@ -567,6 +567,10 @@ def physical_server_delete(request, server_id):
     """delete physical server by id."""
     return novaclient(request).physical_servers.delete(server_id);
 
+def physical_server_update(request, server_id, **kwargs):
+    """update physical server by id."""
+    return novaclient(request).physical_servers.update(server_id, **kwargs);
+
 def charge_product_list(request):
     """Get the list of available charge product."""
     return novaclient(request).charge_products.list();

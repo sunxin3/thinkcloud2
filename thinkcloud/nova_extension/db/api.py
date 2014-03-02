@@ -12,6 +12,10 @@ def physical_server_get_all(context):
     """Get a physical server or raise if it doesn't exist"""
     return IMPL.physical_server_get_all(context)
 
+def physical_server_update(context,server_id,values):
+    """Update a physical server """
+    return IMPL.physical_server_update(context,server_id,values)
+
 def physical_server_delete(context,server_id):
     """Delete a server model """
     return IMPL.physical_server_delete(context,server_id)
