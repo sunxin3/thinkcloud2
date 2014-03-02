@@ -19,6 +19,8 @@ def physical_server_get(context,server_id):
         result['disks'] = result.rel_disk
         result['rams'] = result.rel_ram
         result['hbas'] = result.rel_hba
+        result['subscription'] = result.rel_subscription
+        
         
         return result 
 
@@ -64,6 +66,9 @@ def physical_server_get_all(context):
                     print "throw exception go away!"
                 else:    
                     row['subscrib_project_id'] = row.rel_subscription.project_id         
+	                #Added by sunxin for fetching more subscription details
+                    row['subscrib_user_id'] = row.rel_subscription.user_id         
+                    row['subscrib_expires_at'] = row.rel_subscription.expires_at        
             
             server_list.append(row)
         return server_list;    

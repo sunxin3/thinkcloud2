@@ -66,16 +66,96 @@ class EditPhysicalServer(tables.LinkAction):
         # authorized, don't allow the action. filters
         return False
 
+class RebootPhysicalServer(tables.BatchAction):
+    name = "reboot"
+    action_present = _("Reboot")
+    action_past = _("Scheduled reboot of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("ajax-modal", "btn-edit")    
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+    
+    def action(self, request, obj_id):
+          now = datetime_safe.datetime.now().isoformat()
+    
+          charge_product_id = None
+          charge_products = api.nova.charge_product_list(request)
+          for charge_product in charge_products:
+              if charge_product.item_name == 'physical_server':
+                  charge_product_id = charge_product.id
+    
+          resource_displayname = api.nova.physical_server_get(request, obj_id).name
+          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+    
+          #LOG.debug("test for sunxin %s" % subscription.id)
+          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
+    
+          #Send people mail
+          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+          #TODO by sunxin
+          applier_mail = applier_mail_perfix + '@lenovo.com'
+          
+          mail_title = "[Notice] Server Application Issued"
+          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+          send_mail(mail_title, mail_content, applier_mail)
+    
+class ShutdownPhysicalServer(tables.BatchAction):
+    name = "shutdown"
+    action_present = _("Shutdown")
+    action_past = _("Scheduled shutdown of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("btn-danger", "btn-reboot")    
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+    
+    def action(self, request, obj_id):
+          now = datetime_safe.datetime.now().isoformat()
+    
+          charge_product_id = None
+          charge_products = api.nova.charge_product_list(request)
+          for charge_product in charge_products:
+              if charge_product.item_name == 'physical_server':
+                  charge_product_id = charge_product.id
+    
+          resource_displayname = api.nova.physical_server_get(request, obj_id).name
+          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+    
+          #LOG.debug("test for sunxin %s" % subscription.id)
+          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
+    
+          #Send people mail
+          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+          #TODO by sunxin
+          applier_mail = applier_mail_perfix + '@lenovo.com'
+          
+          mail_title = "[Notice] Server Application Issued"
+          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+          send_mail(mail_title, mail_content, applier_mail)
+
+
 class ApplyPhysicalServer(tables.BatchAction):
     name = "apply"
     action_present = _("Apply")
     action_past = _("Scheduled application of")
     data_type_singular = _("Physical Server")
     data_type_plural = _("Physical Servers")
-    classes = ('btn-danger', 'btn-reboot')
+    classes = ("btn-danger", "btn-reboot")
     
-    def allowed(self, request, server=None):
-        return True 
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id == None:
+            return True
+        return False
 
     def action(self, request, obj_id):
         now = datetime_safe.datetime.now().isoformat()
@@ -206,5 +286,5 @@ class PhysicalserversTable(tables.DataTable):
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
-        table_actions = (OwnerFilter,ApplyPhysicalServer)
-
+        table_actions = (OwnerFilter,)
+        row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer)
