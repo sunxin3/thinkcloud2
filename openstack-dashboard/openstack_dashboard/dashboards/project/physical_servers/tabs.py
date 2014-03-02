@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -22,6 +23,7 @@ from horizon import tabs
 
 from openstack_dashboard import api
 
+LOG = logging.getLogger(__name__)
 
 class OverviewTab(tabs.Tab):
     name = _("Overview")
@@ -37,6 +39,7 @@ class OverviewTab(tabs.Tab):
             exceptions.handle(request,
                               _('Unable to retrieve physical server details.'),
                               redirect=redirect)
+        LOG.debug((server.rel_nic)[0]["interface"])
         return {'server': server}
 
 

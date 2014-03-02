@@ -15,6 +15,11 @@ def physical_server_get(context,server_id):
             raise  Exception()
         
         result['model'] = result.rel_model.name
+        result['nics'] = result.rel_nic
+        result['disks'] = result.rel_disk
+        result['rams'] = result.rel_ram
+        result['hbas'] = result.rel_hba
+        
         return result 
 
 @require_admin_context    

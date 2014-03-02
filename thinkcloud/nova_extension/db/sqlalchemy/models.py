@@ -79,6 +79,9 @@ class PhysicalServer(BASE,NovaBase):
     rel_nic  = relationship("Nic",
                            secondary=server_nic_map,
                            backref="servers")
+    rel_hba  = relationship("Hba",
+                           secondary=server_hba_map,
+                           backref="servers")
     rel_subscription  = relationship("ChargeSubscription",
                              backref="servers")
     
@@ -148,7 +151,7 @@ class Hba (BASE,NovaBase):
     
     type_id = Column(Integer,ForeignKey('thkcld_hba_types.id'))
     description = Column(String(255))
-    rel_type = relationship("HbaType",backref=backref("Hba",uselist=False) )
+    rel_type = relationship("HbaType",lazy='joined',backref=backref("Hba",uselist=False) )
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""

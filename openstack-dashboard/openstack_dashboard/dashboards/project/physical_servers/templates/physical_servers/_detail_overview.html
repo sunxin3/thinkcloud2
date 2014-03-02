@@ -12,7 +12,109 @@
 <tr><td>{% trans "Server Name" %}</td><td>{{ server.name }}</td></tr>
 <tr><td>{% trans "Model" %}</td><td>{{ server.model }}</td></tr>
 <tr><td>{% trans "CPU" %}</td><td>{{ server.cpu_desc }}</td></tr>
-<tr><td>{% trans "Memory" %}</td><td>{{ server.mem_total }}GB</td></tr>
-<tr><td>{% trans "Disk" %}</td><td>{{ server.disk_total }}TB</td></tr>
-<tr><td>{% trans "NICs" %}</td><td>{{ server.nic_num }}</td></tr>
+<tr>
+    <td>{% trans "Memory" %}</td>
+     <td> 
+        <table border=1 frame=void rules=rows cellpadding="3">
+            
+            {% for ram in server.rel_ram %}
+               {% if forloop.counter == 1 %}
+                    <tr>
+                        <th>No</th>
+                        <th>Capacity</th>
+                        <th>Quantity</th>
+                        <th>Frequence</th>
+                        <th>Type</th>
+                    </tr>
+               {% endif %}
+                <tr>
+                    <td align="center" valign="middle">{{ forloop.counter }}</td>
+                    <td align="center" valign="middle">{{ ram.capacity }}G</td>
+                    <td align="center" valign="middle">{{ ram.quantity }}</td>
+                    <td align="center" valign="middle">{{ ram.frequence }}MHz</td>
+                    <td align="center" valign="middle">{{ ram.type }}</td>
+                </tr>
+            {% endfor %}
+       </table>
+    </td>
+</tr>
+<tr>
+    <td>{% trans "Disk" %}</td>
+    <td> 
+        <table border=1 frame=void rules=rows cellpadding="3">
+            
+            {% for disk in server.rel_disk %}
+                {% if forloop.counter == 1 %}
+                   <tr>
+                       <th>No</th>
+                       <th>Model</th>
+                       <th>Interface</th>
+                       <th>RPM</th>
+                       <th>Capacity</th>
+                       <th>Quantity</th>
+                  </tr>
+                {% endif %}
+                <tr>
+                    <td align="center" valign="middle">{{ forloop.counter }}</td>
+                    <td align="center" valign="middle">{{ disk.model }}</td>
+                    <td align="center" valign="middle">{{ disk.interface }}</td>
+                    <td align="center" valign="middle">{{ disk.rpm }}</td>
+                    <td align="center" valign="middle">{{ disk.capacity }}TB</td>
+                    <td align="center" valign="middle">{{ disk.quantity }}</td>
+                </tr>
+            {% endfor %}
+       </table>
+    </td>
+</tr>
+<tr>
+    <td>{% trans "NICs" %}</td>
+    <td> 
+        <table border=1 frame=void rules=rows cellpadding="3">
+         
+            {% for nic_item in server.rel_nic %}
+               {% if forloop.counter == 1 %}
+                      <tr>
+                         <th>No</th>
+                         <th>Speed</th>
+                         <th>Ports</th>
+                         <th>Is OnBoard</th>
+                      </tr>
+               {% endif %}
+                <tr>
+                    <td align="center" valign="middle">{{ forloop.counter }}</td>
+                    <td align="center" valign="middle">{{ nic_item.interface }}Gbps</td>
+                    <td align="center" valign="middle">{{ nic_item.interface_number }}</td>
+                    <td align="center" valign="middle">{{ nic_item.is_onboard|yesno }}</td>
+                </tr>
+            {% endfor %}
+       </table>
+    </td>
+</tr>
+
+<tr>
+    <td>{% trans "HBAs" %}</td>
+    <td> 
+        <table border=1 frame=void rules=rows cellpadding="3">
+         
+            {% for hba in server.rel_hba %}
+               {% if forloop.counter == 1 %}
+                      <tr>
+                         <th>No</th>
+                         <th>Model</th>
+                         <th>Manufacture</th>
+                         <th>BandWidth</th>
+                         <th>Ports</th>
+                      </tr>
+               {% endif %}
+                <tr>
+                    <td align="center" valign="middle">{{ forloop.counter }}</td>
+                    <td align="center" valign="middle">{{ hba.rel_type.model }}</td>
+                    <td align="center" valign="middle">{{ hba.rel_type.manufacture }}</td>
+                    <td align="center" valign="middle">{{ hba.rel_type.bandwidth }}Gbps</td>
+                    <td align="center" valign="middle">{{ hba.rel_type.port_number }}</td>
+                </tr>
+            {% endfor %}
+       </table>
+    </td>
+</tr>
 </table>
