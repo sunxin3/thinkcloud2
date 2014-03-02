@@ -34,6 +34,7 @@ from horizon.templatetags import sizeformat
 from horizon.utils.filters import replace_underscores
 
 from openstack_dashboard import api
+from horizon.mail import send_mail
 
 
 LOG = logging.getLogger(__name__)
@@ -77,9 +78,27 @@ class ApproveChargeSubscription(tables.BatchAction):
         return True
 
     def action(self, request, obj_id):
-	now = datetime_safe.datetime.now().isoformat()
+        now = datetime_safe.datetime.now().isoformat()
         expires_at = (datetime_safe.datetime.now() + timedelta(days=30)).isoformat()
         api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id, approved_at=now,expires_at=expires_at)
+        
+        applier_id = api.nova.charge_subscription_get(request, obj_id).user_id
+        applier_mail_perfix = api.keystone.user_get(request, applier_id).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+        
+        approver_id = request.user.id
+        approver_mail_perfix = api.keystone.user_get(request, approver_id).name
+        #TODO by sunxin
+        approver_mail = approver_mail_perfix + '@lenovo.com'
+                
+        mail_title = "[Notice] Server Application Approved"
+        mail_content = "Your application of server is approved by Lab Administrator: "
+        mail_content += approver_mail
+        mail_content += ".\nThe expiration date is "
+        mail_content += expires_at
+        mail_content += "\n Thank you for using our ThinkCloudvlab!"
+        send_mail(mail_title, mail_content, applier_mail)
 
 class DenyChargeSubscription(tables.BatchAction):
     name = "deny"
@@ -94,6 +113,20 @@ class DenyChargeSubscription(tables.BatchAction):
 
     def action(self, request, obj_id):
         api.nova.charge_subscription_update(request, obj_id, status='denied', approver_id=request.user.id)
+        
+        applier_id = api.nova.charge_subscription_get(request, obj_id).user_id
+        applier_mail_perfix = api.keystone.user_get(request, applier_id).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+        
+        approver_id = request.user.id
+        approver_mail_perfix = api.keystone.user_get(request, approver_id).name
+        #TODO by sunxin
+        approver_mail = approver_mail_perfix + '@lenovo.com'        
+        
+        mail_title = "[Notice] Server Application Denied"
+        mail_content = "Sorry, your application of server is denied by Lab Administrator: " + approver_mail + ".\n Any qeustion, please send mail to " + approver_mail + "@lenovo.com.\n Thank you for your understanding." 
+        send_mail(mail_title, mail_content, applier_mail)
 
 class UpdateRow(tables.Row):
     ajax = True

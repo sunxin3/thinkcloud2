@@ -10,7 +10,8 @@ from nova.db.sqlalchemy import models
 from sqlalchemy import create_engine
 from django.utils import datetime_safe
 from datetime import timedelta
-from openstack_dashboard.openstack.common.mail import send_mail
+#from openstack_dashboard.openstack.common.mail import send_mail
+from horizon.mail import send_mail
 
 engine = create_engine('mysql://root:123qwe@localhost/nova', echo=True)
 

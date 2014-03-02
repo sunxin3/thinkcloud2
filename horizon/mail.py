@@ -1,8 +1,11 @@
 import smtplib
 from email.mime.text import MIMEText
 
-def send_mail(sub, content):
+def send_mail(sub, content, extra_to_list=None):
+
     to_list=['sunxin@lenovo.com', 'chenzg4@lenovo.com']
+    if extra_to_list: 
+	to_list.append(extra_to_list)
     mail_host="thinkcloudlab.com" 
     mail_user="sysadmin"
     mail_pass=""
