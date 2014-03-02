@@ -16,7 +16,7 @@
 
 import logging
 from collections import defaultdict
-from datetime import *
+from django.utils import datetime_safe
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -28,6 +28,7 @@ from horizon import tables
 from horizon.utils.memoized import memoized
 
 from openstack_dashboard import api
+from horizon.mail import send_mail
 
 
 LOG = logging.getLogger(__name__)
@@ -71,21 +72,31 @@ class ApplyPhysicalServer(tables.BatchAction):
     action_past = _("Scheduled application of")
     data_type_singular = _("Physical Server")
     data_type_plural = _("Physical Servers")
+    classes = ('btn-danger', 'btn-reboot')
+    
     def allowed(self, request, server=None):
         return True 
 
     def action(self, request, obj_id):
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime_safe.datetime.now().isoformat()
 
-	charge_product_id = None
-	charge_products = api.nova.charge_product_list(request)
+        charge_product_id = None
+        charge_products = api.nova.charge_product_list(request)
         for charge_product in charge_products:
-	    if charge_product.item_name == 'physical_server':
-		charge_product_id = charge_product.id
+            if charge_product.item_name == 'physical_server':
+		         charge_product_id = charge_product.id
 
-	resource_displayname = api.nova.physical_server_get(request, obj_id).name
-
+        resource_displayname = api.nova.physical_server_get(request, obj_id).name
         api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+
+        #Send people mail
+        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+        
+        mail_title = "[Notice] Server Application Issued"
+        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+        send_mail(mail_title, mail_content, applier_mail)
 
 def filter_tenants():
     return getattr(settings, 'IMAGES_LIST_FILTER_TENANTS', [])

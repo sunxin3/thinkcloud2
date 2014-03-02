@@ -82,6 +82,7 @@ class ApproveChargeSubscription(tables.BatchAction):
         expires_at = (datetime_safe.datetime.now() + timedelta(days=30)).isoformat()
         api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id, approved_at=now,expires_at=expires_at)
         
+        #Send people mail
         applier_id = api.nova.charge_subscription_get(request, obj_id).user_id
         applier_mail_perfix = api.keystone.user_get(request, applier_id).name
         #TODO by sunxin
@@ -114,6 +115,7 @@ class DenyChargeSubscription(tables.BatchAction):
     def action(self, request, obj_id):
         api.nova.charge_subscription_update(request, obj_id, status='denied', approver_id=request.user.id)
         
+        #Send people mail
         applier_id = api.nova.charge_subscription_get(request, obj_id).user_id
         applier_mail_perfix = api.keystone.user_get(request, applier_id).name
         #TODO by sunxin
