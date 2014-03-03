@@ -526,6 +526,10 @@ def charge_subscription_get(context, subscription_id):
         result = query.first()
     if not result or not query:
         raise Exception()
+    # since sqlalchemy use lazy loading as default
+    # and don't want to open eager loading
+    # Then load the joined table manually 
+    result['item'] = result.rel_charge_product.item.name   
 
     return result
 
