@@ -63,7 +63,8 @@ class Physical_serversController(wsgi.Controller):
         try:
             physical_server = db.physical_server_get(context, id)
         except :
-            raise webob.exc.HTTPNotFound(explanation="Physical_server not found")
+            raise webob.exc.HTTPNotFound(explanation="Physical_server[ID:"+ 
+                                         id + "] not found")
  
         physical_servers["physical_server"] = physical_server 
         return physical_servers 

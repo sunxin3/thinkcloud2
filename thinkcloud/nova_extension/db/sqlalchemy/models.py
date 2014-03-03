@@ -48,6 +48,7 @@ class PhysicalServer(BASE,NovaBase):
     name = Column(String(64))
     description = Column(String(255))
     ipmi_address = Column(String(255))
+    ipmi_mac     = Column(String(128))
     cpu_fre    = Column(Float())
     cpu_core_num   = Column(Integer)
     cpu_desc   = Column(String(255))
@@ -63,6 +64,8 @@ class PhysicalServer(BASE,NovaBase):
     disk_total     = Column(Integer)
     raid_internal  = Column(String(64))
     raid_external  = Column(String(64))
+    usage_id       = Column(Integer,ForeignKey('thkcld_usages.id'),
+                            nullable=False)
     
     #build relationships
     rel_model= relationship("ServerModel",order_by="ServerModel.id", 
@@ -83,6 +86,8 @@ class PhysicalServer(BASE,NovaBase):
                            secondary=server_hba_map,
                            backref="servers")
     rel_subscription  = relationship("ChargeSubscription",
+                             backref="servers")
+    rel_usage         = relationship("Usage",
                              backref="servers")
     
     
@@ -152,6 +157,14 @@ class Hba (BASE,NovaBase):
     type_id = Column(Integer,ForeignKey('thkcld_hba_types.id'))
     description = Column(String(255))
     rel_type = relationship("HbaType",lazy='joined',backref=backref("Hba",uselist=False) )
+
+class Usage (BASE,NovaBase):
+    """ Represents usages of customized extension"""
+    __tablename__ = 'thkcld_usages'
+    
+    id = Column(Integer,primary_key=True,nullable=False,)
+    usage = Column(String(255))
+
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""

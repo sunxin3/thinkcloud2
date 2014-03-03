@@ -117,6 +117,21 @@ def hba_delete(context,hba_id):
     """Delete a hba """
     return IMPL.hba_delete(context,hba_id)
 
+def usage_get(context,usage_id):
+    """Get a the usage of the server or raise if it doesn't exist"""
+    return IMPL.usage_get(context,usage_id)
+
+def usage_get_all(context):
+    """Get all  usage """
+    return IMPL.usage_get_all(context)
+
+def usage_create(context,values):
+    """Create new usage entry """
+    return IMPL.usage_create(context,values)
+
+def usage_delete(context,usage_id):
+    """Delete an usage entry """
+    return IMPL.usage_delete(context,usage_id)
 
 
 def power_state_get(context,power_state_id):

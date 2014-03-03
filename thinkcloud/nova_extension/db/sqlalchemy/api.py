@@ -14,13 +14,22 @@ def physical_server_get(context,server_id):
         if not result or not query:
             raise  Exception()
         
+        # since sqlalchemy use lazy loading as default
+        # and don't want to open eager loading
+        # Then load the joined table manually 
         result['model'] = result.rel_model.name
-        result['nics'] = result.rel_nic
-        result['disks'] = result.rel_disk
-        result['rams'] = result.rel_ram
-        result['hbas'] = result.rel_hba
-        result['subscription'] = result.rel_subscription
-        
+        result['nics_count'] = len(result.rel_nic)
+        result['disks_count'] = len (result.rel_disk)
+        result['rams_count'] = len (result.rel_ram)
+        result['hbas_count'] = len (result.rel_hba)
+        if result.subscription_id != None :
+                try:
+                    charge_subscription_get(context,result.subscription_id)
+                except :
+                    result.subscription_id = None
+                    print "throw exception go away!"
+                else:    
+                    result['subscription_count'] = len (result.rel_subscription)
         
         return result 
 
@@ -295,6 +304,39 @@ def hba_create(context, values):
 def hba_delete(context, hba_id):
     result = model_query(context, models.Hba).\
              filter_by(id=hba_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context    
+def usage_get(context,usage_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Usage,session=session,
+                            read_deleted="yes").filter_by(id=usage_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def usage_get_all(context):
+        query = model_query(context, models.Usage)
+        return query.all();    
+      
+@require_admin_context        
+def usage_create(context, values):
+    usage_obj = models.Usage()
+    usage_obj.update(values)
+    usage_obj.save()
+    return usage_obj    
+
+@require_admin_context        
+def usage_delete(context, usage_id):
+    result = model_query(context, models.usage).\
+             filter_by(id=usage_id).\
              soft_delete()
 
     return result
