@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'overview/base.html' %}
 {% load i18n %}
 {% block title %}{% trans "Instance Overview" %}{% endblock %}
 
@@ -7,7 +7,8 @@
 {% endblock page_header %}
 
 {% block main %}
-  {% include "horizon/common/_quota_summary.html" %}
+  {% include "overview/thkcld_quota_summary.html" %}
+  {# {% include "horizon/common/_quota_summary.html" %}  #}
   {% include "horizon/common/_usage_summary.html" %}
   {{ table.render }}
 {% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block css %}
+  {% include "_stylesheets.html" %}
+
+  {% load compress %}
+  {% compress css %}
+ <link href='{{ STATIC_URL }}horizon/lib/jgauge/jgauge.css' type='text/less' media='screen' rel='stylesheet' />
+  {% endcompress %}
+{% endblock %}
+
+
+{% block js %}
+  {% include "horizon/_scripts.html" %}
+
+  {% load compress %}
+  {% compress js %}
+  <script src='{{ STATIC_URL }}horizon/lib/jgauge/jgauge-0.3.0.a3.js' type='text/javascript' charset='utf-8'></script>
+  <script src='{{ STATIC_URL }}horizon/lib/jgauge/jQueryRotate.min.js' type='text/javascript' charset='utf-8'></script>
+  <script src='{{ STATIC_URL }}horizon/lib/jgauge/excanvas.min.js' type='text/javascript' charset='utf-8'></script>
+    {% endcompress %}
+{% endblock %}

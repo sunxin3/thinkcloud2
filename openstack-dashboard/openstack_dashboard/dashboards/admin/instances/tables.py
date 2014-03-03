@@ -26,7 +26,7 @@ from horizon.utils.filters import replace_underscores
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.instances.tables import (
         TerminateInstance, EditInstance, ConsoleLink, LogLink, CreateSnapshot,
-        TogglePause, ToggleSuspend, RebootInstance, SoftRebootInstance,
+        TogglePause, ToggleSuspend, RebootInstance,RebootInstanceBat, SoftRebootInstance,
         ConfirmResize, RevertResize, get_size, UpdateRow, get_ips,
         get_power_state, is_deleting, ACTIVE_STATES, STATUS_DISPLAY_CHOICES,
         TASK_DISPLAY_CHOICES)
@@ -114,7 +114,7 @@ class AdminInstancesTable(tables.DataTable):
         name = "instances"
         verbose_name = _("Instances")
         status_columns = ["status", "task"]
-        table_actions = (TerminateInstance,)
+        table_actions = (RebootInstanceBat, TerminateInstance)
         row_class = AdminUpdateRow
         row_actions = (ConfirmResize, RevertResize, AdminEditInstance,
                        ConsoleLink, LogLink, CreateSnapshot, TogglePause,

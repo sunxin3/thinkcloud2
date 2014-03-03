@@ -28,7 +28,9 @@ from nova.api.openstack import wsgi
 from nova import db
 from nova import exception
 from nova.api.openstack import extensions
+from nova.openstack.common import log as logging
 
+LOG = logging.getLogger(__name__)
 authorize = extensions.extension_authorizer('compute', 'physical_servers')
  
 # Controller which would response for the request
@@ -49,8 +51,8 @@ class Physical_serversController(wsgi.Controller):
         physical_servers = {}
         context = req.environ['nova.context']
         authorize(context)
- 
-        # real logic to create the object
+        physical_servers["physical_servers"] = db.physical_server_create(context, body['physical_server'])
+
         return physical_servers 
  
     def show(self, req, id):
@@ -61,21 +63,38 @@ class Physical_serversController(wsgi.Controller):
         try:
             physical_server = db.physical_server_get(context, id)
         except :
-            raise webob.exc.HTTPNotFound(explanation="Physical_server not found")
+            raise webob.exc.HTTPNotFound(explanation="Physical_server[ID:"+ 
+                                         id + "] not found")
  
         physical_servers["physical_server"] = physical_server 
         return physical_servers 
  
-    def update(self, req):
+    def update(self, req, id, body):
         physical_servers = {}
         context = req.environ['nova.context']
         authorize(context)
  
-        # real logic for update object
-        return physical_servers 
+        LOG.debug("Update physical server with id: %s" % id)
+        num_updated = db.physical_server_update(context, id,  body['physical_server'])
+        LOG.debug("Update physical server rows: %s" %  num_updated)
+        if num_updated == 0:
+            raise exc.HTTPNotFound()
+        return webob.Response(status_int=202)      
  
     def delete(self, req, id):
+        
+        context = req.environ['nova.context']
+        authorize(context)
+
+        LOG.debug(_("Delete physical server with id: %s"), id, context=context)
+
+        rows_deleted = db.physical_server_delete(context, id)
+        LOG.debug(_("Delete physical server rows: %s"), rows_deleted, context=context)
+        if rows_deleted == 0:
+            raise exc.HTTPNotFound()
         return webob.Response(status_int=202)
+        
+    
     
 # extension declaration 
 class Physical_servers(extensions.ExtensionDescriptor):  

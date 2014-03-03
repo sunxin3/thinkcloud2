@@ -4,6 +4,33 @@
 
 #[[section1:start]]
 
+server_ram_map = Table('thkcld_server_ram_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('ram_id',Integer,
+                              ForeignKey('thkcld_rams.id')),
+                       )
+
+server_disk_map = Table('thkcld_server_disk_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('disk_id',Integer,
+                              ForeignKey('thkcld_disks.id')),
+                       )
+
+server_nic_map = Table('thkcld_server_nic_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('nic_id',Integer,
+                              ForeignKey('thkcld_nics.id')),
+                       )
+
+server_hba_map = Table('thkcld_server_hba_map',BASE.metadata,
+                       Column('server_id',Integer,
+                              ForeignKey('thkcld_physical_servers.id')),
+                       Column('hba_id',String(128),
+                              ForeignKey('thkcld_hbas.sn')),
+                       )
 
 class PhysicalServer(BASE,NovaBase):
     """ Represents physical server of customized extension"""
@@ -14,13 +41,14 @@ class PhysicalServer(BASE,NovaBase):
     server_models_id = Column(Integer, ForeignKey('thkcld_server_models.id'),
                        nullable=False)
     is_public = Column(Boolean())
-    locked_by = Column(Integer)
+    subscription_id = Column(String(64),ForeignKey('thkcld_charge_subscriptions.id'),nullable=True)
     power_states_id = Column(Integer, ForeignKey('thkcld_power_states.id'),
                        nullable=False)
     nc_number = Column(String(64))
     name = Column(String(64))
     description = Column(String(255))
     ipmi_address = Column(String(255))
+    ipmi_mac     = Column(String(128))
     cpu_fre    = Column(Float())
     cpu_core_num   = Column(Integer)
     cpu_desc   = Column(String(255))
@@ -36,6 +64,8 @@ class PhysicalServer(BASE,NovaBase):
     disk_total     = Column(Integer)
     raid_internal  = Column(String(64))
     raid_external  = Column(String(64))
+    usage_id       = Column(Integer,ForeignKey('thkcld_usages.id'),
+                            nullable=False)
     
     #build relationships
     rel_model= relationship("ServerModel",order_by="ServerModel.id", 
@@ -43,6 +73,22 @@ class PhysicalServer(BASE,NovaBase):
     rel_power_state = relationship("PowerState", order_by="PowerState.id", 
                                backref="physical_servers" 
                                  )
+    rel_ram = relationship("Ram",
+                           secondary=server_ram_map,
+                           backref="servers")
+    rel_disk = relationship("Disk",
+                           secondary=server_disk_map,
+                           backref="servers")
+    rel_nic  = relationship("Nic",
+                           secondary=server_nic_map,
+                           backref="servers")
+    rel_hba  = relationship("Hba",
+                           secondary=server_hba_map,
+                           backref="servers")
+    rel_subscription  = relationship("ChargeSubscription",
+                             backref="servers")
+    rel_usage         = relationship("Usage",
+                             backref="servers")
     
     
 class ServerModel (BASE,NovaBase):
@@ -52,6 +98,73 @@ class ServerModel (BASE,NovaBase):
     id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
     
     name = Column(String(64))
+
+class Ram (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_rams'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    type = Column(String(64))
+    frequence = Column(Integer)
+    capacity = Column(Integer)
+    quantity = Column(Integer)
+    description = Column(String(255))
+
+class Disk (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_disks'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    manufacture = Column(String(255))
+    model = Column(String(255))
+    interface = Column(String(255))
+    capacity = Column(Float())
+    rpm = Column(Integer)
+    quantity =  Column(Integer)
+    description = Column(String(255))
+
+class Nic (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_nics'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    is_onboard = Column(Boolean())
+    interface_number = Column(Integer)
+    interface = Column(Integer)
+    description = Column(String(255))
+
+class HbaType (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_hba_types'
+    
+    id = Column(Integer,primary_key=True,nullable=False, autoincrement=True)
+    
+    model = Column(String(64))
+    manufacture = Column(String(128))
+    bandwidth = Column(Integer)
+    port_number = Column(Integer)
+    description = Column(String(255))
+    
+class Hba (BASE,NovaBase):
+    """ Represents RAMs of customized extension"""
+    __tablename__ = 'thkcld_hbas'
+    
+    sn = Column(String(128),primary_key=True,nullable=False,)
+    
+    type_id = Column(Integer,ForeignKey('thkcld_hba_types.id'))
+    description = Column(String(255))
+    rel_type = relationship("HbaType",lazy='joined',backref=backref("Hba",uselist=False) )
+
+class Usage (BASE,NovaBase):
+    """ Represents usages of customized extension"""
+    __tablename__ = 'thkcld_usages'
+    
+    id = Column(Integer,primary_key=True,nullable=False,)
+    usage = Column(String(255))
+
     
 class PowerState (BASE,NovaBase):
     """ Represents physical power status of customized extension"""
@@ -178,7 +291,7 @@ class ChargeSubscription(BASE,NovaBase):
 
     user_id = Column(String(64), nullable=False, index=True)
 
-    approver_id = Column(String(64), nullable=False, index=True)
+    approver_id = Column(String(64))
 
     project_id = Column(String(64), nullable=False, index=True)
 
@@ -197,11 +310,11 @@ class ChargeSubscription(BASE,NovaBase):
 
     resource_name = Column(String(255), nullable=False)
 
-    applied_at = Column(DateTime, nullable=False, index=True)
+    applied_at = Column(DateTime, nullable=False)
 
-    expires_at = Column(DateTime, nullable=False, index=True)
+    expires_at = Column(DateTime)
 
-    approved_at = Column(DateTime, nullable=False, index=True)
+    approved_at = Column(DateTime)
 
     status = Column(String(255), nullable=False)
 

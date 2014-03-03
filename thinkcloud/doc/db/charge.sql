@@ -141,13 +141,13 @@ CREATE TABLE `thkcld_charge_subscriptions` (
 
   `deleted_at` datetime DEFAULT NULL,
 
-  `deleted` tinyint(1) DEFAULT NULL,
+  `deleted` tinyint(1) DEFAULT 0,
 
   `id` int(11) NOT NULL AUTO_INCREMENT,
 
   `user_id` varchar(64) NOT NULL,
 
-  `approver_id` varchar(64) NOT NULL,
+  `approver_id` varchar(64) DEFAULT NULL,
 
   `project_id` varchar(64) NOT NULL,
 
@@ -157,13 +157,13 @@ CREATE TABLE `thkcld_charge_subscriptions` (
 
   `resource_name` varchar(255) NOT NULL,
 
-  `applied_at` datetime DEFAULT NULL,
+  `applied_at` datetime NOT NULL,
 
   `expires_at` datetime DEFAULT NULL,
 
   `approved_at` datetime DEFAULT NULL,
 
-  `status` varchar(255) DEFAULT NULL,  # comfirmed, creating, deleting
+  `status` varchar(255) NOT NULL,  # comfirmed, creating, deleting
 
   PRIMARY KEY (`id`),
 
@@ -217,6 +217,10 @@ insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,n
 
 insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'m1.xlarge');
 
+insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'server');
+
+insert into thkcld_charge_item_types (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'hph');
+
 #items
 insert into thkcld_charge_items (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'instance');
 
@@ -239,6 +243,10 @@ insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,reg
 insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,1,4,1,'hours',6000,4,'yuan');
 
 insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,1,5,1,'hours',6000,5,'yuan');
+
+insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,2,6,1,'hours',6000,6,'yuan');
+
+insert into thkcld_charge_products (created_at,updated_at,deleted_at,deleted,region_id,item_id,item_type_id,payment_type_id,order_unit,order_size,price,currency)values(now(),NULL,NULL,0,1,3,7,1,'hours',6000,7,'yuan');
 
 # regions
 insert into thkcld_charge_regions (created_at,updated_at,deleted_at,deleted,name)values(now(),NULL,NULL,0,'lenovo');

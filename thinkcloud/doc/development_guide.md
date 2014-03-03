@@ -151,7 +151,7 @@ make above api work, we should add new data model defniton into
     server_model_id = Column(Integer, ForeignKey('thkcld_server_models.id'),
                        nullable=False)
     is_public = Column(Boolean())
-    locked_by = Column(Integer, ForeignKey('thkcld_server_apply.id'))
+    subscription_id = Column(String(36))
     power_state_id = Column(Integer, ForeignKey('thkcld_power_stats.id'),
                        nullable=False)
     nc_number = Column(String(64))

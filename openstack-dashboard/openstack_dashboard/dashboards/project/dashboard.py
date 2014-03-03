@@ -27,7 +27,9 @@ class BasePanels(horizon.PanelGroup):
               'instances',
               'images_and_snapshots',
               'access_and_security',
-	      'charges',)
+	      'charge_subscriptions',
+              'lvcc',
+              'lvdi',)
 
 
 class NetworkPanels(horizon.PanelGroup):

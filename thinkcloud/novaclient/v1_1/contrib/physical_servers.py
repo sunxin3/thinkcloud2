@@ -39,12 +39,12 @@ class Physical_ServerManager(base.ManagerWithFind):
     def get(self, physical_server):
         return self._get('/thkcld-physical_servers/%s' % base.getid(physical_server),
                          'physical_server')
-
+    
     def delete(self, physical_server):
         self._delete('/thkcld-physical_servers/%s' % base.getid(physical_server))
 
     def create(self, user_id,server_models_id,region_id,
-               locked_by,is_public,power_states_id,
+               subscription_id,is_public,power_states_id,
                nc_number,name, description,ipmi_address,
                cpu_fre,cpu_core_num,cpu_desc,
                mem_total,mem_desc,disk_num,disk_desc,
@@ -56,10 +56,10 @@ class Physical_ServerManager(base.ManagerWithFind):
         """
         Create a physical server.
 
-        :param user_id: Physical server user
+        :param user_id: Physical server owner user
         :param server_models_id: server model id
         :param region_id: server location id
-        :param locked_by: server was reserved by one request 
+        :param subscription_id: server related to user application
         :param is_public: the physical server resource is public or private
         :param power_states_id: server power state
         :param nic_number: the count number of nics
@@ -87,7 +87,7 @@ class Physical_ServerManager(base.ManagerWithFind):
         body = {'physical_server':{'user_id':user_id,
                                    'server_models_id':server_models_id,
                                    'region_id':region_id,
-                                   'locked_by':locked_by,
+                                   'subscription_id':subscription_id,
                                    'is_public':is_public,
                                    'power_states_id':power_states_id,
                                    'nc_number':nc_number,
@@ -103,7 +103,7 @@ class Physical_ServerManager(base.ManagerWithFind):
                                    'disk_desc':disk_desc,
                                    'nic_num':nic_num,
                                    'nic_desc':nic_desc,
-                                   'hba_attached':hba_atached,
+                                   'hba_attached':hba_attached,
                                    'hba_port_num':hba_port_num,
                                    'cpu_socket_num':cpu_socket_num,
                                    'disk_total':disk_total,
@@ -113,6 +113,43 @@ class Physical_ServerManager(base.ManagerWithFind):
                                    
                                    }}
         return self._create('/thkcld-physical_servers', body, 'server_model')
+
+    def update(self,server_id,user_id=None,server_models_id=None,region_id=None,subscription_id=None,is_public=None,power_states_id=None,nc_number=None,name=None, description=None,ipmi_address=None,cpu_fre=None,cpu_core_num=None,cpu_desc=None,mem_total=None,mem_desc=None,disk_num=None,disk_desc=None,nic_num=None,nic_desc=None,hba_attached=None,hba_port_num=None,cpu_socket_num=None,disk_total=None,raid_internal=None,raid_external=None,hba_cards_id=None):
+        body = {'physical_server':{'user_id':user_id,
+                                  'server_models_id':server_models_id,
+                                  'region_id':region_id,
+                                  'subscription_id':subscription_id,
+                                  'is_public':is_public,
+                                  'power_states_id':power_states_id,
+                                  'nc_number':nc_number,
+                                  'name':name,
+                                  'description':description,
+                                  'ipmi_address':ipmi_address,
+                                  'cpu_fre':cpu_fre,
+                                  'cpu_core_num':cpu_core_num,
+                                  'cpu_desc':cpu_desc,
+                                  'mem_total':mem_total,
+                                  'mem_desc':mem_desc,
+                                  'disk_num':disk_num,
+                                  'disk_desc':disk_desc,
+                                  'nic_num':nic_num,
+                                  'nic_desc':nic_desc,
+                                  'hba_attached':hba_attached,
+                                  'hba_port_num':hba_port_num,
+                                  'cpu_socket_num':cpu_socket_num,
+                                  'disk_total':disk_total,
+                                  'raid_internal':raid_internal,
+                                  'raid_external':raid_external,
+                                  'hba_cards_id':hba_cards_id}}       
+        
+        for key in list(body['physical_server']):
+            if body['physical_server'][key] is None:
+                body['physical_server'].pop(key)
+        url = '/thkcld-physical_servers/%s' % server_id
+#        return self._update('/thkcld-physical_servers/%s' % base.getid(physical_server), body, 'physical_server')
+
+        return self._update(url, body, 'physical_server')
+    
 
 
 @utils.arg('physical_server_id', metavar='<physical_server_id>', help='ID of physical server')
@@ -130,7 +167,7 @@ def do_physical_server_list(cs, args):
     """
     physical_servers = cs.physical_servers.list()
     utils.print_list(physical_servers, ['ID', 'Name','Model','Description',
-                                     'Server_Models_id','State',                                    
+                                     'Server_Models_id','State','Ram_ids',                                    
                                      ])
 
 
@@ -147,10 +184,9 @@ def do_physical_server_list(cs, args):
     metavar='<region_id>',
     type=int,
     help='server location id')
-@utils.arg('locked_by',
-    metavar='<locked_by>',
-    type=int,
-    help='Server was reserved by one request')
+@utils.arg('subscription_id',
+    metavar='<subscription_id>',
+    help='Server related to user application')
 @utils.arg('is_public',
     metavar='<is_public>',
     help='Server is public or not')
@@ -222,7 +258,7 @@ def do_server_model_create(cs, args):
     Create a server model record
     """
     model = cs.server_models.create(args.user_id,args.server_models_id,
-               args.region_id,args.locked_by,args.is_public,
+               args.region_id,args.subscription_id,args.is_public,
                args.power_states_id,args.nc_number,args.name, 
                args.description,args.ipmi_address,args.cpu_fre,
                args.cpu_core_num,args.cpu_desc,args.mem_total,args.mem_desc,
@@ -233,6 +269,19 @@ def do_server_model_create(cs, args):
     utils.print_dict(model._info)
 
 
+
+@utils.arg('server_id',
+    metavar='<server_id>',
+    help='Name of nova compute host which will control this baremetal node')
+@utils.arg('subscription_id',
+    metavar='<subscription_id>',
+    help='Server related to user application')
+def do_physical_server_update(cs, args):
+    """
+    update a charge subscription record
+    """
+    physical_server = cs.physical_servers.update(args.server_id, args.subscription_id)
+    utils.print_dict(physical_server._info)
 
 def do_physical_server_delete(cs, args):
     """

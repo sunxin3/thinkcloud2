@@ -16,6 +16,7 @@
 
 import logging
 from collections import defaultdict
+from django.utils import datetime_safe
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -27,6 +28,7 @@ from horizon import tables
 from horizon.utils.memoized import memoized
 
 from openstack_dashboard import api
+from horizon.mail import send_mail
 
 
 LOG = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class DeletePhysicalServer(tables.DeleteAction):
         return False
 
     def delete(self, request, obj_id):
-        return
+        api.nova.physical_server_delete(request, obj_id)
 
 
 class AddPhysicalServer(tables.LinkAction):
@@ -61,9 +63,123 @@ class EditPhysicalServer(tables.LinkAction):
             return image.status in ("active",) and \
                 image.owner == request.user.tenant_id
         # We don't have bulk editing, so if there isn't an image that's
-        # authorized, don't allow the action.
+        # authorized, don't allow the action. filters
         return False
 
+class RebootPhysicalServer(tables.BatchAction):
+    name = "reboot"
+    action_present = _("Reboot")
+    action_past = _("Scheduled reboot of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("ajax-modal", "btn-edit")    
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+    
+    def action(self, request, obj_id):
+          now = datetime_safe.datetime.now().isoformat()
+    
+          charge_product_id = None
+          charge_products = api.nova.charge_product_list(request)
+          for charge_product in charge_products:
+              if charge_product.item_name == 'physical_server':
+                  charge_product_id = charge_product.id
+    
+          resource_displayname = api.nova.physical_server_get(request, obj_id).name
+          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+    
+          #LOG.debug("test for sunxin %s" % subscription.id)
+          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
+    
+          #Send people mail
+          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+          #TODO by sunxin
+          applier_mail = applier_mail_perfix + '@lenovo.com'
+          
+          mail_title = "[Notice] Server Application Issued"
+          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+          send_mail(mail_title, mail_content, applier_mail)
+    
+class ShutdownPhysicalServer(tables.BatchAction):
+    name = "shutdown"
+    action_present = _("Shutdown")
+    action_past = _("Scheduled shutdown of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("btn-danger", "btn-reboot")    
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+    
+    def action(self, request, obj_id):
+          now = datetime_safe.datetime.now().isoformat()
+    
+          charge_product_id = None
+          charge_products = api.nova.charge_product_list(request)
+          for charge_product in charge_products:
+              if charge_product.item_name == 'physical_server':
+                  charge_product_id = charge_product.id
+    
+          resource_displayname = api.nova.physical_server_get(request, obj_id).name
+          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+    
+          #LOG.debug("test for sunxin %s" % subscription.id)
+          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
+    
+          #Send people mail
+          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+          #TODO by sunxin
+          applier_mail = applier_mail_perfix + '@lenovo.com'
+          
+          mail_title = "[Notice] Server Application Issued"
+          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+          send_mail(mail_title, mail_content, applier_mail)
+
+
+class ApplyPhysicalServer(tables.BatchAction):
+    name = "apply"
+    action_present = _("Apply")
+    action_past = _("Scheduled application of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("btn-danger", "btn-reboot")
+    
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id == None:
+            return True
+        return False
+
+    def action(self, request, obj_id):
+        now = datetime_safe.datetime.now().isoformat()
+
+        charge_product_id = None
+        charge_products = api.nova.charge_product_list(request)
+        for charge_product in charge_products:
+            if charge_product.item_name == 'physical_server':
+		         charge_product_id = charge_product.id
+
+        resource_displayname = api.nova.physical_server_get(request, obj_id).name
+        subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
+
+        #LOG.debug("test for sunxin %s" % subscription.id)
+        api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
+
+        #Send people mail
+        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+        
+        mail_title = "[Notice] Server Application Issued"
+        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+        send_mail(mail_title, mail_content, applier_mail)
 
 def filter_tenants():
     return getattr(settings, 'IMAGES_LIST_FILTER_TENANTS', [])
@@ -78,48 +194,60 @@ def filter_tenant_ids():
 class UpdateRow(tables.Row):
     ajax = True
 
-    def get_data(self, request, image_id):
-        image = api.glance.image_get(request, image_id)
-        return image
+    def get_data(self, request, server_id):
+        server = api.nova.physical_server_get(request, server_id)
+        return server
 
-    def load_cells(self, image=None):
-        super(UpdateRow, self).load_cells(image)
-
+    def load_cells(self, server=None):
+        super(UpdateRow, self).load_cells(server)
+        # Tag the row with the server category for client-side filtering.
+        server = self.datum
+        my_tenant_id = self.table.request.user.tenant_id
+        server_categories = get_server_categories(server, my_tenant_id)
+        for category in server_categories:
+            self.classes.append('category-' + category)
       
 class OwnerFilter(tables.FixedFilterAction):
     def get_fixed_buttons(self):
         def make_dict(text, tenant, icon):
             return dict(text=text, value=tenant, icon=icon)
-
-        buttons = [make_dict('Free Avaiale', 'project', 'icon-home')]
-        buttons.append(make_dict('Reserved by Me', 'shared', 'icon-star'))
-        buttons.append(make_dict('Power On', 'public', 'icon-play'))
-        buttons.append(make_dict('Power Off', 'public', 'icon-stop'))
+        buttons = [make_dict('Reserved by Me', 'reserved', 'icon-star')]
+        buttons.append(make_dict('Free Available', 'free', 'icon-home'))
+      
         return buttons
 
-    def categorize(self, table, images):
+    def categorize(self, table, servers):
         user_tenant_id = table.request.user.tenant_id
         tenants = defaultdict(list)
-        for im in images:
-            categories = [] #get_image_categories(im, user_tenant_id)
+        for server in servers:
+            categories = get_server_categories(server,user_tenant_id)
             for category in categories:
-                tenants[category].append(im)
+                if category == "free":
+                    server.ipmi_address = "N/A"
+                tenants[category].append(server)
         return tenants
     
 def get_server_categories(server,user_tenant_id):
     categories = []
-    if server.is_public:
-        categories.append('public')
-    if server.owner == user_tenant_id:
-        categories.append('project')
-    elif server.owner in filter_tenant_ids():
-        categories.append(server.owner)
-    elif not server.is_public:
-        categories.append('shared')
+    if server.is_public: 
+        if server.subscription_id == None:
+            categories.append('free')
+        elif server.subscrib_project_id == user_tenant_id:
+            categories.append('reserved')
+    else:
+        if server.subscription_id == None: 
+            categories.append('private_free')
+        else:
+            categories.append('private_reserved')
     return categories
 
 def  total_memory(server):
-    return _("%sGB") % server.mem_total
+    return _("%sGB") % server.ram_sum
+
+def  total_disk(server):
+    return _("%sT") % server.disk_sum
+
+
 
 
 class PhysicalserversTable(tables.DataTable):
@@ -128,12 +256,16 @@ class PhysicalserversTable(tables.DataTable):
                          link=("horizon:project:physical_servers:"
                                "detail"),
                          verbose_name=_("Server Name"))
+    nc_num = tables.Column("nc_number",
+                             verbose_name=_("NC Number"))
     model = tables.Column("model",
                                verbose_name=_("Model"),
                                filters=(filters.upper,))
     status = tables.Column("state",
                            filters=(filters.title,),
                            verbose_name=_("Power State"),)
+    ipmi  = tables.Column("ipmi_address",
+                          verbose_name= _("IPMI Address"))
     public = tables.Column("is_public",
                            verbose_name=_("Public"),
                            empty_value=False,
@@ -142,16 +274,17 @@ class PhysicalserversTable(tables.DataTable):
     
     memory = tables.Column(total_memory, verbose_name=_("Memory"))
     
-    storage = tables.Column("disk_total", verbose_name=_("Storage"))
+    storage = tables.Column(total_disk, verbose_name=_("Storage"))
     
-    nics    = tables.Column("nic_num", verbose_name=_("Nics"))
+    nics    = tables.Column("nic_sum", verbose_name=_("Nics"),
+                            filters=(filters.linebreaksbr,))
 
     class Meta:
         name = "physicalservers"
-        status_columns = ["status"]
+        row_class = UpdateRow
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name", "model","status", "public", "cpu","memory","storage","nics"]
+        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
         table_actions = (OwnerFilter,)
-
+        row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer)

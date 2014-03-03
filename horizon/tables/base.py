@@ -19,6 +19,7 @@ import copy
 import logging
 from operator import attrgetter
 import sys
+import types
 
 from django import forms
 from django.http import HttpResponse
@@ -1241,6 +1242,8 @@ class DataTable(object):
             Make sure that the value returned is a unique value for the id
             otherwise rendering issues can occur.
         """
+	if type(datum.id) == types.IntType:
+	    return unicode(str(datum.id))
         return datum.id
 
     def get_object_display(self, datum):

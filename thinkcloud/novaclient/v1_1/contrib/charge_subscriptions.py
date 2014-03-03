@@ -42,9 +42,37 @@ class Charge_SubscriptionManager(base.ManagerWithFind):
     def delete(self, charge_subscription):
         self._delete('/thkcld-charge_subscriptions/%s' % base.getid(charge_subscription))
 
-    def create(self, subscription_name):
-        body = {'charge_subscription':{'name':subscription_name}}
+    def create(self, user_id=None, project_id=None, product_id=None, resource_uuid=None, resource_name=None, applied_at=None, status=None):
+        body = {'charge_subscription': {
+                'user_id':user_id,
+                'project_id':project_id,
+                'product_id':product_id,
+                'resource_uuid':resource_uuid,
+                'resource_name':resource_name,
+                'applied_at':applied_at,
+                'status':status}}
+
+        for key in list(body['charge_subscription']):
+            if body['charge_subscription'][key] is None:
+                body['charge_subscription'].pop(key)
+
         return self._create('/thkcld-charge_subscriptions', body, 'charge_subscription')
+
+    def update(self, charge_subscription_id,status=None,approver_id=None, resource_name=None, approved_at=None, deleted=None, expires_at=None):
+        body = {'charge_subscription': {
+		'status':status,
+		'approver_id':approver_id,
+		'resource_name':resource_name,
+		'approved_at':approved_at,
+		'deleted':deleted,
+                'expires_at':expires_at}}
+
+        for key in list(body['charge_subscription']):
+            if body['charge_subscription'][key] is None:
+                body['charge_subscription'].pop(key)
+
+	url = '/thkcld-charge_subscriptions/%s' % charge_subscription_id
+        return self._update(url, body, 'charge_subscription')
 
 @utils.arg('charge_subscription_id', metavar='<charge_subscription_id>', 
            help='ID of charge subscription')
@@ -61,7 +89,7 @@ def do_charge_subscription_list(cs, args):
     List charge subscriptions
     """
     charge_subscriptions = cs.charge_subscriptions.list()
-    utils.print_list(charge_subscriptions, ['ID', 'Name','Created_at'])
+    utils.print_list(charge_subscriptions, ['ID', 'Status','Created_at'])
 
 @utils.arg('subscription_name', metavar='<subscription_name>',
            help='Charge subscription name')
@@ -72,6 +100,16 @@ def do_charge_subscription_create(cs, args):
     subscription = cs.charge_subscriptions.create(args.subscription_name)
     utils.print_dict(subscription._info)
 
+@utils.arg('charge_subscription_id', metavar='<charge_subscription_id>',
+           help='ID of charge subscription')
+@utils.arg('charge_subscription_status', metavar='<charge_subscription_status>',
+           help='Charge subscription status')
+def do_charge_subscription_update(cs, args):
+    """
+    update a charge subscription record
+    """
+    subscription = cs.charge_subscriptions.update(args.charge_subscription_id, args.charge_subscription_status)
+    utils.print_dict(subscription._info)
 
 @utils.arg('charge_subscription_id', metavar='<charge_subscription_id>', 
            help='ID of charge subscription')

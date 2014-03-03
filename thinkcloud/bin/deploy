@@ -16,8 +16,8 @@ use File::Basename;
 #
 #-------------------------------------------------------------------------------
 my $ROOT_DIR = {
-	NOVA_ROOT        => '/root/workspace/stack/nova',
-	NOVA_CLIENT_ROOT => '/root/workspace/stack/python-novaclient',
+	NOVA_ROOT        => '/opt/stack/nova',
+	NOVA_CLIENT_ROOT => '/opt/stack/python-novaclient',
 };
 
 sub macro_hash {

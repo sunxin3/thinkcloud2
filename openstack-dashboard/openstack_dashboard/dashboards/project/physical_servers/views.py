@@ -21,7 +21,7 @@ class IndexView(tables.DataTableView):
     template_name = 'admin/physical_servers/index.html'
 
 #    def has_more_data(self, table):
-#        return self._more
+#        return self._more  parse_date
     
     def get_data(self):
         request = self.request

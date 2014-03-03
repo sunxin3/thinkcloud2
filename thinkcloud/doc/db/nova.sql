@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 07, 2013 at 05:54 PM
+-- Generation Time: Mar 03, 2014 at 03:05 PM
 -- Server version: 5.5.34
 -- PHP Version: 5.3.10-1ubuntu3.8
 
@@ -23,6 +23,125 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `thkcld_disks`
+--
+
+DROP TABLE IF EXISTS `thkcld_disks`;
+CREATE TABLE IF NOT EXISTS `thkcld_disks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `manufacture` varchar(255) NOT NULL,
+  `model` varchar(255) NOT NULL,
+  `capacity` float NOT NULL COMMENT 'Unit:TB',
+  `interface` varchar(255) NOT NULL,
+  `rpm` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '1',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime NOT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=6 ;
+
+--
+-- Dumping data for table `thkcld_disks`
+--
+
+INSERT INTO `thkcld_disks` (`id`, `manufacture`, `model`, `capacity`, `interface`, `rpm`, `quantity`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
+(1, 'SEAGATE', 'ST1000NM0033', 1, 'SATA', 7200, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(2, 'IBM', '39M4514', 0.5, 'SATA', 7200, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(3, 'Western Digital', 'WD3001BKHG', 0.3, 'SAS 6Gb/s', 10000, 4, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(4, 'Western Digital', 'WD2001FYYG', 2, 'SAS 6Gb/s', 7200, 2, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(5, 'IBM', '81Y9794', 2, 'SATA', 7200, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_hbas`
+--
+
+DROP TABLE IF EXISTS `thkcld_hbas`;
+CREATE TABLE IF NOT EXISTS `thkcld_hbas` (
+  `sn` varchar(128) NOT NULL,
+  `type_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime NOT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`sn`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `thkcld_hbas`
+--
+
+INSERT INTO `thkcld_hbas` (`sn`, `type_id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
+('lenovo_abc1', 1, '2014-02-25 00:00:00', '2014-02-25 00:00:00', '0000-00-00 00:00:00', 0, ''),
+('lenovo_abc2', 2, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_hba_types`
+--
+
+DROP TABLE IF EXISTS `thkcld_hba_types`;
+CREATE TABLE IF NOT EXISTS `thkcld_hba_types` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `model` varchar(64) NOT NULL,
+  `manufacture` varchar(128) NOT NULL,
+  `bandwidth` int(11) NOT NULL COMMENT 'Unit: Gb',
+  `port_number` tinyint(4) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime NOT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `thkcld_hba_types`
+--
+
+INSERT INTO `thkcld_hba_types` (`id`, `model`, `manufacture`, `bandwidth`, `port_number`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
+(1, 'LPe1250', 'Emulex', 8, 1, '2014-02-20 16:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, 'Emulex LPe1250 Fibre Channel card'),
+(2, '68Y8431', '', 6, 2, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(3, 'LP1150', 'Emulex', 4, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_nics`
+--
+
+DROP TABLE IF EXISTS `thkcld_nics`;
+CREATE TABLE IF NOT EXISTS `thkcld_nics` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `is_onboard` tinyint(1) NOT NULL,
+  `interface_number` tinyint(4) NOT NULL,
+  `interface` int(11) NOT NULL COMMENT 'Unit.Gbps',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime NOT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `thkcld_nics`
+--
+
+INSERT INTO `thkcld_nics` (`id`, `is_onboard`, `interface_number`, `interface`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
+(1, 1, 2, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(2, 0, 2, 10, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(3, 1, 4, 1, '2014-02-25 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `thkcld_physical_servers`
 --
 
@@ -36,13 +155,14 @@ CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
   `user_id` varchar(255) DEFAULT NULL,
   `server_models_id` int(11) NOT NULL,
   `region_id` int(11) DEFAULT NULL,
-  `locked_by` tinyint(4) DEFAULT NULL COMMENT 'server can be locked by one server apply',
+  `subscription_id` varchar(64) DEFAULT NULL COMMENT 'server can be locked by one server apply',
   `is_public` tinyint(1) DEFAULT NULL,
   `power_states_id` int(11) NOT NULL DEFAULT '0',
   `nc_number` varchar(64) DEFAULT NULL,
   `name` varchar(64) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `ipmi_address` varchar(255) DEFAULT NULL,
+  `ipmi_mac` varchar(128) NOT NULL,
   `cpu_fre` float DEFAULT NULL COMMENT 'without the curency, only digi value',
   `cpu_core_num` tinyint(4) DEFAULT NULL COMMENT 'pythical',
   `cpu_desc` varchar(255) DEFAULT NULL COMMENT 'value for example: Intel(R) Xeon(R) CPU E5645 @ 2.40Ghz',
@@ -59,18 +179,21 @@ CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
   `raid_internal` varchar(45) DEFAULT NULL COMMENT 'only raid card model',
   `raid_external` varchar(45) DEFAULT NULL COMMENT 'only raid card model',
   `hba_cards_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`,`server_models_id`,`power_states_id`),
+  `usage_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
   KEY `fk_servers_server_models_idx` (`server_models_id`),
   KEY `fk_servers_power_states1_idx` (`power_states_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
 
 --
 -- Dumping data for table `thkcld_physical_servers`
 --
 
-INSERT INTO `thkcld_physical_servers` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `user_id`, `server_models_id`, `region_id`, `locked_by`, `is_public`, `power_states_id`, `nc_number`, `name`, `description`, `ipmi_address`, `cpu_fre`, `cpu_core_num`, `cpu_desc`, `mem_total`, `mem_desc`, `disk_num`, `disk_desc`, `nic_num`, `nic_desc`, `hba_attached`, `hba_port_num`, `cpu_socket_num`, `disk_total`, `raid_internal`, `raid_external`, `hba_cards_id`) VALUES
-(1, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, NULL, NULL, 1, NULL, NULL, 1, 1, NULL, 'RD620', NULL, NULL, 3.4, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0),
-(2, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, NULL, NULL, 2, NULL, NULL, 1, 1, NULL, 'TS140', NULL, NULL, 3.5, 4, '1 x Intel® Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, '1 x 500 GB 7200 RPM 3.5" DC SATA', NULL, NULL, NULL, NULL, 2, 500, NULL, NULL, NULL);
+INSERT INTO `thkcld_physical_servers` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `user_id`, `server_models_id`, `region_id`, `subscription_id`, `is_public`, `power_states_id`, `nc_number`, `name`, `description`, `ipmi_address`, `ipmi_mac`, `cpu_fre`, `cpu_core_num`, `cpu_desc`, `mem_total`, `mem_desc`, `disk_num`, `disk_desc`, `nic_num`, `nic_desc`, `hba_attached`, `hba_port_num`, `cpu_socket_num`, `disk_total`, `raid_internal`, `raid_external`, `hba_cards_id`, `usage_id`) VALUES
+(1, '2013-11-27 00:00:00', '2014-03-02 03:29:36', NULL, 0, NULL, 1, NULL, NULL, 1, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0, 1),
+(2, '2013-11-27 00:00:00', '2014-03-01 13:15:34', '2014-02-24 08:02:05', 0, NULL, 2, NULL, NULL, 1, 1, 'NC10001', 'Spiderman', NULL, '12.12.12.13', '', 3.5, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, '1 x 500 GB 7200 RPM 3.5" DC SATA', NULL, NULL, NULL, NULL, 2, 500, NULL, NULL, NULL, 1),
+(3, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, NULL, NULL, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 1, 1),
+(4, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, '', NULL, 1, 'NC100004', 'Ironman4', NULL, '10.12.12.14', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -100,6 +223,75 @@ INSERT INTO `thkcld_power_states` (`id`, `created_at`, `updated_at`, `deleted_at
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `thkcld_rams`
+--
+
+DROP TABLE IF EXISTS `thkcld_rams`;
+CREATE TABLE IF NOT EXISTS `thkcld_rams` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(64) NOT NULL,
+  `frequence` int(11) NOT NULL,
+  `capacity` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime NOT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `thkcld_rams`
+--
+
+INSERT INTO `thkcld_rams` (`id`, `type`, `frequence`, `capacity`, `quantity`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `description`) VALUES
+(1, 'RDIMM', 1333, 4, 1, '2014-02-19 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, ''),
+(2, 'UDIMM', 1600, 4, 2, '2014-02-19 09:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_server_disk_map`
+--
+
+DROP TABLE IF EXISTS `thkcld_server_disk_map`;
+CREATE TABLE IF NOT EXISTS `thkcld_server_disk_map` (
+  `server_id` int(11) NOT NULL,
+  `disk_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `thkcld_server_disk_map`
+--
+
+INSERT INTO `thkcld_server_disk_map` (`server_id`, `disk_id`) VALUES
+(1, 1),
+(1, 2),
+(2, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_server_hba_map`
+--
+
+DROP TABLE IF EXISTS `thkcld_server_hba_map`;
+CREATE TABLE IF NOT EXISTS `thkcld_server_hba_map` (
+  `server_id` int(11) NOT NULL,
+  `hba_id` varchar(128) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `thkcld_server_hba_map`
+--
+
+INSERT INTO `thkcld_server_hba_map` (`server_id`, `hba_id`) VALUES
+(1, 'lenovo_abc1');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `thkcld_server_models`
 --
 
@@ -119,11 +311,78 @@ CREATE TABLE IF NOT EXISTS `thkcld_server_models` (
 --
 
 INSERT INTO `thkcld_server_models` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `name`) VALUES
-(1, NULL, NULL, NULL, 0, 'RD620'),
+(1, NULL, NULL, NULL, 0, 'RD630'),
 (2, NULL, NULL, NULL, 0, 'RD420'),
 (3, '2013-12-07 02:58:16', NULL, '2013-12-07 05:59:01', 3, 'RD220'),
 (4, '2013-12-07 07:11:24', NULL, NULL, 0, 'RD320'),
 (5, '2013-12-07 07:16:34', NULL, '2013-12-07 07:32:16', 5, 'RD520');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_server_nic_map`
+--
+
+DROP TABLE IF EXISTS `thkcld_server_nic_map`;
+CREATE TABLE IF NOT EXISTS `thkcld_server_nic_map` (
+  `server_id` int(11) NOT NULL,
+  `nic_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `thkcld_server_nic_map`
+--
+
+INSERT INTO `thkcld_server_nic_map` (`server_id`, `nic_id`) VALUES
+(1, 1),
+(1, 2),
+(2, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_server_ram_map`
+--
+
+DROP TABLE IF EXISTS `thkcld_server_ram_map`;
+CREATE TABLE IF NOT EXISTS `thkcld_server_ram_map` (
+  `server_id` int(11) NOT NULL,
+  `ram_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `thkcld_server_ram_map`
+--
+
+INSERT INTO `thkcld_server_ram_map` (`server_id`, `ram_id`) VALUES
+(1, 2),
+(1, 1),
+(2, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `thkcld_usages`
+--
+
+DROP TABLE IF EXISTS `thkcld_usages`;
+CREATE TABLE IF NOT EXISTS `thkcld_usages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  `deleted_at` datetime NOT NULL,
+  `usage` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `thkcld_usages`
+--
+
+INSERT INTO `thkcld_usages` (`id`, `created_at`, `updated_at`, `deleted`, `deleted_at`, `usage`) VALUES
+(1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 'demo'),
+(2, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 'test');
 
 --
 -- Constraints for dumped tables

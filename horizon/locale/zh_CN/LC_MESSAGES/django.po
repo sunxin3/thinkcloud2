@@ -3897,3 +3897,9 @@ msgstr "控制台"
 
 msgid "Department"
 msgstr "部门"
+
+msgid "LVCC Solution"
+msgstr "LVCC解决方案"
+
+msgid "LVDI Solution"
+msgstr "LVDI解决方案"

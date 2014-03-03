@@ -48,7 +48,7 @@ class Charge_subscriptionsController(wsgi.Controller):
     
     
  
-    def create(self, req,body):
+    def create(self, req, body):
         charge_subscription = {}
         context = req.environ['nova.context']
         authorize(context)
@@ -70,13 +70,15 @@ class Charge_subscriptionsController(wsgi.Controller):
         charge_subscriptions["charge_subscription"] = charge_subscription 
         return charge_subscriptions 
  
-    def update(self, req):
+    def update(self, req, id, body):
         charge_subscriptions = {}
         context = req.environ['nova.context']
         authorize(context)
  
-        # real logic for update object
-        return charge_subscriptions 
+        num_updated = db.charge_subscription_update(context, id, body['charge_subscription'])
+        if num_updated == 0:
+            raise exc.HTTPNotFound()
+        return webob.Response(status_int=202)
  
     def delete(self, req, id):
         """Delete a charge subscription entry.  'id' is a subscription id."""

@@ -560,17 +560,37 @@ def physical_server_list(request):
     return novaclient(request).physical_servers.list();
 
 def physical_server_get(request, server_id):
-    """Get  physical server detail."""
+    """Get physical server detail."""
     return novaclient(request).physical_servers.get(server_id);
+
+def physical_server_delete(request, server_id):
+    """delete physical server by id."""
+    return novaclient(request).physical_servers.delete(server_id);
+
+def physical_server_update(request, server_id, **kwargs):
+    """update physical server by id."""
+    return novaclient(request).physical_servers.update(server_id, **kwargs);
 
 def charge_product_list(request):
     """Get the list of available charge product."""
     return novaclient(request).charge_products.list();
 
+def charge_product_get(request, charge_product_id):
+    """Get charge product."""
+    return novaclient(request).charge_products.get(charge_product_id);
+
 def charge_subscription_list(request):
     """Get the list of available charge subscription."""
     return novaclient(request).charge_subscriptions.list();
 
-def charge_subscription_list_by_userid(request, user_id):
-    """Get the list of available charge subscription."""
-    return novaclient(request).charge_subscriptions.list();
+def charge_subscription_get(request, charge_subscription_id):
+    """Get the charge subscription details."""
+    return novaclient(request).charge_subscriptions.get(charge_subscription_id);
+
+def charge_subscription_update(request, charge_subscription_id, **kwargs):
+    """update charge subscription."""
+    return novaclient(request).charge_subscriptions.update(charge_subscription_id, **kwargs);
+
+def charge_subscription_create(request, **kwargs):
+    """update charge subscription."""
+    return novaclient(request).charge_subscriptions.create(**kwargs);

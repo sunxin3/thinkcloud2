@@ -14,21 +14,95 @@ def physical_server_get(context,server_id):
         if not result or not query:
             raise  Exception()
         
+        # since sqlalchemy use lazy loading as default
+        # and don't want to open eager loading
+        # Then load the joined table manually 
         result['model'] = result.rel_model.name
+        result['nics_count'] = len(result.rel_nic)
+        result['disks_count'] = len (result.rel_disk)
+        result['rams_count'] = len (result.rel_ram)
+        result['hbas_count'] = len (result.rel_hba)
+        if result.subscription_id != None :
+                try:
+                    charge_subscription_get(context,result.subscription_id)
+                except :
+                    result.subscription_id = None
+                    print "throw exception go away!"
+                else:    
+                    result['subscription_count'] = len (result.rel_subscription)
+        
         return result 
 
 @require_admin_context    
 def physical_server_get_all(context):
         server_list = []
         session = get_session()
-        resultset = session.query(models.PhysicalServer).all()
+        query = model_query(context,models.PhysicalServer,session=session,
+                            read_deleted="no");
+        resultset = query.all()
         for row in resultset:
             row['state'] = row.rel_power_state.state
             row['model'] = row.rel_model.name
+            # get RAMs of server
+            ram_ids = []
+            row['ram_sum'] = 0
+            for ram_item in row.rel_ram:
+                ram_ids.append(ram_item.id)
+                row['ram_sum'] = row['ram_sum'] + ram_item.capacity * ram_item.quantity
+            row['ram_ids'] = ','.join(str(v) for v in ram_ids)
+           
+            
+            disk_ids = []
+            row['disk_sum'] = 0 
+            for  disk_item in row.rel_disk:
+                disk_ids.append(disk_item.id)
+                row['disk_sum'] = row['disk_sum'] + disk_item.capacity * disk_item.quantity
+            row['disk_ids'] = ','.join(str(v) for v in disk_ids)            
+            
+            nic_ids = []
+            row['nic_sum'] = "" 
+            for  nic_item in row.rel_nic:
+                nic_ids.append(nic_item.id)
+                row['nic_sum'] +=  str(nic_item.interface_number) + " X " + str(nic_item.interface) + "G\n"
+            row['nic_ids'] = ','.join(str(v) for v in nic_ids) 
+                 
+            row['subscrib_project_id']  = None           
+            if row.subscription_id != None :
+                try:
+                    charge_subscription_get(context,row.subscription_id)
+                except :
+                    row.subscription_id = None
+                    print "throw exception go away!"
+                else:    
+                    row['subscrib_project_id'] = row.rel_subscription.project_id         
+	                #Added by sunxin for fetching more subscription details
+                    row['subscrib_user_id'] = row.rel_subscription.user_id         
+                    row['subscrib_expires_at'] = row.rel_subscription.expires_at        
+            
             server_list.append(row)
         return server_list;    
 
-    
+@require_admin_context        
+def physical_server_delete(context, server_id):
+    result = model_query(context, models.PhysicalServer).\
+             filter_by(id=server_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context
+def physical_server_update(context,server_id,values):
+    LOG.debug("Update physical server with id: %s" % server_id)
+    session = get_session()
+    with session.begin():
+	query = model_query(context,models.PhysicalServer,session=session,
+                            read_deleted="yes").filter_by(id=server_id)
+        physical_server_ref= query.first()
+
+#	physical_server_ref = physical_server_get(context, server_id)
+    	physical_server_ref.update(values)
+    	physical_server_ref.save(session=session)
+
 @require_admin_context    
 def server_model_get(context,model_id):
     session = get_session()
@@ -61,6 +135,213 @@ def server_model_delete(context, model_id):
              soft_delete()
 
     return result
+
+    
+@require_admin_context    
+def ram_get(context,ram_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Ram,session=session,
+                            read_deleted="yes").filter_by(id=ram_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def ram_get_all(context):
+        query = model_query(context, models.Ram)
+        return query.all();    
+      
+@require_admin_context        
+def ram_create(context, values):
+    ram_obj = models.Ram()
+    ram_obj.update(values)
+    ram_obj.save()
+    return ram_obj    
+
+@require_admin_context        
+def ram_delete(context, ram_id):
+    result = model_query(context, models.Ram).\
+             filter_by(id=ram_id).\
+             soft_delete()
+
+    return result
+
+
+@require_admin_context    
+def disk_get(context,disk_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Disk,session=session,
+                            read_deleted="yes").filter_by(id=disk_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def disk_get_all(context):
+        query = model_query(context, models.Disk)
+        return query.all();    
+      
+@require_admin_context        
+def disk_create(context, values):
+    disk_obj = models.Disk()
+    disk_obj.update(values)
+    disk_obj.save()
+    return disk_obj    
+
+@require_admin_context        
+def disk_delete(context, disk_id):
+    result = model_query(context, models.Disk).\
+             filter_by(id=disk_id).\
+             soft_delete()
+
+    return result
+
+
+@require_admin_context    
+def nic_get(context,nic_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Nic,session=session,
+                            read_deleted="yes").filter_by(id=nic_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def nic_get_all(context):
+        query = model_query(context, models.Nic)
+        return query.all();    
+      
+@require_admin_context        
+def nic_create(context, values):
+    nic_obj = models.Nic()
+    nic_obj.update(values)
+    nic_obj.save()
+    return nic_obj    
+
+@require_admin_context        
+def nic_delete(context, nic_id):
+    result = model_query(context, models.Nic).\
+             filter_by(id=nic_id).\
+             soft_delete()
+
+    return result
+
+
+
+@require_admin_context    
+def hba_type_get(context,hba_type_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.HbaType,session=session,
+                            read_deleted="yes").filter_by(id=hba_type_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def hba_type_get_all(context):
+        query = model_query(context, models.HbaType)
+        return query.all();    
+      
+@require_admin_context        
+def hba_type_create(context, values):
+    hba_type_obj = models.HbaType()
+    hba_type_obj.update(values)
+    hba_type_obj.save()
+    return hba_type_obj    
+
+@require_admin_context        
+def hba_type_delete(context, hba_type_id):
+    result = model_query(context, models.HbaType).\
+             filter_by(id=hba_type_id).\
+             soft_delete()
+
+    return result
+
+
+    
+@require_admin_context    
+def hba_get(context,hba_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Hba,session=session,
+                            read_deleted="yes").filter_by(id=hba_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def hba_get_all(context):
+        query = model_query(context, models.Hba)
+        return query.all();    
+      
+@require_admin_context        
+def hba_create(context, values):
+    hba_obj = models.Hba()
+    hba_obj.update(values)
+    hba_obj.save()
+    return hba_obj    
+
+@require_admin_context        
+def hba_delete(context, hba_id):
+    result = model_query(context, models.Hba).\
+             filter_by(id=hba_id).\
+             soft_delete()
+
+    return result
+
+@require_admin_context    
+def usage_get(context,usage_id):
+    session = get_session()
+    with session.begin():
+        query = model_query(context,models.Usage,session=session,
+                            read_deleted="yes").filter_by(id=usage_id)
+        result = query.first()
+        
+        if not result or not query:
+            raise  Exception()
+        
+        return result
+    
+@require_admin_context    
+def usage_get_all(context):
+        query = model_query(context, models.Usage)
+        return query.all();    
+      
+@require_admin_context        
+def usage_create(context, values):
+    usage_obj = models.Usage()
+    usage_obj.update(values)
+    usage_obj.save()
+    return usage_obj    
+
+@require_admin_context        
+def usage_delete(context, usage_id):
+    result = model_query(context, models.usage).\
+             filter_by(id=usage_id).\
+             soft_delete()
+
+    return result
+
+
 
 @require_admin_context    
 def power_state_get(context,power_state_id):
@@ -227,8 +508,15 @@ def charge_product_delete(context, product_id):
 
 @require_admin_context
 def charge_product_get_all(context):
-    query = model_query(context, models.ChargeProduct)
-    return query.all();
+    product_list = []
+    session = get_session()
+    with session.begin():
+	resultset = session.query(models.ChargeProduct).all()
+    	for row in resultset:
+            row['item_name'] = row.item.name
+            row['item_type_name'] = row.item_type.name
+            product_list.append(row)
+    return product_list;
 
 @require_admin_context
 def charge_subscription_get(context, subscription_id):
@@ -255,6 +543,14 @@ def charge_subscription_delete(context, subscription_id):
              soft_delete()
 
     return result
+
+@require_admin_context
+def charge_subscription_update(context, subscription_id, values):
+    session = get_session()
+    with session.begin():
+        subscription_ref = charge_subscription_get(context, subscription_id)
+        subscription_ref.update(values)
+	subscription_ref.save(session=session)
 
 @require_admin_context
 def charge_subscription_get_all(context):
