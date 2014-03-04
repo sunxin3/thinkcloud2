@@ -24,7 +24,8 @@ from openstack_dashboard.dashboards.project.physical_servers\
         .tables import (PhysicalserversTable, AddPhysicalServer, \
                        EditPhysicalServer,  DeletePhysicalServer,\
                        RebootPhysicalServer, ShutdownPhysicalServer,\
-                       PublicPhysicalServer,PrivatePhysicalServer,)
+                       PublicPhysicalServer,PrivatePhysicalServer,\
+                       PoweronPhysicalServer)
 
 
 class AdminAddPhysicalServer(AddPhysicalServer):
@@ -47,6 +48,10 @@ class AdminRebootPhysicalServer(RebootPhysicalServer):
         return True
 
 class AdminShutdownPhysicalServer(ShutdownPhysicalServer):
+    def allowed(self, request, obj_id):
+        return True
+
+class AdminPoweronPhysicalServer(ShutdownPhysicalServer):
     def allowed(self, request, obj_id):
         return True
     
@@ -123,4 +128,4 @@ class AdminPhysicalserversTable(PhysicalserversTable):
         verbose_name = _("Physical Servers")
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
         table_actions = (AdminOwnerFilter,AdminAddPhysicalServer, AdminDeletePhysicalServer)
-        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer, AdminRebootPhysicalServer, AdminShutdownPhysicalServer, AdminPublicPhysicalServer, AdminPrivatePhysicalServer)
+        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer, AdminRebootPhysicalServer, AdminShutdownPhysicalServer, AdminPoweronPhysicalServer, AdminPublicPhysicalServer, AdminPrivatePhysicalServer)

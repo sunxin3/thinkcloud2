@@ -117,7 +117,32 @@ class ShutdownPhysicalServer(tables.BatchAction):
             if result == 'Chassis Power Control: Down/Off\n':
                 api.nova.physical_server_update(request, obj_id, power_states_id=2)
                 break
-    
+
+class PoweronPhysicalServer(tables.BatchAction):
+    name = "poweron"
+    action_present = _("Power on")
+    action_past = _("Scheduled power on of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("btn-danger", "btn-reboot")
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+
+    def action(self, request, obj_id):
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        poweron_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power on'
+        p = subprocess.Popen(poweron_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(3)
+        p.kill()
+        for result in p.stdout.readlines():
+            if result == 'Chassis Power Control: Up/On\n':
+                api.nova.physical_server_update(request, obj_id, power_states_id=1)
+                break
+
 class ApplyPhysicalServer(tables.BatchAction):
     name = "apply"
     action_present = _("Apply")
