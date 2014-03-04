@@ -19,9 +19,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
+from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.physical_servers\
         .tables import (PhysicalserversTable, AddPhysicalServer, \
-                       EditPhysicalServer,  DeletePhysicalServer,)
+                       EditPhysicalServer,  DeletePhysicalServer,\
+                       RebootPhysicalServer, ShutdownPhysicalServer,\
+                       PublicPhysicalServer,PrivatePhysicalServer,\
+                       PoweronPhysicalServer)
 
 
 class AdminAddPhysicalServer(AddPhysicalServer):
@@ -39,7 +43,32 @@ class AdminEditPhysicalServer(EditPhysicalServer):
     def allowed(self, request, server=None):
         return True
 
+class AdminRebootPhysicalServer(RebootPhysicalServer):
+    def allowed(self, request, obj_id):
+        return True
 
+class AdminShutdownPhysicalServer(ShutdownPhysicalServer):
+    def allowed(self, request, obj_id):
+        return True
+
+class AdminPoweronPhysicalServer(ShutdownPhysicalServer):
+    def allowed(self, request, obj_id):
+        return True
+    
+class AdminPublicPhysicalServer(PublicPhysicalServer):
+    def allowed(self, request, obj_id):
+        is_public = api.nova.physical_server_get(request, obj_id).is_public
+        if not is_public:
+             return True
+        return False
+    
+class AdminPrivatePhysicalServer(PrivatePhysicalServer):
+    def allowed(self, request, obj_id):
+        is_public = api.nova.physical_server_get(request, obj_id).is_public
+        if is_public:
+             return True
+        return False
+    
 class AdminOwnerFilter(tables.FixedFilterAction):
     def get_fixed_buttons(self):
         def make_dict(text, tenant, icon):
@@ -99,4 +128,4 @@ class AdminPhysicalserversTable(PhysicalserversTable):
         verbose_name = _("Physical Servers")
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
         table_actions = (AdminOwnerFilter,AdminAddPhysicalServer, AdminDeletePhysicalServer)
-        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer)
+        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer, AdminRebootPhysicalServer, AdminShutdownPhysicalServer, AdminPoweronPhysicalServer, AdminPublicPhysicalServer, AdminPrivatePhysicalServer)
