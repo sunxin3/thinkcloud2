@@ -15,6 +15,8 @@
 #    under the License.
 
 import logging
+import subprocess
+import time
 from collections import defaultdict
 from django.utils import datetime_safe
 
@@ -81,28 +83,23 @@ class RebootPhysicalServer(tables.BatchAction):
         return False
     
     def action(self, request, obj_id):
-          now = datetime_safe.datetime.now().isoformat()
-    
-          charge_product_id = None
-          charge_products = api.nova.charge_product_list(request)
-          for charge_product in charge_products:
-              if charge_product.item_name == 'physical_server':
-                  charge_product_id = charge_product.id
-    
-          resource_displayname = api.nova.physical_server_get(request, obj_id).name
-          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
-    
-          #LOG.debug("test for sunxin %s" % subscription.id)
-          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
-    
-          #Send people mail
-          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
-          #TODO by sunxin
-          applier_mail = applier_mail_perfix + '@lenovo.com'
-          
-          mail_title = "[Notice] Server Application Issued"
-          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
-          send_mail(mail_title, mail_content, applier_mail)
+	ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+	reboot_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power reset' 
+        p = subprocess.Popen(reboot_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(2)
+        p.kill()
+        cmd_result = p.stdout.readlines()
+        if cmd_result == 'Chassis Power Control: Reset':
+            api.nova.physical_server_update(request, obj_id, power_states_id=2)
+   
+        '''#Send people mail
+        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+         
+        mail_title = "[Notice] Server Application Issued"
+        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+        send_mail(mail_title, mail_content, applier_mail)'''
     
 class ShutdownPhysicalServer(tables.BatchAction):
     name = "shutdown"
@@ -119,29 +116,23 @@ class ShutdownPhysicalServer(tables.BatchAction):
         return False
     
     def action(self, request, obj_id):
-          now = datetime_safe.datetime.now().isoformat()
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        shutdown_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power off'
+        p = subprocess.Popen(shutdown_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(2)
+        p.kill()
+        cmd_result = p.stdout.readlines()
+        if cmd_result == 'Chassis Power Control: Down/Off':
+            api.nova.physical_server_update(request, obj_id, power_states_id=2)
     
-          charge_product_id = None
-          charge_products = api.nova.charge_product_list(request)
-          for charge_product in charge_products:
-              if charge_product.item_name == 'physical_server':
-                  charge_product_id = charge_product.id
-    
-          resource_displayname = api.nova.physical_server_get(request, obj_id).name
-          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
-    
-          #LOG.debug("test for sunxin %s" % subscription.id)
-          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
-    
-          #Send people mail
-          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
-          #TODO by sunxin
-          applier_mail = applier_mail_perfix + '@lenovo.com'
-          
-          mail_title = "[Notice] Server Application Issued"
-          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
-          send_mail(mail_title, mail_content, applier_mail)
-
+        '''#Send people mail
+        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+        
+        mail_title = "[Notice] Server Application Issued"
+        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+        send_mail(mail_title, mail_content, applier_mail)'''
 
 class ApplyPhysicalServer(tables.BatchAction):
     name = "apply"
