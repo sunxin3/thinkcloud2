@@ -25,7 +25,7 @@ from openstack_dashboard.dashboards.project.physical_servers\
 
 
 class AdminAddPhysicalServer(AddPhysicalServer):
-    url = "horizon:admin:images:create"
+    url = "horizon:admin:physical_servers:create"
 
 
 class AdminDeletePhysicalServer(DeletePhysicalServer):
