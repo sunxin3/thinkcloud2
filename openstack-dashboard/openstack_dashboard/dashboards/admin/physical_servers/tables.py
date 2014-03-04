@@ -43,11 +43,11 @@ class AdminEditPhysicalServer(EditPhysicalServer):
         return True
 
 class AdminRebootPhysicalServer(RebootPhysicalServer):
-    def allowed(self, request, server=None):
+    def allowed(self, request, obj_id):
         return True
 
 class AdminShutdownPhysicalServer(ShutdownPhysicalServer):
-    def allowed(self, request, server=None):
+    def allowed(self, request, obj_id):
         return True
     
 class AdminPublicPhysicalServer(PublicPhysicalServer):
@@ -60,7 +60,6 @@ class AdminPublicPhysicalServer(PublicPhysicalServer):
 class AdminPrivatePhysicalServer(PrivatePhysicalServer):
     def allowed(self, request, obj_id):
         is_public = api.nova.physical_server_get(request, obj_id).is_public
-        LOG.debug("sunxinxx %s" % is_public )
         if is_public:
              return True
         return False

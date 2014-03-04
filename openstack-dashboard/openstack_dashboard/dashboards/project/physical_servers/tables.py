@@ -36,7 +36,6 @@ from horizon.mail import send_mail
 LOG = logging.getLogger(__name__)
 
 
-
 class DeletePhysicalServer(tables.DeleteAction):
     data_type_singular = _("Physical Server")
     data_type_plural = _("Physical Servers")
@@ -74,7 +73,7 @@ class RebootPhysicalServer(tables.BatchAction):
     action_past = _("Scheduled reboot of")
     data_type_singular = _("Physical Server")
     data_type_plural = _("Physical Servers")
-    classes = ("ajax-modal", "btn-edit")    
+    classes = ("btn-danger", "btn-reboot")    
 
     def allowed(self, request, obj_id):
         server = api.nova.physical_server_get(request, obj_id)
@@ -83,23 +82,16 @@ class RebootPhysicalServer(tables.BatchAction):
         return False
     
     def action(self, request, obj_id):
-	ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
-	reboot_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power reset' 
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        reboot_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power reset'
         p = subprocess.Popen(reboot_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        time.sleep(2)
+        time.sleep(3)
         p.kill()
-        cmd_result = p.stdout.readlines()
-        if cmd_result == 'Chassis Power Control: Reset':
-            api.nova.physical_server_update(request, obj_id, power_states_id=2)
-   
-        '''#Send people mail
-        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
-        #TODO by sunxin
-        applier_mail = applier_mail_perfix + '@lenovo.com'
-         
-        mail_title = "[Notice] Server Application Issued"
-        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
-        send_mail(mail_title, mail_content, applier_mail)'''
+	for result in p.stdout.readlines():
+	    if result == 'Chassis Power Control: Reset\n':
+	    #TODO by sunxin this is a hardcoding, need to modify later
+                api.nova.physical_server_update(request, obj_id, power_states_id=2)
+		break
     
 class ShutdownPhysicalServer(tables.BatchAction):
     name = "shutdown"
@@ -119,21 +111,13 @@ class ShutdownPhysicalServer(tables.BatchAction):
         ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
         shutdown_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power off'
         p = subprocess.Popen(shutdown_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        time.sleep(2)
+        time.sleep(3)
         p.kill()
-        cmd_result = p.stdout.readlines()
-        if cmd_result == 'Chassis Power Control: Down/Off':
-            api.nova.physical_server_update(request, obj_id, power_states_id=2)
+	for result in p.stdout.readlines():
+            if result == 'Chassis Power Control: Down/Off\n':
+                api.nova.physical_server_update(request, obj_id, power_states_id=2)
+                break
     
-        '''#Send people mail
-        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
-        #TODO by sunxin
-        applier_mail = applier_mail_perfix + '@lenovo.com'
-        
-        mail_title = "[Notice] Server Application Issued"
-        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
-        send_mail(mail_title, mail_content, applier_mail)'''
-
 class ApplyPhysicalServer(tables.BatchAction):
     name = "apply"
     action_present = _("Apply")
