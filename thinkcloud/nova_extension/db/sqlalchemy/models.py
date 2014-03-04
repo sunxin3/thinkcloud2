@@ -41,7 +41,8 @@ class PhysicalServer(BASE,NovaBase):
     server_models_id = Column(Integer, ForeignKey('thkcld_server_models.id'),
                        nullable=False)
     is_public = Column(Boolean())
-    subscription_id = Column(String(64),ForeignKey('thkcld_charge_subscriptions.id'),nullable=True)
+    subscription_id = Column(Integer,ForeignKey('thkcld_charge_subscriptions.id'),
+                             nullable=True)
     power_states_id = Column(Integer, ForeignKey('thkcld_power_states.id'),
                        nullable=False)
     nc_number = Column(String(64))

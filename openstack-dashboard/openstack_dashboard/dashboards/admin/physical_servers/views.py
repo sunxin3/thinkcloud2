@@ -10,7 +10,7 @@ from openstack_dashboard import api
 from openstack_dashboard.dashboards.project \
         .physical_servers import views
 from .tables import AdminPhysicalserversTable
-from .forms import AdminCreateImageForm, AdminUpdateImageForm
+from .forms import CreatePhysicalServerForm, UpdatePhysicalServerForm
 
 
 LOG = logging.getLogger(__name__)
@@ -35,15 +35,15 @@ class IndexView(tables.DataTableView):
     
 
 class CreateView(views.CreateView):
-    template_name = 'admin/images/create.html'
-    form_class = AdminCreateImageForm
-    success_url = reverse_lazy('horizon:admin:images:index')
+    template_name = 'admin/physical_servers/create.html'
+    form_class = CreatePhysicalServerForm
+    success_url = reverse_lazy('horizon:admin:physical_servers:index')
 
 
 class UpdateView(views.UpdateView):
-    template_name = 'admin/images/update.html'
-    form_class = AdminUpdateImageForm
-    success_url = reverse_lazy('horizon:admin:images:index')
+    template_name = 'admin/physical_servers/update.html'
+    form_class = UpdatePhysicalServerForm
+    success_url = reverse_lazy('horizon:admin:physical_servers:index')
 
 
 class DetailView(views.DetailView):

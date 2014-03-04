@@ -114,7 +114,11 @@ class DenyChargeSubscription(tables.BatchAction):
 
     def action(self, request, obj_id):
         api.nova.charge_subscription_update(request, obj_id, status='denied', approver_id=request.user.id)
-        
+        subscription = api.nova.charge_subscription_get(request, obj_id)
+        #TODO by sunxin, if need to handle exception?
+        if (subscription.resource_uuid and (subscription.item == 'physical_server')):
+            api.nova.physical_server_update(request, subscription.resource_uuid, subscription_id='NULL')
+            
         #Send people mail
         applier_id = api.nova.charge_subscription_get(request, obj_id).user_id
         applier_mail_perfix = api.keystone.user_get(request, applier_id).name
@@ -127,7 +131,7 @@ class DenyChargeSubscription(tables.BatchAction):
         approver_mail = approver_mail_perfix + '@lenovo.com'        
         
         mail_title = "[Notice] Server Application Denied"
-        mail_content = "Sorry, your application of server is denied by Lab Administrator: " + approver_mail + ".\n Any qeustion, please send mail to " + approver_mail + "@lenovo.com.\n Thank you for your understanding." 
+        mail_content = " Sorry, your application of server is denied by Lab Administrator: " + approver_mail + ".\n Any qeustion, please send mail to " + approver_mail + ".\n Thank you for your understanding." 
         send_mail(mail_title, mail_content, applier_mail)
 
 class UpdateRow(tables.Row):

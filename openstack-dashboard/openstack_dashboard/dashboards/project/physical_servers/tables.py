@@ -15,6 +15,8 @@
 #    under the License.
 
 import logging
+import subprocess
+import time
 from collections import defaultdict
 from django.utils import datetime_safe
 
@@ -32,7 +34,6 @@ from horizon.mail import send_mail
 
 
 LOG = logging.getLogger(__name__)
-
 
 
 class DeletePhysicalServer(tables.DeleteAction):
@@ -72,7 +73,7 @@ class RebootPhysicalServer(tables.BatchAction):
     action_past = _("Scheduled reboot of")
     data_type_singular = _("Physical Server")
     data_type_plural = _("Physical Servers")
-    classes = ("ajax-modal", "btn-edit")    
+    classes = ("btn-danger", "btn-reboot")    
 
     def allowed(self, request, obj_id):
         server = api.nova.physical_server_get(request, obj_id)
@@ -81,28 +82,16 @@ class RebootPhysicalServer(tables.BatchAction):
         return False
     
     def action(self, request, obj_id):
-          now = datetime_safe.datetime.now().isoformat()
-    
-          charge_product_id = None
-          charge_products = api.nova.charge_product_list(request)
-          for charge_product in charge_products:
-              if charge_product.item_name == 'physical_server':
-                  charge_product_id = charge_product.id
-    
-          resource_displayname = api.nova.physical_server_get(request, obj_id).name
-          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
-    
-          #LOG.debug("test for sunxin %s" % subscription.id)
-          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
-    
-          #Send people mail
-          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
-          #TODO by sunxin
-          applier_mail = applier_mail_perfix + '@lenovo.com'
-          
-          mail_title = "[Notice] Server Application Issued"
-          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
-          send_mail(mail_title, mail_content, applier_mail)
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        reboot_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power reset'
+        p = subprocess.Popen(reboot_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(3)
+        p.kill()
+	for result in p.stdout.readlines():
+	    if result == 'Chassis Power Control: Reset\n':
+	    #TODO by sunxin this is a hardcoding, need to modify later
+                api.nova.physical_server_update(request, obj_id, power_states_id=2)
+		break
     
 class ShutdownPhysicalServer(tables.BatchAction):
     name = "shutdown"
@@ -119,29 +108,40 @@ class ShutdownPhysicalServer(tables.BatchAction):
         return False
     
     def action(self, request, obj_id):
-          now = datetime_safe.datetime.now().isoformat()
-    
-          charge_product_id = None
-          charge_products = api.nova.charge_product_list(request)
-          for charge_product in charge_products:
-              if charge_product.item_name == 'physical_server':
-                  charge_product_id = charge_product.id
-    
-          resource_displayname = api.nova.physical_server_get(request, obj_id).name
-          subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)
-    
-          #LOG.debug("test for sunxin %s" % subscription.id)
-          api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
-    
-          #Send people mail
-          applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
-          #TODO by sunxin
-          applier_mail = applier_mail_perfix + '@lenovo.com'
-          
-          mail_title = "[Notice] Server Application Issued"
-          mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
-          send_mail(mail_title, mail_content, applier_mail)
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        shutdown_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power off'
+        p = subprocess.Popen(shutdown_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(3)
+        p.kill()
+	for result in p.stdout.readlines():
+            if result == 'Chassis Power Control: Down/Off\n':
+                api.nova.physical_server_update(request, obj_id, power_states_id=2)
+                break
 
+class PoweronPhysicalServer(tables.BatchAction):
+    name = "poweron"
+    action_present = _("Power on")
+    action_past = _("Scheduled power on of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("btn-danger", "btn-reboot")
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+
+    def action(self, request, obj_id):
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        poweron_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo chassis power on'
+        p = subprocess.Popen(poweron_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(3)
+        p.kill()
+        for result in p.stdout.readlines():
+            if result == 'Chassis Power Control: Up/On\n':
+                api.nova.physical_server_update(request, obj_id, power_states_id=1)
+                break
 
 class ApplyPhysicalServer(tables.BatchAction):
     name = "apply"
@@ -180,6 +180,76 @@ class ApplyPhysicalServer(tables.BatchAction):
         mail_title = "[Notice] Server Application Issued"
         mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
         send_mail(mail_title, mail_content, applier_mail)
+
+class PublicPhysicalServer(tables.BatchAction):
+    name = "public"
+    action_present = _("Public")
+    action_past = _("Scheduled application of")
+    data_type_singular = _("Physical Server")
+    data_type_plural = _("Physical Servers")
+    classes = ("btn-danger", "btn-reboot")
+    
+    def allowed(self, request, obj_id):
+         return False
+
+    def action(self, request, obj_id):
+        now = datetime_safe.datetime.now().isoformat()
+
+        '''charge_product_id = None
+        charge_products = api.nova.charge_product_list(request)
+        for charge_product in charge_products:
+            if charge_product.item_name == 'physical_server':
+		         charge_product_id = charge_product.id
+
+        resource_displayname = api.nova.physical_server_get(request, obj_id).name
+        subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)'''
+
+        #LOG.debug("test for sunxin %s" % subscription.id)
+        api.nova.physical_server_update(request, obj_id, is_public=1)
+
+        '''#Send people mail
+        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        #TODO by sunxin
+        applier_mail = applier_mail_perfix + '@lenovo.com'
+        
+        mail_title = "[Notice] Server Application Issued"
+        mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+        send_mail(mail_title, mail_content, applier_mail)'''
+
+class PrivatePhysicalServer(tables.BatchAction):
+   name = "private"
+   action_present = _("Private")
+   action_past = _("Scheduled private of")
+   data_type_singular = _("Physical Server")
+   data_type_plural = _("Physical Servers")
+   classes = ("btn-danger", "btn-reboot")
+   
+   def allowed(self, request, obj_id):
+       return False
+
+   def action(self, request, obj_id):
+       '''now = datetime_safe.datetime.now().isoformat()
+
+       charge_product_id = None
+       charge_products = api.nova.charge_product_list(request)
+       for charge_product in charge_products:
+           if charge_product.item_name == 'physical_server':
+	         charge_product_id = charge_product.id
+
+       resource_displayname = api.nova.physical_server_get(request, obj_id).name
+       subscription = api.nova.charge_subscription_create(request, status='apply', product_id=charge_product_id,resource_uuid=obj_id,user_id=request.user.id, project_id=request.user.tenant_id, resource_name=resource_displayname, applied_at=now)'''
+
+       #LOG.debug("test for sunxin %s" % subscription.id)
+       api.nova.physical_server_update(request, obj_id, is_public=0)
+
+       '''#Send people mail
+       applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+       #TODO by sunxin
+       applier_mail = applier_mail_perfix + '@lenovo.com'
+       
+       mail_title = "[Notice] Server Application Issued"
+       mail_content = "Our user " + applier_mail + " asked for a server application, Please handle it immediately." 
+       send_mail(mail_title, mail_content, applier_mail)'''
 
 def filter_tenants():
     return getattr(settings, 'IMAGES_LIST_FILTER_TENANTS', [])

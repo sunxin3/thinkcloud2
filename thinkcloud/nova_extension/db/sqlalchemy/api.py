@@ -5,33 +5,51 @@
 @require_admin_context
 def physical_server_get(context,server_id):
     session = get_session()
-    with session.begin():
+    #with session.begin():
         #query = model_query(context,models.PhysicalServer,session=session,read_deleted="yes")
-        query = model_query(context,models.PhysicalServer,session=session,
+    query = model_query(context,models.PhysicalServer,session=session,
                             read_deleted="yes").filter_by(id=server_id)
-        result = query.first()
-        
-        if not result or not query:
-            raise  Exception()
-        
-        # since sqlalchemy use lazy loading as default
-        # and don't want to open eager loading
-        # Then load the joined table manually 
-        result['model'] = result.rel_model.name
-        result['nics_count'] = len(result.rel_nic)
-        result['disks_count'] = len (result.rel_disk)
-        result['rams_count'] = len (result.rel_ram)
-        result['hbas_count'] = len (result.rel_hba)
-        if result.subscription_id != None :
-                try:
-                    charge_subscription_get(context,result.subscription_id)
-                except :
-                    result.subscription_id = None
-                    print "throw exception go away!"
-                else:    
-                    result['subscription_count'] = len (result.rel_subscription)
-        
-        return result 
+    result = query.first()
+    if not result or not query:
+        LOG.debug("xxxxxxx")
+        raise  Exception()
+    # since sqlalchemy use lazy loading as default
+    # and don't want to open eager loading
+    # Then load the joined table manually 
+    result['model'] = result.rel_model.name
+    result['nics_count'] = len(result.rel_nic)
+    result['disks_count'] = len (result.rel_disk)
+    result['rams_count'] = len (result.rel_ram)
+    result['hbas_count'] = len (result.rel_hba)
+    try:
+        result.subscription_id
+    except:
+        result['subscription_id'] = None
+    return result  
+
+"""       
+    
+   
+    result['nics_count'] = len(result.rel_nic)
+    result['disks_count'] = len (result.rel_disk)
+    result['rams_count'] = len (result.rel_ram)
+    result['hbas_count'] = len (result.rel_hba)
+    LOG.debug("AAAAAAAAAAAAAAAAAAa" + result['subscription_id'] )
+
+    if result['subscription_id'] != None :
+        try:
+            charge_subscription_get(context,result['subscription_id'])
+        except :
+                 #LOG.debug("thkcld_physical_server.subscription_id=%s and throw exception go away!",result.subscription_id)
+            result['subscription_id'] = None
+            LOG.debug("BBBBBBBBBbbbb" + result['subscription_id'] )
+    if result['subscription_id ']!= None :
+        result['subscription_count'] = result.rel_subscription 
+                                                     
+"""    
+      
+   
+
 
 @require_admin_context    
 def physical_server_get_all(context):
@@ -526,6 +544,10 @@ def charge_subscription_get(context, subscription_id):
         result = query.first()
     if not result or not query:
         raise Exception()
+    # since sqlalchemy use lazy loading as default
+    # and don't want to open eager loading
+    # Then load the joined table manually 
+    result['item'] = result.rel_charge_product.item.name   
 
     return result
 
