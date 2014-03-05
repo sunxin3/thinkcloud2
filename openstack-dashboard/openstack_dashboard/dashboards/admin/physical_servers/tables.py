@@ -51,7 +51,7 @@ class AdminShutdownPhysicalServer(ShutdownPhysicalServer):
     def allowed(self, request, obj_id):
         return True
 
-class AdminPoweronPhysicalServer(ShutdownPhysicalServer):
+class AdminPoweronPhysicalServer(PoweronPhysicalServer):
     def allowed(self, request, obj_id):
         return True
     
