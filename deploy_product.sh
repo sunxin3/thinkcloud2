@@ -1,3 +1,4 @@
+sh i18n.sh
 rm /usr/share/openstack-dashboard -rf
 cp openstack-dashboard/ /usr/share/ -rf
 chown apache:apache /usr/share/openstack-dashboard -R

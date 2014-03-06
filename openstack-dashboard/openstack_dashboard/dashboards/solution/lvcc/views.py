@@ -26,7 +26,7 @@ from openstack_dashboard import usage
 class ProjectOverview(usage.UsageView):
     table_class = usage.TenantUsageTable
     usage_class = usage.TenantUsage
-    template_name = 'project/overview/usage.html'
+    template_name = 'solution/lvcc/introduction.html'
 
     def get_data(self):
         super(ProjectOverview, self).get_data()
@@ -34,4 +34,4 @@ class ProjectOverview(usage.UsageView):
 
 
 class WarningView(TemplateView):
-    template_name = "project/_warning.html"
+    template_name = "solution/_warning.html"

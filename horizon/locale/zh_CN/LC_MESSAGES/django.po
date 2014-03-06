@@ -963,7 +963,7 @@ msgstr "镜像更新成功。"
 #: dashboards/nova/images_and_snapshots/snapshots/tables.py:32
 #: dashboards/nova/instances/workflows.py:456
 msgid "Launch"
-msgstr "启动"
+msgstr "创建"
 
 #: dashboards/nova/images_and_snapshots/images/tables.py:45
 #: dashboards/nova/images_and_snapshots/images/tables.py:81
@@ -3464,7 +3464,7 @@ msgstr "没有条目显示。"
 
 #: tables/base.py:829
 msgid "Actions"
-msgstr "动作"
+msgstr "操作"
 
 #: tables/base.py:1005
 #, python-format
@@ -3903,3 +3903,141 @@ msgstr "LVCC解决方案"
 
 msgid "LVDI Solution"
 msgstr "LVDI解决方案"
+
+msgid "Physical Servers"
+msgstr "物理服务器"
+
+msgid "IPMI Address"
+msgstr "IPMI 地址"
+
+msgid "Storage"
+msgstr "硬盘容量"
+
+msgid "Nics"
+msgstr "网卡"
+
+msgid "HBAs"
+msgstr "HBA网卡"
+
+msgid "Shutdown"
+msgstr "关闭"
+
+msgid "Power on"
+msgstr "开启"
+
+msgid "Model"
+msgstr "型号"
+
+msgid "Physical Server Overview"
+msgstr "物理服务器概况"
+
+msgid "Charge Subscriptions"
+msgstr "订单管理"
+
+msgid "Charge Product"
+msgstr "可供申请产品"
+
+msgid "Resource Name"
+msgstr "资源名称"
+
+msgid "Resource UUID"
+msgstr "资源唯一标识"
+
+msgid "Applyer"
+msgstr "申请人"
+
+msgid "Approver"
+msgstr "审批人"
+
+msgid "Apply Time"
+msgstr "申请时间"
+
+msgid "Approved Time"
+msgstr "审批时间"
+
+msgid "Expires Time"
+msgstr "过期时间"
+
+msgid "Solution Demo"
+msgstr "方案展示"
+
+msgid "Solution"
+msgstr "方案"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "denied"
+msgstr "被拒绝"
+
+msgid "verified"
+msgstr "可使用"
+
+msgid "apply"
+msgstr "待审批"
+
+msgid "Apply"
+msgstr "申请"
+
+msgid "Private"
+msgstr "设为私有"
+
+msgid "Physical Server"
+msgstr "物理服务器"
+
+msgid "Add Physical Server"
+msgstr "添加物理服务器"
+
+msgid "Private Reserved"
+msgstr "私有预留"
+
+msgid "Private Free"
+msgstr "私有非预留"
+
+msgid "Delete Physical Servers"
+msgstr "删除服务器"
+
+msgid "Reboot Instances"
+msgstr "重启虚拟机"
+
+msgid "Terminate Instances"
+msgstr "删除虚拟机"
+
+msgid "Delete Images"
+msgstr "删除镜像"
+
+msgid "Delete Flavors"
+msgstr "删除虚拟机类型"
+
+msgid "Delete Projects"
+msgstr "删除部门"
+
+msgid "Delete Users"
+msgstr "删除用户"
+
+msgid "Delete Security Groups"
+msgstr "删除安全组"
+
+msgid "Reserved by Me"
+msgstr "我申请预留的"
+
+msgid "Free Available"
+msgstr "可公开申请的"
+
+msgid "Approve Subscriptions"
+msgstr "批准订单"
+
+msgid "Deny Subscriptions"
+msgstr "拒绝订单"
+
+msgid "Soft Reboot"
+msgstr "软重启"
+
+msgid "Hard Reboot"
+msgstr "硬重启"
+
+msgid "Edit Security Groups"
+msgstr "编辑安全组"
+
+msgid "Shared with Me"
+msgstr "我可见的"

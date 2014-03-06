@@ -40,7 +40,7 @@ class GlobalUsageTable(BaseUsageTable):
         verbose_name = _("Usage Summary")
         columns = ("tenant", "vcpus", "disk", "memory",
                    "hours", "disk_hours")
-        table_actions = (CSVSummary,)
+        #table_actions = (CSVSummary,)
         multi_select = False
 
 
@@ -67,5 +67,5 @@ class TenantUsageTable(BaseUsageTable):
         name = "tenant_usage"
         verbose_name = _("Usage Summary")
         columns = ("instance", "vcpus", "disk", "memory", "uptime")
-        table_actions = (CSVSummary,)
+        #table_actions = (CSVSummary,)
         multi_select = False

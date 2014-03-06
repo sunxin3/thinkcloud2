@@ -344,7 +344,7 @@ class PhysicalserversTable(tables.DataTable):
     
     memory = tables.Column(total_memory, verbose_name=_("Memory"))
     
-    storage = tables.Column(total_disk, verbose_name=_("Storage"))
+    storage_disk = tables.Column(total_disk, verbose_name=_("Storage"))
     
     nics    = tables.Column("nic_sum", verbose_name=_("Nics"),
                             filters=(filters.linebreaksbr,))
@@ -357,4 +357,4 @@ class PhysicalserversTable(tables.DataTable):
         # all the columns by default.
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
         table_actions = (OwnerFilter,)
-        row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer)
+        row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer,PoweronPhysicalServer)
