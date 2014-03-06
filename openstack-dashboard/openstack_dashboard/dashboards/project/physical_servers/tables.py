@@ -344,7 +344,7 @@ class PhysicalserversTable(tables.DataTable):
     
     memory = tables.Column(total_memory, verbose_name=_("Memory"))
     
-    storage_disk = tables.Column(total_disk, verbose_name=_("Storage"))
+    storage = tables.Column(total_disk, verbose_name=_("Storage"))
     
     nics    = tables.Column("nic_sum", verbose_name=_("Nics"),
                             filters=(filters.linebreaksbr,))

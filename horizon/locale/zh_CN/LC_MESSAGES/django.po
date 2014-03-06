@@ -3911,7 +3911,7 @@ msgid "IPMI Address"
 msgstr "IPMI 地址"
 
 msgid "Storage"
-msgstr "硬盘容量"
+msgstr "硬盘"
 
 msgid "Nics"
 msgstr "网卡"
