@@ -3916,6 +3916,9 @@ msgstr "硬盘"
 msgid "Nics"
 msgstr "网卡"
 
+msgid "NICs"
+msgstr "网卡"
+
 msgid "HBAs"
 msgstr "HBA网卡"
 
@@ -4041,3 +4044,6 @@ msgstr "编辑安全组"
 
 msgid "Shared with Me"
 msgstr "我可见的"
+
+msgid "IPMI Password"
+msgstr "IPMI 密码"

@@ -81,9 +81,24 @@ class ApproveChargeSubscription(tables.BatchAction):
         now = datetime_safe.datetime.now().isoformat()
         expires_at = (datetime_safe.datetime.now() + timedelta(days=30)).isoformat()
         api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id, approved_at=now,expires_at=expires_at)
-        
+	
+        subscription = api.nova.charge_subscription_get(request, obj_id)
+        server_id = subscription.resource_uuid
+        ipmi_address = api.nova.physical_server_get(request, server_id).ipmi_address
+        password_list = '0123456789'
+        password = string.join(random.sample(password_list, 6), sep='')
+        pass_wd_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo user set password 3 ' + pass_word 
+        p = subprocess.Popen(reboot_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(3)
+        p.kill()
+        for result in p.stdout.readlines():
+            if result == 'Chassis Power Control: Reset\n':
+            #TODO by sunxin this is a hardcoding, need to modify later
+                api.nova.physical_server_update(request, server_id, ipmi_password=pass_word)
+                break
+
         #Send people mail
-        applier_id = api.nova.charge_subscription_get(request, obj_id).user_id
+        applier_id = subscription.user_id
         applier_mail_perfix = api.keystone.user_get(request, applier_id).name
         #TODO by sunxin
         applier_mail = applier_mail_perfix + '@lenovo.com'

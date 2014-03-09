@@ -126,6 +126,6 @@ class AdminPhysicalserversTable(PhysicalserversTable):
         name = "physicalservers"
         row_class = UpdateRow
         verbose_name = _("Physical Servers")
-        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
+        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi","ipmi_password", ]
         table_actions = (AdminOwnerFilter,AdminAddPhysicalServer, AdminDeletePhysicalServer)
         row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer, AdminRebootPhysicalServer, AdminShutdownPhysicalServer, AdminPoweronPhysicalServer, AdminPublicPhysicalServer, AdminPrivatePhysicalServer)

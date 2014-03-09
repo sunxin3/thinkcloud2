@@ -294,6 +294,7 @@ class OwnerFilter(tables.FixedFilterAction):
             for category in categories:
                 if category == "free":
                     server.ipmi_address = "N/A"
+                    server.ipmi_password = "N/A"
                 tenants[category].append(server)
         return tenants
     
@@ -336,6 +337,8 @@ class PhysicalserversTable(tables.DataTable):
                            verbose_name=_("Power State"),)
     ipmi  = tables.Column("ipmi_address",
                           verbose_name= _("IPMI Address"))
+    ipmi_password  = tables.Column("ipmi_password",
+                          verbose_name= _("IPMI Password"))
     public = tables.Column("is_public",
                            verbose_name=_("Public"),
                            empty_value=False,
@@ -355,6 +358,6 @@ class PhysicalserversTable(tables.DataTable):
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", ]
+        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", "ipmi_password", ]
         table_actions = (OwnerFilter,)
         row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer,PoweronPhysicalServer)
