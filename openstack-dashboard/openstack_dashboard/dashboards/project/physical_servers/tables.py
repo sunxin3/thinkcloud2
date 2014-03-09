@@ -295,6 +295,10 @@ class OwnerFilter(tables.FixedFilterAction):
                 if category == "free":
                     server.ipmi_address = "N/A"
                     server.ipmi_password = "N/A"
+		if category == "reserved":
+		    if server.subscrib_status != "verified":
+                        server.ipmi_address = "N/A"
+                        server.ipmi_password = "N/A"
                 tenants[category].append(server)
         return tenants
     
@@ -351,6 +355,7 @@ class PhysicalserversTable(tables.DataTable):
     
     nics    = tables.Column("nic_sum", verbose_name=_("Nics"),
                             filters=(filters.linebreaksbr,))
+    subscrib_status = tables.Column("subscrib_status", verbose_name=_("Subscrib Status"))
 
     class Meta:
         name = "physicalservers"
@@ -358,6 +363,6 @@ class PhysicalserversTable(tables.DataTable):
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", "ipmi_password", ]
+        columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", "ipmi_password", "subscrib_status"]
         table_actions = (OwnerFilter,)
         row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer,PoweronPhysicalServer)

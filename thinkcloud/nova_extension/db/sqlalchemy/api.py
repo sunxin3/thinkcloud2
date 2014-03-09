@@ -25,6 +25,9 @@ def physical_server_get(context,server_id):
         result.subscription_id
     except:
         result['subscription_id'] = None
+    #Added by sunxin
+    if result['subscription_id']!= None :
+        result['subscrib_status'] = result.rel_subscription.status
     return result  
 
 """       
@@ -96,6 +99,7 @@ def physical_server_get_all(context):
 	                #Added by sunxin for fetching more subscription details
                     row['subscrib_user_id'] = row.rel_subscription.user_id         
                     row['subscrib_expires_at'] = row.rel_subscription.expires_at        
+                    row['subscrib_status'] = row.rel_subscription.status        
             
             server_list.append(row)
         return server_list;    

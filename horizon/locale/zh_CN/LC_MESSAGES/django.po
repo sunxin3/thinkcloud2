@@ -4047,3 +4047,12 @@ msgstr "我可见的"
 
 msgid "IPMI Password"
 msgstr "IPMI 密码"
+
+msgid "Physical Server Detail"
+msgstr "物理服务器细节"
+
+msgid "All subscription waiting for approving"
+msgstr "所有等待审批的订单"
+
+msgid "Subscrib Status"
+msgstr "申请状态"

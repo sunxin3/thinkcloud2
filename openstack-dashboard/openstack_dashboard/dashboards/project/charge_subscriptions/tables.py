@@ -86,8 +86,10 @@ class ApproveChargeSubscription(tables.BatchAction):
         server_id = subscription.resource_uuid
         ipmi_address = api.nova.physical_server_get(request, server_id).ipmi_address
         password_list = '0123456789'
+        import random
+        import string
         password = string.join(random.sample(password_list, 6), sep='')
-        pass_wd_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo user set password 3 ' + pass_word 
+        pass_wd_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo user set password 3 ' + password 
         p = subprocess.Popen(reboot_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         time.sleep(3)
         p.kill()

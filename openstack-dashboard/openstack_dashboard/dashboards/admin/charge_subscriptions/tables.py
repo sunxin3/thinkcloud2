@@ -50,16 +50,13 @@ class MigrateInstance(tables.BatchAction):
         api.nova.server_migrate(request, obj_id)
 
 
-class AdminUpdateRow(UpdateRow):
-    def get_data(self, request, instance_id):
-        instance = super(AdminUpdateRow, self).get_data(request, instance_id)
-        tenant = api.keystone.tenant_get(request,
-                                         instance.tenant_id,
-                                         admin=True)
-        instance.tenant_name = getattr(tenant, "name", None)
-        return instance
+class AdminUpdateRow(tables.Row):
+    ajax = True
 
-
+    def get_data(self, request, charge_subscription_id):
+        charge_subscription = api.nova.charge_subscription_get(request, charge_subscription_id)
+        return charge_subscription
+	
 class AdminChargesTable(tables.DataTable):
     TASK_STATUS_CHOICES = (
         (None, True),
@@ -108,8 +105,8 @@ class AdminChargesTable(tables.DataTable):
                             verbose_name=_("Expires Time"))
 
     class Meta:
-        name = "instances"
-        verbose_name = _("Instances")
+        name = "ChargeSubscriptions"
+        verbose_name = _("Charge Subscriptions")
         #status_columns = ["status"]
         table_actions = (ApproveChargeSubscription, DenyChargeSubscription)
         row_class = AdminUpdateRow
