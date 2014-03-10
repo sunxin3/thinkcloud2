@@ -178,7 +178,7 @@ msgstr "IP地址"
 #: dashboards/nova/instances/tables.py:122
 #: dashboards/nova/volumes/tables.py:197 tests/workflows_tests.py:58
 msgid "Instance"
-msgstr "实例"
+msgstr "虚拟机"
 
 #: dashboards/nova/access_and_security/floating_ips/tables.py:121
 msgid "Floating IP Pool"
