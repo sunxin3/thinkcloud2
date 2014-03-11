@@ -1,0 +1,56 @@
+{% load i18n horizon humanize sizeformat %}
+<div>
+<h3>{% trans "Usage Summary" %}</h3>
+<div id="chartContainer1"  class="thkcld_pie3d"></div>  
+<div id="chartContainer2"  class="thkcld_pie3d"></div> 
+<div id="chartContainer3"  class="thkcld_pie3d"></div> 
+<div style="clear:both"></div>
+</div>
+
+
+ <script type="text/javascript">  
+
+        function init(){  
+            var xml1 = "<graph showNames='1'  enableSmartLabels='1' manageLabelOverflow='1'  decimalPrecision='0'   animation='1' caption='{% trans "Physical Server Usages" %}' baseFontSize='14'>";
+                xml1 += "<set name='李克强' value='20' />";
+                xml1 += "<set name='France' value='7'  />";
+                xml1 += "<set name='India' value='12' />";
+                xml1 += "<set name='England' value='11' />";
+                xml1 += "<set name='Italy' value='8' />";
+                xml1 += "<set name='Canada' value='19'/>";
+                xml1 += "<set name='Germany' value='15'/>";
+                xml1 += "</graph>";
+            var chart1 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "300", "300");  
+            chart1.setDataXML(xml1);  
+            chart1.render("chartContainer1");  
+            
+            var xml2 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "Physical Server Usages" %}' >";
+            xml2 += "<set name='李克强' value='20' />";
+            xml2 += "<set name='France' value='7'  />";
+            xml2 += "<set name='India' value='12' />";
+            xml2 += "<set name='England' value='11' />";
+            xml2 += "<set name='Italy' value='8' />";
+            xml2 += "<set name='Canada' value='19'/>";
+            xml2 += "<set name='Germany' value='15'/>";
+            xml2 += "</graph>";
+            var chart2 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "300", "300");  
+            chart2.setDataXML(xml2);  
+            chart2.render("chartContainer2");
+            
+            var xml3 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "Physical Server Usages" %}' >";
+            xml3 += "<set name='李克强' value='20' />";
+            xml3 += "<set name='France' value='7'  />";
+            xml3 += "<set name='India' value='12' />";
+            xml3 += "<set name='England' value='11' />";
+            xml3 += "<set name='Italy' value='8' />";
+            xml3 += "<set name='Canada' value='19'/>";
+            xml3 += "<set name='Germany' value='15'/>";
+            xml3 += "</graph>";
+            var chart3 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "300", "300");  
+            chart3.setDataXML(xml3);  
+            chart3.render("chartContainer3");
+            
+        }  
+        
+        init();
+ </script>  

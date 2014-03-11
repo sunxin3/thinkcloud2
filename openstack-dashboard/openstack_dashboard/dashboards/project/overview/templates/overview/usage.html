@@ -8,7 +8,6 @@
 
 {% block main %}
   {% include "overview/thkcld_quota_summary.html" %}
-  {# {% include "horizon/common/_quota_summary.html" %}  #}
-  {% include "horizon/common/_usage_summary.html" %}
-  {{ table.render }}
+
+  {% include "overview/thkcld_statistics.html" %}
 {% endblock %}

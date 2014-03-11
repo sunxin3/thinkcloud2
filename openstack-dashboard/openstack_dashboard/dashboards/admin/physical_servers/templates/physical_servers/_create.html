@@ -2,10 +2,10 @@
 {% load i18n %}
 
 {% block form_id %}create_image_form{% endblock %}
-{% block form_action %}{% url horizon:admin:images:create %}{% endblock %}
+{% block form_action %}{% url horizon:admin:physical_servers:create %}{% endblock %}
 {% block form_attrs %}enctype="multipart/form-data"{% endblock %}
 
-{% block modal-header %}{% trans "Create An Image" %}{% endblock %}
+{% block modal-header %}{% trans "Add New Physical Server" %}{% endblock %}
 
 {% block modal-body %}
 <div class="left">
@@ -16,19 +16,16 @@
 <div class="right">
     <h3>{% trans "Description:" %}</h3>
     <p>
-        {% trans "Specify an image to upload to the Image Service." %}
+        {% trans "Fill the basic hardware specification for physical server." %}
     </p>
-    <p>
-        {% trans "Currently only images available via an HTTP URL are supported. The image location must be accessible to the Image Service. Compressed image binaries are supported (.zip and .tar.gz.)" %}
-    </p>
-    <p>
+       <p>
         <strong>{% trans "Please note: " %}</strong>
-        {% trans "The Image Location field MUST be a valid and direct URL to the image binary. URLs that redirect or serve error pages will result in unusable images." %}
+        {% trans "For the hardware component such as RAMs/Disks/Nics/HBAs can be added after the physical server was saved" %}
     </p>
 </div>
 {% endblock %}
 
 {% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Create Image" %}" />
+  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Save Physical Server" %}" />
   <a href="{% url horizon:admin:images:index %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>
 {% endblock %}
