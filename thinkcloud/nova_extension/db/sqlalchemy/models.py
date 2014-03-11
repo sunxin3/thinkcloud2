@@ -50,6 +50,7 @@ class PhysicalServer(BASE,NovaBase):
     description = Column(String(255))
     ipmi_address = Column(String(255))
     ipmi_mac     = Column(String(128))
+    ipmi_password = Column(String(64))
     cpu_fre    = Column(Float())
     cpu_core_num   = Column(Integer)
     cpu_desc   = Column(String(255))

@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
   `description` varchar(255) DEFAULT NULL,
   `ipmi_address` varchar(255) DEFAULT NULL,
   `ipmi_mac` varchar(128) NOT NULL,
+  `ipmi_password` varchar(64) DEFAULT NULL,
   `cpu_fre` float DEFAULT NULL COMMENT 'without the curency, only digi value',
   `cpu_core_num` tinyint(4) DEFAULT NULL COMMENT 'pythical',
   `cpu_desc` varchar(255) DEFAULT NULL COMMENT 'value for example: Intel(R) Xeon(R) CPU E5645 @ 2.40Ghz',
@@ -189,11 +190,11 @@ CREATE TABLE IF NOT EXISTS `thkcld_physical_servers` (
 -- Dumping data for table `thkcld_physical_servers`
 --
 
-INSERT INTO `thkcld_physical_servers` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `user_id`, `server_models_id`, `region_id`, `subscription_id`, `is_public`, `power_states_id`, `nc_number`, `name`, `description`, `ipmi_address`, `ipmi_mac`, `cpu_fre`, `cpu_core_num`, `cpu_desc`, `mem_total`, `mem_desc`, `disk_num`, `disk_desc`, `nic_num`, `nic_desc`, `hba_attached`, `hba_port_num`, `cpu_socket_num`, `disk_total`, `raid_internal`, `raid_external`, `hba_cards_id`, `usage_id`) VALUES
-(1, '2013-11-27 00:00:00', '2014-03-02 03:29:36', NULL, 0, NULL, 1, NULL, NULL, 1, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0, 1),
-(2, '2013-11-27 00:00:00', '2014-03-01 13:15:34', '2014-02-24 08:02:05', 0, NULL, 2, NULL, NULL, 1, 1, 'NC10001', 'Spiderman', NULL, '12.12.12.13', '', 3.5, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, '1 x 500 GB 7200 RPM 3.5" DC SATA', NULL, NULL, NULL, NULL, 2, 500, NULL, NULL, NULL, 1),
-(3, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, NULL, NULL, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 1, 1),
-(4, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, '', NULL, 1, 'NC100004', 'Ironman4', NULL, '10.12.12.14', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0, 1);
+INSERT INTO `thkcld_physical_servers` (`id`, `created_at`, `updated_at`, `deleted_at`, `deleted`, `user_id`, `server_models_id`, `region_id`, `subscription_id`, `is_public`, `power_states_id`, `nc_number`, `name`, `description`, `ipmi_address`, `ipmi_mac`, `ipmi_password`, `cpu_fre`, `cpu_core_num`, `cpu_desc`, `mem_total`, `mem_desc`, `disk_num`, `disk_desc`, `nic_num`, `nic_desc`, `hba_attached`, `hba_port_num`, `cpu_socket_num`, `disk_total`, `raid_internal`, `raid_external`, `hba_cards_id`, `usage_id`) VALUES
+(1, '2013-11-27 00:00:00', '2014-03-02 03:29:36', NULL, 0, NULL, 1, NULL, NULL, 1, 1, 'NC10000', 'Ironman', NULL, '172.200.17.33', '', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0, 1),
+(2, '2013-11-27 00:00:00', '2014-03-01 13:15:34', '2014-02-24 08:02:05', 0, NULL, 2, NULL, NULL, 1, 1, 'NC10001', 'Spiderman', NULL, '12.12.12.13', '', '', 3.5, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, '1 x 500 GB 7200 RPM 3.5" DC SATA', NULL, NULL, NULL, NULL, 2, 500, NULL, NULL, NULL, 1),
+(3, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, NULL, NULL, 1, 'NC10000', 'Ironman', NULL, '10.12.12.12', '', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 1, 1),
+(4, '2013-11-27 00:00:00', '2013-12-03 00:00:00', NULL, 0, NULL, 1, NULL, '', NULL, 1, 'NC100004', 'Ironman4', NULL, '10.12.12.14', '', '', 3.4, 4, '1 x Intel Ci3-4130 processor 3.4 GHz, 2C, 4M Cache, 1.00 GT/s, 65W', 4, '4 GB (1 x 4 GB PC3-12800E 1600MHz DDR3 ECC-UD', 1, NULL, NULL, NULL, NULL, NULL, NULL, 500, NULL, NULL, 0, 1);
 
 -- --------------------------------------------------------
 

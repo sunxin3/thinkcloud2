@@ -75,7 +75,7 @@ msgstr "请确认您的选择。这个动作不能撤消"
 
 #: static/horizon/js/horizon.tables.js:171
 msgid "Working"
-msgstr "加工"
+msgstr "加载"
 
 #: static/horizon/js/horizon.tables.js:221
 #, c-format
@@ -86,15 +86,3 @@ msgstr[0] "显示%s个条目"
 #: static/horizon/js/horizon.users.js:18
 msgid "Passwords do not match."
 msgstr "密码不匹配。"
-
-msgid "Running"
-msgstr "运行中"
-
-msgid "denied"
-msgstr "被拒绝"
-
-msgid "verified"
-msgstr "已确认"
-
-msgid "apply"
-msgstr "申请中"
