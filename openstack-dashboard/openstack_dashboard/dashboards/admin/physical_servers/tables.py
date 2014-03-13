@@ -25,7 +25,7 @@ from openstack_dashboard.dashboards.project.physical_servers\
                        EditPhysicalServer,  DeletePhysicalServer,\
                        RebootPhysicalServer, ShutdownPhysicalServer,\
                        PublicPhysicalServer,PrivatePhysicalServer,\
-                       PoweronPhysicalServer)
+                       PoweronPhysicalServer,PasswordPhysicalServer)
 
 
 class AdminAddPhysicalServer(AddPhysicalServer):
@@ -55,6 +55,10 @@ class AdminPoweronPhysicalServer(PoweronPhysicalServer):
     def allowed(self, request, obj_id):
         return True
     
+class AdminnPasswordPhysicalServer(PasswordPhysicalServer):
+    def allowed(self, request, obj_id):
+        return True
+
 class AdminPublicPhysicalServer(PublicPhysicalServer):
     def allowed(self, request, obj_id):
         is_public = api.nova.physical_server_get(request, obj_id).is_public
@@ -128,4 +132,4 @@ class AdminPhysicalserversTable(PhysicalserversTable):
         verbose_name = _("Physical Servers")
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi","ipmi_password", "subscrib_status", ]
         table_actions = (AdminOwnerFilter,AdminAddPhysicalServer, AdminDeletePhysicalServer)
-        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer, AdminRebootPhysicalServer, AdminShutdownPhysicalServer, AdminPoweronPhysicalServer, AdminPublicPhysicalServer, AdminPrivatePhysicalServer)
+        row_actions = (AdminEditPhysicalServer, AdminDeletePhysicalServer, AdminRebootPhysicalServer, AdminShutdownPhysicalServer, AdminPoweronPhysicalServer, AdminPublicPhysicalServer, AdminPrivatePhysicalServer, AdminnPasswordPhysicalServer)

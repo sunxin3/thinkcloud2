@@ -4056,3 +4056,6 @@ msgstr "所有等待审批的订单"
 
 msgid "Subscrib Status"
 msgstr "申请状态"
+
+msgid "Change IPMI Password"
+msgstr "修改IPMI用户thkcld的密码"

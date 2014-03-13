@@ -90,14 +90,15 @@ class ApproveChargeSubscription(tables.BatchAction):
         import string
         password = string.join(random.sample(password_list, 6), sep='')
         pass_wd_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo user set password 3 ' + password 
-        p = subprocess.Popen(reboot_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen(pass_wd_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         time.sleep(3)
         p.kill()
-        for result in p.stdout.readlines():
-            if result == 'Chassis Power Control: Reset\n':
+        api.nova.physical_server_update(request, server_id, ipmi_password=pass_word)
+        '''for result in p.stdout.readlines():
+            if result == 'Set session password\n':
             #TODO by sunxin this is a hardcoding, need to modify later
                 api.nova.physical_server_update(request, server_id, ipmi_password=pass_word)
-                break
+                break'''
 
         #Send people mail
         applier_id = subscription.user_id

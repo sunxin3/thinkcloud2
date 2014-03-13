@@ -45,7 +45,7 @@ class Physical_ServerManager(base.ManagerWithFind):
 
     def create(self, user_id,server_models_id,region_id,
                subscription_id,is_public,power_states_id,
-               nc_number,name, description,ipmi_address,
+               nc_number,name, description,ipmi_address,ipmi_mac,ipmi_password,
                cpu_fre,cpu_core_num,cpu_desc,
                mem_total,mem_desc,disk_num,disk_desc,
                nic_num,nic_desc,hba_attached,
@@ -66,6 +66,8 @@ class Physical_ServerManager(base.ManagerWithFind):
         :param name: server name
         :param description: description of the server
         :param ipmi_address:  server ipmi  address
+        :param ipmi_mac:  server ipmi mac 
+        :param ipmi_password:  server ipmi password 
         :param cpu_fre:  CPU frequence
         :param cpu_core_num: the number of cpu core
         :param cpu_desc:  description for the cpu
@@ -94,6 +96,8 @@ class Physical_ServerManager(base.ManagerWithFind):
                                    'name':name,
                                    'description':description,
                                    'ipmi_address':ipmi_address,
+                                   'ipmi_mac':ipmi_mac,
+                                   'ipmi_password':ipmi_password,
                                    'cpu_fre':cpu_fre,
                                    'cpu_core_num':cpu_core_num,
                                    'cpu_desc':cpu_desc,
@@ -114,7 +118,7 @@ class Physical_ServerManager(base.ManagerWithFind):
                                    }}
         return self._create('/thkcld-physical_servers', body, 'server_model')
 
-    def update(self,server_id,user_id=None,server_models_id=None,region_id=None,subscription_id=None,is_public=None,power_states_id=None,nc_number=None,name=None, description=None,ipmi_address=None,cpu_fre=None,cpu_core_num=None,cpu_desc=None,mem_total=None,mem_desc=None,disk_num=None,disk_desc=None,nic_num=None,nic_desc=None,hba_attached=None,hba_port_num=None,cpu_socket_num=None,disk_total=None,raid_internal=None,raid_external=None,hba_cards_id=None):
+    def update(self,server_id,user_id=None,server_models_id=None,region_id=None,subscription_id=None,is_public=None,power_states_id=None,nc_number=None,name=None,description=None,ipmi_address=None,ipmi_mac=None,ipmi_password=None,cpu_fre=None,cpu_core_num=None,cpu_desc=None,mem_total=None,mem_desc=None,disk_num=None,disk_desc=None,nic_num=None,nic_desc=None,hba_attached=None,hba_port_num=None,cpu_socket_num=None,disk_total=None,raid_internal=None,raid_external=None,hba_cards_id=None):
         body = {'physical_server':{'user_id':user_id,
                                   'server_models_id':server_models_id,
                                   'region_id':region_id,
@@ -125,6 +129,8 @@ class Physical_ServerManager(base.ManagerWithFind):
                                   'name':name,
                                   'description':description,
                                   'ipmi_address':ipmi_address,
+                                  'ipmi_mac':ipmi_mac,
+                                  'ipmi_password':ipmi_password,
                                   'cpu_fre':cpu_fre,
                                   'cpu_core_num':cpu_core_num,
                                   'cpu_desc':cpu_desc,
@@ -205,6 +211,12 @@ def do_physical_server_list(cs, args):
 @utils.arg('ipmi_address', default=None,
     metavar='<ipmi_address>',
     help='Server IPMI address')
+@utils.arg('ipmi_mac', default=None,
+    metavar='<ipmi_mac>',
+    help='Server IPMI mac')
+@utils.arg('ipmi_password', default=None,
+    metavar='<ipmi_password>',
+    help='Server IPMI password')
 @utils.arg('cpu_fre', default=None,
     metavar='<cpu_fre>',
     help='CPU frequence')
@@ -260,7 +272,7 @@ def do_server_model_create(cs, args):
     model = cs.server_models.create(args.user_id,args.server_models_id,
                args.region_id,args.subscription_id,args.is_public,
                args.power_states_id,args.nc_number,args.name, 
-               args.description,args.ipmi_address,args.cpu_fre,
+               args.description,args.ipmi_address,args.ipmi_mac,args.ipmi_password,args.cpu_fre,
                args.cpu_core_num,args.cpu_desc,args.mem_total,args.mem_desc,
                args.disk_num,args.disk_desc,args.nic_num,args.nic_desc,
                args.hba_attached,args.hba_port_num,args.cpu_socket_num,

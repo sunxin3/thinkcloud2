@@ -143,6 +143,37 @@ class PoweronPhysicalServer(tables.BatchAction):
                 api.nova.physical_server_update(request, obj_id, power_states_id=1)
                 break
 
+class PasswordPhysicalServer(tables.BatchAction):
+    name = "changepassword"
+    action_present = _("Change IPMI Password")
+    action_past = _("Scheduled change IPMI password of")
+    data_type_singular = _(" ")
+    data_type_plural = _(" ")
+    classes = ("btn-danger", "btn-reboot")
+
+    def allowed(self, request, obj_id):
+        server = api.nova.physical_server_get(request, obj_id)
+        if server.subscription_id != None:
+            return True
+        return False
+
+    def action(self, request, obj_id):
+        ipmi_address = api.nova.physical_server_get(request, obj_id).ipmi_address
+        password_list = '0123456789'
+        import random
+        import string
+        password = string.join(random.sample(password_list, 6), sep='')
+        pass_wd_cmd = 'ipmitool -I lan -H ' + ipmi_address + ' -U lenovo -P lenovo user set password 3 ' + password
+        p = subprocess.Popen(pass_wd_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        time.sleep(3)
+        p.kill()
+        api.nova.physical_server_update(request, obj_id, ipmi_password=password)
+        '''for result in p.stdout.readlines():
+            if result == 'Set session password\n':
+            #TODO by sunxin this is a hardcoding, need to modify later
+                api.nova.physical_server_update(request, obj_id, ipmi_password=password)
+                break'''
+
 class ApplyPhysicalServer(tables.BatchAction):
     name = "apply"
     action_present = _("Apply")
@@ -365,4 +396,4 @@ class PhysicalserversTable(tables.DataTable):
         # all the columns by default.
         columns = ["name","nc_num" "model", "cpu","memory","storage","nics","status","ipmi", "ipmi_password", "subscrib_status"]
         table_actions = (OwnerFilter,)
-        row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer,PoweronPhysicalServer)
+        row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer,PoweronPhysicalServer,PasswordPhysicalServer)
