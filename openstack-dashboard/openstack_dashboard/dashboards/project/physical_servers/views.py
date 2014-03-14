@@ -18,21 +18,23 @@ LOG = logging.getLogger(__name__)
 
 class IndexView(tables.DataTableView):
     table_class = PhysicalserversTable
-    template_name = 'admin/physical_servers/index.html'
+    template_name = 'project/physical_servers/index.html'
 
 #    def has_more_data(self, table):
 #        return self._more  parse_date
     
     def get_data(self):
         request = self.request
-        flavors = []
+        servers = []
         try:
-            flavors = api.nova.physical_server_list(request)
+            server_query_result = api.nova.physical_server_list(request)
         except:
             exceptions.handle(request,
                               _('Unable to retrieve physical server list.'))
-
-        return flavors
+        for server in server_query_result:
+            if server.is_public and (server.subscrib_user_id == request.user.id or server.subscription_id == None):
+	        servers.append(server)
+        return servers
     
 
 class CreateView(views.CreateView):

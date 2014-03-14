@@ -4059,3 +4059,6 @@ msgstr "申请状态"
 
 msgid "Change IPMI Password"
 msgstr "修改IPMI用户thkcld的密码"
+
+msgid "Release Floating IPs"
+msgstr "释放浮动IP"
