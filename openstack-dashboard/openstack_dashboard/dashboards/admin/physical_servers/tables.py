@@ -75,8 +75,8 @@ class AdminPrivatePhysicalServer(PrivatePhysicalServer):
     
 class AdminOwnerFilter(tables.FixedFilterAction):
     def get_fixed_buttons(self):
-        def make_dict(text, tenant, icon):
-            return dict(text=text, value=tenant, icon=icon)
+        def make_dict(text, user, icon):
+            return dict(text=text, value=user, icon=icon)
         buttons = [make_dict('Public', 'public', 'icon-star')]
         buttons.append(make_dict('Private Reserved', 'private_reserved', 'icon-home'))
         buttons.append(make_dict('Private Free', 'private_free', 'icon-fire'))
@@ -84,15 +84,15 @@ class AdminOwnerFilter(tables.FixedFilterAction):
         return buttons
 
     def categorize(self, table, servers):
-        user_tenant_id = table.request.user.tenant_id
-        tenants = defaultdict(list)
+        user_id = table.request.user.id
+        users = defaultdict(list)
         for server in servers:
-            categories = get_server_categories(server,user_tenant_id)
+            categories = get_server_categories(server,user_id)
             for category in categories:
-                tenants[category].append(server)
-        return tenants
+                users[category].append(server)
+        return users
 
-def get_server_categories(server,user_tenant_id):
+def get_server_categories(server,user_id):
     categories = []
     if server.is_public: 
         categories.append('public')
@@ -115,8 +115,8 @@ class UpdateRow(tables.Row):
         super(UpdateRow, self).load_cells(server)
         # Tag the row with the server category for client-side filtering.
         server = self.datum
-        my_tenant_id = self.table.request.user.tenant_id
-        server_categories = get_server_categories(server, my_tenant_id)
+        my_user_id = self.table.request.user.id
+        server_categories = get_server_categories(server, my_user_id)
         for category in server_categories:
             self.classes.append('category-' + category)
             
