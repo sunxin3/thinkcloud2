@@ -21,6 +21,8 @@ def physical_server_get(context,server_id):
     result['disks_count'] = len (result.rel_disk)
     result['rams_count'] = len (result.rel_ram)
     result['hbas_count'] = len (result.rel_hba)
+
+    result['subscrib_status'] = None
     try:
         result.subscription_id
     except:
@@ -88,6 +90,9 @@ def physical_server_get_all(context):
             row['nic_ids'] = ','.join(str(v) for v in nic_ids) 
                  
             row['subscrib_project_id']  = None           
+            row['subscrib_user_id']  = None           
+            row['subscrib_expires_at']  = None           
+            row['subscrib_status']  = None           
             if row.subscription_id != None :
                 try:
                     charge_subscription_get(context,row.subscription_id)

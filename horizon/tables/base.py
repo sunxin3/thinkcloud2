@@ -1242,8 +1242,6 @@ class DataTable(object):
             Make sure that the value returned is a unique value for the id
             otherwise rendering issues can occur.
         """
-	if type(datum.id) == types.IntType:
-	    return unicode(str(datum.id))
         return datum.id
 
     def get_object_display(self, datum):

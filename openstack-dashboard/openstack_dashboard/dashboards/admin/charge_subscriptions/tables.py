@@ -16,6 +16,7 @@
 #    under the License.
 
 import logging
+import types
 
 from django.template.defaultfilters import title
 from django.utils.translation import ugettext_lazy as _
@@ -69,6 +70,11 @@ class AdminChargesTable(tables.DataTable):
         ("paused", True),
         ("error", False),
     )
+
+    def get_object_id(self, datum):
+        if type(datum.id) == types.IntType:
+            return unicode(str(datum.id))
+        return datum.id
 
     def get_object_display(self, datum):
         return datum.resource_name

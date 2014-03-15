@@ -15,6 +15,7 @@
 #    under the License.
 
 import logging
+import subprocess
 import types
 from django.utils import datetime_safe
 from datetime import timedelta
@@ -213,6 +214,11 @@ class ChargeSubscriptionTable(tables.DataTable):
         ("paused", True),
         ("error", False),
     )
+
+    def get_object_id(self, datum):
+        if type(datum.id) == types.IntType:
+            return unicode(str(datum.id))
+        return datum.id
 
     def get_object_display(self, datum):
 	 return datum.resource_name

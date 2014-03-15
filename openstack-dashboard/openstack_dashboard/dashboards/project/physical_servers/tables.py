@@ -15,6 +15,7 @@
 #    under the License.
 
 import logging
+import types
 import subprocess
 import time
 from collections import defaultdict
@@ -77,7 +78,7 @@ class RebootPhysicalServer(tables.BatchAction):
 
     def allowed(self, request, obj_id):
         server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None:
+        if server.subscription_id != None and server.subscrib_status == "verified":
             return True
         return False
     
@@ -103,7 +104,7 @@ class ShutdownPhysicalServer(tables.BatchAction):
 
     def allowed(self, request, obj_id):
         server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None:
+        if server.subscription_id != None and server.subscrib_status == "verified":
             return True
         return False
     
@@ -128,7 +129,7 @@ class PoweronPhysicalServer(tables.BatchAction):
 
     def allowed(self, request, obj_id):
         server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None:
+        if server.subscription_id != None and server.subscrib_status == "verified":
             return True
         return False
 
@@ -153,7 +154,7 @@ class PasswordPhysicalServer(tables.BatchAction):
 
     def allowed(self, request, obj_id):
         server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None:
+        if server.subscription_id != None and server.subscrib_status == "verified":
             return True
         return False
 
@@ -204,7 +205,8 @@ class ApplyPhysicalServer(tables.BatchAction):
         api.nova.physical_server_update(request, obj_id, subscription_id=subscription.id)
 
         #Send people mail
-        applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        #applier_mail_perfix = api.keystone.user_get(request, request.user.id,).name
+        applier_mail_perfix = request.user.username
         #TODO by sunxin
         applier_mail = applier_mail_perfix + '@lenovo.com'
         
@@ -387,6 +389,11 @@ class PhysicalserversTable(tables.DataTable):
     nics    = tables.Column("nic_sum", verbose_name=_("Nics"),
                             filters=(filters.linebreaksbr,))
     subscrib_status = tables.Column("subscrib_status", verbose_name=_("Subscrib Status"))
+
+    def get_object_id(self, datum):
+        if type(datum.id) == types.IntType:
+            return unicode(str(datum.id))
+        return datum.id
 
     class Meta:
         name = "physicalservers"

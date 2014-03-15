@@ -53,7 +53,9 @@ class IndexView(tables.DataTableView):
             charge_subscriptions = api.nova.charge_subscription_list(self.request)
             for charge_subscription in charge_subscriptions:
                 if self.request.user.id == charge_subscription.user_id:
-                    charge_subscription.user_id = api.keystone.user_get(self.request, charge_subscription.user_id).name
+                    #non-admin user can not have the permission querying the keystone's user info
+                    #charge_subscription.user_id = api.keystone.user_get(self.request, charge_subscription.user_id).name
+                    charge_subscription.user_id = self.request.user.username
                     try:
                         #TODO: fixme need to test it into product envirment.
                         #TODO: fixme need to add resource_name get syncing 
@@ -62,7 +64,9 @@ class IndexView(tables.DataTableView):
                         pass
 
                     if charge_subscription.approver_id:
-                        charge_subscription.approver_id = api.keystone.user_get(self.request, charge_subscription.approver_id).name
+                        #non-admin user can not have the permission querying the keystone's user info
+                        #charge_subscription.approver_id = api.keystone.user_get(self.request, charge_subscription.approver_id).name
+                        charge_subscription.approver_id = "admin"
                     else:
                         charge_subscription.approver_id = 'N/A'
 
