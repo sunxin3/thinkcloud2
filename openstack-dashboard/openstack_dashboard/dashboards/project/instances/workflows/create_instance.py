@@ -484,7 +484,8 @@ class LaunchInstance(workflows.Workflow):
         name = self.context.get('name', 'unknown instance')
         count = self.context.get('count', 1)
         if int(count) > 1:
-            return message % {"count": _("%s instances") % count,
+            count_str = count + " instances"
+            return message % {"count": _(count_str),
                               "name": name}
         else:
             return message % {"count": _("instance"), "name": name}
