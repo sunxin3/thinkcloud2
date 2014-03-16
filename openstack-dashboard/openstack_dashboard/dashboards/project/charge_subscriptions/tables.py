@@ -17,6 +17,7 @@
 import logging
 import subprocess
 import types
+import time
 from django.utils import datetime_safe
 from datetime import timedelta
 
@@ -94,7 +95,7 @@ class ApproveChargeSubscription(tables.BatchAction):
         p = subprocess.Popen(pass_wd_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         time.sleep(3)
         p.kill()
-        api.nova.physical_server_update(request, server_id, ipmi_password=pass_word)
+        api.nova.physical_server_update(request, server_id, ipmi_password=password)
         '''for result in p.stdout.readlines():
             if result == 'Set session password\n':
             #TODO by sunxin this is a hardcoding, need to modify later
