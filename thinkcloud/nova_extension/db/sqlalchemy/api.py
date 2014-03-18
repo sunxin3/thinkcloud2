@@ -23,14 +23,15 @@ def physical_server_get(context,server_id):
     result['hbas_count'] = len (result.rel_hba)
 
     result['subscrib_status'] = None
-    try:
-        result.subscription_id
-    except:
-        result['subscription_id'] = None
-    #Added by sunxin
-    if result['subscription_id']!= None :
-        result['subscrib_status'] = result.rel_subscription.status
+    if result['subscription_id'] != None :
+        try:
+            charge_subscription_get(context,result['subscription_id'])
+        except :
+            result['subscription_id'] = None
+        else:
+            result['subscrib_status'] = result.rel_subscription.status
     return result  
+
 
 """       
     

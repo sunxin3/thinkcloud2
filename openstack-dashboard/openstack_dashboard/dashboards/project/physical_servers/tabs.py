@@ -39,7 +39,7 @@ class OverviewTab(tabs.Tab):
             exceptions.handle(request,
                               _('Unable to retrieve physical server details.'),
                               redirect=redirect)
-        LOG.debug((server.rel_nic)[0]["interface"])
+        #LOG.debug((server.rel_nic)[0]["interface"])
         return {'server': server}
 
 

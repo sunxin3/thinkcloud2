@@ -7,8 +7,7 @@ from horizon import exceptions
 from horizon import tables
 
 from openstack_dashboard import api
-from openstack_dashboard.dashboards.project \
-        .physical_servers import views
+from openstack_dashboard.dashboards.project.physical_servers import views
 from .tables import AdminPhysicalserversTable
 from .forms import CreatePhysicalServerForm, UpdatePhysicalServerForm
 
