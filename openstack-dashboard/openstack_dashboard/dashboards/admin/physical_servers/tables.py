@@ -61,15 +61,15 @@ class AdminnPasswordPhysicalServer(PasswordPhysicalServer):
 
 class AdminPublicPhysicalServer(PublicPhysicalServer):
     def allowed(self, request, obj_id):
-        is_public = api.nova.physical_server_get(request, obj_id).is_public
-        if not is_public:
+        #is_public = api.nova.physical_server_get(request, obj_id).is_public
+        if not datum.is_public:
              return True
         return False
     
 class AdminPrivatePhysicalServer(PrivatePhysicalServer):
-    def allowed(self, request, obj_id):
-        is_public = api.nova.physical_server_get(request, obj_id).is_public
-        if is_public:
+    def allowed(self, request, datum):
+        #is_public = api.nova.physical_server_get(request, obj_id).is_public
+        if datum.is_public:
              return True
         return False
     

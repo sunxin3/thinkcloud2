@@ -76,9 +76,10 @@ class RebootPhysicalServer(tables.BatchAction):
     data_type_plural = _("Physical Servers")
     classes = ("btn-danger", "btn-reboot")    
 
-    def allowed(self, request, obj_id):
-        server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None and server.subscrib_status == "verified":
+    def allowed(self, request, datum):
+        #server = api.nova.physical_server_get(request, obj_id)
+        #if server.subscription_id != None and server.subscrib_status == "verified":
+        if datum.subscription_id != None and datum.subscrib_status == "verified":
             return True
         return False
     
@@ -102,9 +103,10 @@ class ShutdownPhysicalServer(tables.BatchAction):
     data_type_plural = _("Physical Servers")
     classes = ("btn-danger", "btn-reboot")    
 
-    def allowed(self, request, obj_id):
-        server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None and server.subscrib_status == "verified":
+    def allowed(self, request, datum):
+        #server = api.nova.physical_server_get(request, obj_id)
+        #if server.subscription_id != None and server.subscrib_status == "verified":
+        if datum.subscription_id != None and datum.subscrib_status == "verified":
             return True
         return False
     
@@ -128,8 +130,9 @@ class PoweronPhysicalServer(tables.BatchAction):
     classes = ("btn-danger", "btn-reboot")
 
     def allowed(self, request, obj_id):
-        server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None and server.subscrib_status == "verified":
+        #server = api.nova.physical_server_get(request, obj_id)
+        #if server.subscription_id != None and server.subscrib_status == "verified":
+        if datum.subscription_id != None and datum.subscrib_status == "verified":
             return True
         return False
 
@@ -152,9 +155,10 @@ class PasswordPhysicalServer(tables.BatchAction):
     data_type_plural = _(" ")
     classes = ("btn-danger", "btn-reboot")
 
-    def allowed(self, request, obj_id):
-        server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id != None and server.subscrib_status == "verified":
+    def allowed(self, request, datum):
+        #server = api.nova.physical_server_get(request, obj_id)
+        #if server.subscription_id != None and server.subscrib_status == "verified":
+        if datum.subscription_id != None and datum.subscrib_status == "verified":
             return True
         return False
 
@@ -183,9 +187,9 @@ class ApplyPhysicalServer(tables.BatchAction):
     data_type_plural = _("Physical Servers")
     classes = ("btn-danger", "btn-reboot")
     
-    def allowed(self, request, obj_id):
-        server = api.nova.physical_server_get(request, obj_id)
-        if server.subscription_id == None:
+    def allowed(self, request, datum):
+        #server = api.nova.physical_server_get(request, obj_id)
+        if datum.subscription_id == None:
             return True
         return False
 
