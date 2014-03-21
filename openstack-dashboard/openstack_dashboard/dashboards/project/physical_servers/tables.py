@@ -129,7 +129,7 @@ class PoweronPhysicalServer(tables.BatchAction):
     data_type_plural = _("Physical Servers")
     classes = ("btn-danger", "btn-reboot")
 
-    def allowed(self, request, obj_id):
+    def allowed(self, request, datum):
         #server = api.nova.physical_server_get(request, obj_id)
         #if server.subscription_id != None and server.subscrib_status == "verified":
         if datum.subscription_id != None and datum.subscrib_status == "verified":
