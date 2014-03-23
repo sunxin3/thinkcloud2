@@ -1,9 +1,28 @@
 {% load i18n horizon humanize sizeformat %}
 <div>
 <h3>{% trans "Usage Summary" %}</h3>
+<table width=800>
+<tr>
+<td width=400>
 <div id="chartContainer1"  class="thkcld_pie3d"></div>  
-<div id="chartContainer2"  class="thkcld_pie3d"></div> 
+</td>
+<td width=400>
+<div id="chartContainer2"  class="thkcld_pie3d"></div>
+</td>
+</tr>
+</table>
+<hr> 
+<h3>{% trans "Power State Summary" %}</h3>
+<table width=800>
+<tr>
+<td width=400>
 <div id="chartContainer3"  class="thkcld_pie3d"></div> 
+</td>
+<td width=400>
+<div id="chartContainer4"  class="thkcld_pie3d"></div> 
+</td>
+</tr>
+</table>
 <div style="clear:both"></div>
 </div>
 
@@ -12,43 +31,46 @@
 
         function init(){  
             var xml1 = "<graph showNames='1'  enableSmartLabels='1' manageLabelOverflow='1'  decimalPrecision='0'   animation='1' caption='{% trans "Physical Server Usages" %}' baseFontSize='14'>";
-                xml1 += "<set name='李克强' value='20' />";
-                xml1 += "<set name='France' value='7'  />";
-                xml1 += "<set name='India' value='12' />";
-                xml1 += "<set name='England' value='11' />";
-                xml1 += "<set name='Italy' value='8' />";
-                xml1 += "<set name='Canada' value='19'/>";
-                xml1 += "<set name='Germany' value='15'/>";
+                xml1 += "<set name='LVCC' value='{{ svr_usage.lvcc }}' />";
+                xml1 += "<set name='LVDI' value='{{ svr_usage.lvdi }}'  />";
+                xml1 += "<set name='HPC' value='{{ svr_usage.hpc }}' />";
+                xml1 += "<set name='OpenStack' value='{{ svr_usage.openstack }}' />";
+                xml1 += "<set name='LeStor' value='{{ svr_usage.lestor }}' />";
+                xml1 += "<set name='3rd Partner Test' value='{{ svr_usage.test }}'/>";
+                xml1 += "<set name='Demo Used' value='{{ svr_usage.demo }}'/>";
+                xml1 += "<set name='Hadoop' value='{{ svr_usage.hadoop }}'/>";
                 xml1 += "</graph>";
-            var chart1 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "300", "300");  
+            var chart1 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "420", "300");  
             chart1.setDataXML(xml1);  
             chart1.render("chartContainer1");  
             
-            var xml2 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "Physical Server Usages" %}' >";
-            xml2 += "<set name='李克强' value='20' />";
-            xml2 += "<set name='France' value='7'  />";
-            xml2 += "<set name='India' value='12' />";
-            xml2 += "<set name='England' value='11' />";
-            xml2 += "<set name='Italy' value='8' />";
-            xml2 += "<set name='Canada' value='19'/>";
-            xml2 += "<set name='Germany' value='15'/>";
+            var xml2 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "VM Usages" %}' >";
+            xml2 += "<set name='RHEL 6.4' value='{{ vm_sys.rhel6_4 }}' />";
+            xml2 += "<set name='CentOS 6.4' value='{{ vm_sys.centos6_4 }}' />";
+            xml2 += "<set name='Windows 7' value='{{ vm_sys.windows7 }}' />";
+            xml2 += "<set name='Windows 2008' value='{{ vm_sys.windows2008 }}'  />";
             xml2 += "</graph>";
-            var chart2 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "300", "300");  
+            var chart2 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "420", "300");  
             chart2.setDataXML(xml2);  
             chart2.render("chartContainer2");
-            
-            var xml3 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "Physical Server Usages" %}' >";
-            xml3 += "<set name='李克强' value='20' />";
-            xml3 += "<set name='France' value='7'  />";
-            xml3 += "<set name='India' value='12' />";
-            xml3 += "<set name='England' value='11' />";
-            xml3 += "<set name='Italy' value='8' />";
-            xml3 += "<set name='Canada' value='19'/>";
-            xml3 += "<set name='Germany' value='15'/>";
+
+            var xml3 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "Physical Server Power States" %}' >";
+            xml3 += "<set name='Power On' value='{{ svr_power.poweron }}'  />";
+            xml3 += "<set name='Power Off' value='{{ svr_power.poweroff }}'  />";
             xml3 += "</graph>";
-            var chart3 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "300", "300");  
+            var chart3 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "420", "300");  
             chart3.setDataXML(xml3);  
             chart3.render("chartContainer3");
+            
+
+            var xml4 = "<graph showNames='1'  baseFontSize='14' decimalPrecision='0' animation='1' caption='{% trans "VM Power States" %}' >";
+            xml4 += "<set name='Power On' value='{{ vm_power.poweron }}' />";
+            xml4 += "<set name='Power Off' value='{{ vm_power.poweroff }}' />";
+            xml4 += "</graph>";
+            var chart4 = new FusionCharts("../static/horizon/lib/fusioncharts/charts/FCF_Pie3D.swf", "myChartId", "420", "300");
+            chart4.setDataXML(xml4);
+            chart4.render("chartContainer4");
+
             
         }  
         

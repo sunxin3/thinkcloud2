@@ -3778,7 +3778,23 @@ msgstr "磁盘 GB 小时时间"
 
 #: usage/tables.py:40 usage/tables.py:68
 msgid "Usage Summary"
-msgstr "使用情况摘要"
+msgstr "实验室使用情况摘要"
+
+#: usage/tables.py:40 usage/tables.py:68
+msgid "Power State Summary"
+msgstr "实验室电源状况摘要"
+
+msgid "Physical Server Usages"
+msgstr "物理服务器使用状况"
+
+msgid "VM Usages"
+msgstr "虚拟机使用状况"
+
+msgid "Physical Server Power States"
+msgstr "物理服务器开关机状况"
+
+msgid "VM Power States"
+msgstr "虚拟机开关机状况"
 
 #: usage/tables.py:60
 msgid "Uptime"

@@ -31,7 +31,18 @@ class ProjectOverview(usage.UsageView):
     def get_data(self):
         super(ProjectOverview, self).get_data()
         return self.usage.get_instances()
-
+   
+    def get_context_data(self, **kwargs):
+        context = super(ProjectOverview, self).get_context_data(**kwargs)
+        svr_usage = {'lvcc':21, 'lvdi':24, 'hpc':34, 'openstack':40, 'lestor':30, 'test':55, 'demo':53, 'hadoop':10 }
+        vm_sys = {'rhel6_4':41, 'centos6_4':54, 'windows7':39, 'windows2008':50 }
+        vm_power = {'poweroff':11, 'poweron':184 }
+        svr_power = {'poweroff':2, 'poweron':203 }
+        context['svr_usage'] = svr_usage
+        context['vm_sys'] = vm_sys
+        context['vm_power'] = vm_power
+        context['svr_power'] = svr_power
+        return context
 
 class WarningView(TemplateView):
     template_name = "project/_warning.html"
