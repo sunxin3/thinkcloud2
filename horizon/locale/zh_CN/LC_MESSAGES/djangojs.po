@@ -64,10 +64,10 @@ msgstr "更新时发生错误。"
 msgid "You have selected %s. "
 msgstr "你已经选择了 %s 。 "
 
-#: static/horizon/js/horizon.tables.js:156
+#: static/horizon/js/	:156
 #, c-format
-msgid "Confirm %s"
-msgstr "确认 %s"
+msgid "Confirm "
+msgstr "确认："
 
 #: static/horizon/js/horizon.tables.js:157
 msgid "Please confirm your selection. This action cannot be undone."

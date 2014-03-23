@@ -481,21 +481,21 @@ msgstr "无法创建安全组。"
 
 #: dashboards/nova/access_and_security/security_groups/tables.py:30
 msgid "Security Group"
-msgstr "安全组"
+msgstr "防火墙"
 
 #: dashboards/nova/access_and_security/security_groups/tables.py:31
 #: dashboards/nova/access_and_security/security_groups/tables.py:65
 #: dashboards/nova/instances/workflows.py:337
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:49
 msgid "Security Groups"
-msgstr "安全组"
+msgstr "防火墙"
 
 #: dashboards/nova/access_and_security/security_groups/tables.py:44
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/_create.html:7
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/_create.html:23
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/create.html:6
 msgid "Create Security Group"
-msgstr "创建安全组"
+msgstr "创建防火墙"
 
 #: dashboards/nova/access_and_security/security_groups/tables.py:51
 msgid "Edit Rules"
@@ -642,12 +642,12 @@ msgstr "下载密钥对&quot;%(keypair_name)s&quot;"
 
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/_create.html:18
 msgid "From here you can create a new security group"
-msgstr "从这里可以创建一个新的安全组"
+msgstr "从这里可以创建一个新的防火墙"
 
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/_edit_rules.html:9
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/edit_rules.html:6
 msgid "Edit Security Group Rules"
-msgstr "编辑安全组规则"
+msgstr "编辑防火墙规则"
 
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/_edit_rules.html:12
 #: dashboards/nova/access_and_security/templates/access_and_security/security_groups/_edit_rules.html:19
@@ -1677,6 +1677,9 @@ msgstr "查看所有日志"
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:3
 msgid "Instance Overview"
 msgstr "虚拟机概况"
+
+msgid "Tenant and Server Room Resource Overview"
+msgstr " 部门和实验室资源使用概况"
 
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:24
 #: dashboards/nova/instances/templates/instances/_launch_details_help.html:14
@@ -3879,7 +3882,7 @@ msgid "Open"
 msgstr "开放方式"
 
 msgid "Rules define which traffic is allowed to instances assigned to the security group. A security group rule consists of three main parts:"
-msgstr "定义安全组的规则，用于开启虚拟机的网络端口,允许通过网络数据包，进行虚拟机访问，安全组的规则主要包括以下三个方面:"
+msgstr "定义防火墙的规则，用于开启虚拟机的网络端口,允许通过网络数据包，进行虚拟机访问，安全组的规则主要包括以下三个方面:"
 
 msgid "Image File"
 msgstr "镜像文件"
@@ -4035,7 +4038,7 @@ msgid "Delete Users"
 msgstr "删除用户"
 
 msgid "Delete Security Groups"
-msgstr "删除安全组"
+msgstr "删除防火墙"
 
 msgid "Reserved by Me"
 msgstr "我申请预留的"
@@ -4078,3 +4081,6 @@ msgstr "修改IPMI用户thkcld的密码"
 
 msgid "Release Floating IPs"
 msgstr "释放浮动IP"
+
+msgid "NC Number"
+msgstr "NC 号"

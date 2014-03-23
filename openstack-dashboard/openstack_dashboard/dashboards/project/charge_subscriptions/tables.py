@@ -81,7 +81,7 @@ class ApproveChargeSubscription(tables.BatchAction):
 
     def action(self, request, obj_id):
         now = datetime_safe.datetime.now().isoformat()
-        expires_at = (datetime_safe.datetime.now() + timedelta(days=30)).isoformat()
+        expires_at = (datetime_safe.datetime.now() + timedelta(days=30)).isoformat().strftime("%Y-%m-%d %H:%M:%S")
         api.nova.charge_subscription_update(request, obj_id, status='verified', approver_id=request.user.id, approved_at=now,expires_at=expires_at)
 	
         subscription = api.nova.charge_subscription_get(request, obj_id)
