@@ -23,14 +23,14 @@ class IndexView(tables.DataTableView):
     
     def get_data(self):
         request = self.request
-        flavors = []
+        physical_servers = []
         try:
-            flavors = api.nova.physical_server_list(request)
+            physical_servers = api.nova.physical_server_list(request)
         except:
             exceptions.handle(request,
                               _('Unable to retrieve physical server list.'))
 
-        return flavors
+        return physical_servers
     
 
 class CreateView(views.CreateView):

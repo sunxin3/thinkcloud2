@@ -25,16 +25,16 @@ class IndexView(tables.DataTableView):
     
     def get_data(self):
         request = self.request
-        servers = []
+        physical_servers = []
         try:
             server_query_result = api.nova.physical_server_list(request)
+            for server in server_query_result:
+                if server.is_public and (server.subscrib_user_id == request.user.id or server.subscription_id == None):
+	            physical_servers.append(server)
+            return physical_servers
         except:
             exceptions.handle(request,
                               _('Unable to retrieve physical server list.'))
-        for server in server_query_result:
-            if server.is_public and (server.subscrib_user_id == request.user.id or server.subscription_id == None):
-	        servers.append(server)
-        return servers
     
 
 class CreateView(views.CreateView):

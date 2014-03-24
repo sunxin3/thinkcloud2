@@ -405,6 +405,6 @@ class PhysicalserversTable(tables.DataTable):
         verbose_name = _("Physical Servers")
         # Hide the image_type column. Done this way so subclasses still get
         # all the columns by default.
-        columns = ["nc_num", "name", "model", "cpu","memory","storage","nics","status","ipmi", "ipmi_password", "subscrib_status"]
+        columns = ["nc_num", "model", "name", "cpu","memory","storage","nics","status","ipmi", "ipmi_password", "subscrib_status"]
         table_actions = (OwnerFilter,)
         row_actions = (ApplyPhysicalServer,RebootPhysicalServer,ShutdownPhysicalServer,PoweronPhysicalServer,PasswordPhysicalServer)

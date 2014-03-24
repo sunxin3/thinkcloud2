@@ -94,13 +94,18 @@ def physical_server_get_all(context):
             row['subscrib_user_id']  = None           
             row['subscrib_expires_at']  = None           
             row['subscrib_status']  = None           
-            if row.subscription_id != None :
-                row['subscrib_project_id'] = row.rel_subscription.project_id         
-	        #Added by sunxin for fetching more subscription details
-                row['subscrib_user_id'] = row.rel_subscription.user_id         
-                row['subscrib_expires_at'] = row.rel_subscription.expires_at        
-                row['subscrib_status'] = row.rel_subscription.status        
-            
+            if row['subscription_id'] != None:
+	        try:
+                    charge_subscription_get(context,row['subscription_id'])
+                except:
+                    row['subscription_id'] = None
+                else:
+                    row['subscrib_project_id'] = row.rel_subscription.project_id         
+	            #Added by sunxin for fetching more subscription details
+                    row['subscrib_user_id'] = row.rel_subscription.user_id         
+                    row['subscrib_expires_at'] = row.rel_subscription.expires_at        
+                    row['subscrib_status'] = row.rel_subscription.status
+
             server_list.append(row)
         return server_list;    
 
