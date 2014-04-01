@@ -1477,7 +1477,7 @@ msgstr "虚拟机快照"
 
 #: dashboards/nova/instances/workflows.py:175
 msgid "Server Name"
-msgstr "服务器名称"
+msgstr "名称"
 
 #: dashboards/nova/instances/workflows.py:176
 #: dashboards/nova/instances/templates/instances/_detail_overview.html:22
@@ -4084,3 +4084,6 @@ msgstr "释放浮动IP"
 
 msgid "NC Number"
 msgstr "NC 号"
+
+msgid "Owner"
+msgstr "资产属主"

@@ -384,6 +384,9 @@ class PhysicalserversTable(tables.DataTable):
                            verbose_name=_("Public"),
                            empty_value=False,
                            filters=(filters.yesno, filters.capfirst))
+
+    owner = tables.Column("owner", verbose_name=_("Owner"))
+
     cpu = tables.Column("cpu_desc", verbose_name=_("CPU"))
     
     memory = tables.Column(total_memory, verbose_name=_("Memory"))
