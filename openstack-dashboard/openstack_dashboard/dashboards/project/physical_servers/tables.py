@@ -385,7 +385,7 @@ class PhysicalserversTable(tables.DataTable):
                            empty_value=False,
                            filters=(filters.yesno, filters.capfirst))
 
-    owner = tables.Column("owner", verbose_name=_("Owner"))
+    owner = tables.Column("user_id", verbose_name=_("Owner"))
 
     cpu = tables.Column("cpu_desc", verbose_name=_("CPU"))
     

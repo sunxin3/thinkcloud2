@@ -48,6 +48,7 @@ class PhysicalServer(BASE,NovaBase):
     nc_number = Column(String(64))
     name = Column(String(64))
     description = Column(String(255))
+    user_id = Column(String(255))
     ipmi_address = Column(String(255))
     ipmi_mac     = Column(String(128))
     ipmi_password = Column(String(64))
